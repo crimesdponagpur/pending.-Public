@@ -2892,6 +2892,14 @@ function pdfToJpeg(buf, maxPages) {
     });
   });
 }
+function kb(n) { n = +n || 0; return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(n ? 1 : 0, Math.round(n / 1024)) + ' KB'; }
+function readBuf(f) {
+  function once() {
+    if (f.arrayBuffer) return f.arrayBuffer();
+    return new Promise(function (res, rej) { var rd = new FileReader(); rd.onload = function () { res(rd.result); }; rd.onerror = function () { rej(rd.error); }; rd.readAsArrayBuffer(f); });
+  }
+  return once().then(function (b) { return b && b.byteLength ? b : new Promise(function (r) { setTimeout(r, 600); }).then(once); });
+}
 function bufB64(buf) {
   var u = new Uint8Array(buf), s = '';
   for (var i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
@@ -2928,10 +2936,9 @@ function firDlg() {
           if (m.indexOf('10 MB पर्यंत') >= 0) m = 'Apps Script मध्ये नवीन Code.gs टाकून Deploy करा (आवृत्ती 5.0.1)';
           c.st = 'err'; c.err = m; draw(c); sum(); pump();
         }
-        var rd = new FileReader();
-        rd.onload = function () {
-          var buf = rd.result;
-          if (!buf || !buf.byteLength) return fail('फाइल रिकामी वाचली गेली. PDF आधी फोनमध्ये डाउनलोड करून मग निवडा.');
+        readBuf(f).then(function (buf) {
+          if (!buf || !buf.byteLength) return fail(f.size ? 'फाइल वाचता आली नाही (' + kb(f.size) + '). PDF एकदा उघडून बंद करा किंवा Desktop वर कॉपी करून पुन्हा निवडा.' : 'ही फाइल 0 KB आहे, आत काहीच नाही. FIR पुन्हा डाउनलोड करा.');
+          if (String.fromCharCode.apply(null, new Uint8Array(buf.slice(0, 5))).indexOf('%PDF') < 0) return fail('ही खरी PDF नाही (' + kb(buf.byteLength) + '). डाउनलोड अपूर्ण असेल; FIR पुन्हा डाउनलोड करा.');
           var b64 = bufB64(buf);
           var ocr = PL.mode === 'demo' ? Promise.resolve({ data: b64 }) : pdfToJpeg(buf, 3).then(function (img) { return { img: img }; }, function () {
             if (buf.byteLength > 1.9e6) throw new Error('PDF वाचता आली नाही (pdf.js लोड झाले नाही). इंटरनेट तपासून पुन्हा प्रयत्न करा.');
@@ -2942,9 +2949,7 @@ function firDlg() {
             if (c.st === 'ok' && !res.doc && buf.byteLength <= 8 * 1048576) c.docP = rpc('act', [KEY, 'firsave', { name: f.name, data: b64 }]).then(function (r) { setDoc(c, r && r.doc); }, function () {});
             pump();
           }).catch(fail);
-        };
-        rd.onerror = function () { fail('फाइल वाचता आली नाही'); };
-        rd.readAsArrayBuffer(f);
+        }, function () { fail('फाइल वाचता आली नाही (' + kb(f.size) + '). PDF Desktop वर कॉपी करून पुन्हा निवडा.'); });
       })(queue.shift());
     }
     function setDoc(c, url) {
