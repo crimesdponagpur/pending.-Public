@@ -2176,12 +2176,17 @@ function editForm(o, kind, x) {
       }
       if (t !== 'AD') {
         var sg = headSuggest(t, k), hs = ov.querySelector('[data-hsug]');
-        hs.innerHTML = sg.head && sg.head !== (c || hd.toUpperCase().trim()) ? 'कलमावरून सुचवलेला: <a class="lnk" data-usehead>' + esc(sg.head) + '</a>' + (sg.type && sg.type !== t ? ' (' + esc(T_L[sg.type]) + ')' : '') : '';
+        var hcur = c || hd.toUpperCase().trim(), ls = hcur && lrnSub(k, hcur), lb = lrnBhag(k);
+        hs.innerHTML = (sg.head && sg.head !== hcur ? (sg.learn ? 'आधीच्या ' + sg.learn.t + ' पैकी ' + sg.learn.n + ' गुन्ह्यांत याच कलमाला: ' : 'कलमावरून सुचवलेला: ') + '<a class="lnk" data-usehead>' + esc(sg.head) + '</a>' + (sg.type && sg.type !== t ? ' (' + esc(T_L[sg.type]) + ')' : '') : '') +
+          (ls && q('sub') && q('sub').value !== ls.v ? '<br>उप-शीर्ष नेहमी: <a class="lnk" data-usesub>' + esc(ls.v) + '</a> (' + ls.n + ' वेळा)' : '') +
+          (lb && q('bhag') && q('bhag').value !== lb.v ? '<br>जुना गट याआधी हाताने: <a class="lnk" data-usebhag>' + esc(ogName(lb.v)) + '</a> (' + lb.n + ' वेळा)' : '');
+        var us = hs.querySelector('[data-usesub]'); if (us) us.onclick = function () { q('sub').value = ls.v; var w = ov.querySelector('[data-pk=sub]'); w.style.display = ''; pickSet(ov, 'sub', subsFor(q('head').value)); hints(); };
+        var ubh = hs.querySelector('[data-usebhag]'); if (ubh) ubh.onclick = function () { q('bhag').value = lb.v; hints(); };
         var uh = hs.querySelector('[data-usehead]'); if (uh) uh.onclick = function () { if (sg.type && sg.type !== t && q('type').querySelector('option[value="' + sg.type + '"]')) { q('type').value = sg.type; sync(); } HC.pick(sg.head); };
         var is = ov.querySelector('[data-isug]');
         if (is && t === 'IPC-BNS') {
           var ib = ipcBnsSuggest(c || hd, k), need = (ib.ipc && ib.ipc !== q('ipc').value) || (ib.bns && ib.bns !== q('bns').value);
-          is.innerHTML = need ? 'सुचवलेले: IPC ' + esc(ib.ipc || '-') + ' / BNS ' + esc(ib.bns || '-') + ' <a class="lnk" data-useib>वापरा</a>' : '';
+          is.innerHTML = need ? (ib.learn ? 'आधीच्या ' + ib.learn.n + ' गुन्ह्यांप्रमाणे: IPC ' : 'सुचवलेले: IPC ') + esc(ib.ipc || '-') + ' / BNS ' + esc(ib.bns || '-') + ' <a class="lnk" data-useib>वापरा</a>' : '';
           var ub = is.querySelector('[data-useib]'); if (ub) ub.onclick = function () { if (ib.ipc) q('ipc').value = ib.ipc; if (ib.bns) q('bns').value = ib.bns; hints(); };
         } else if (is) is.innerHTML = '';
       }
@@ -3657,15 +3662,17 @@ function kalamInfo(k) {
   var c = main ? main.code : '', type = c === 'B' || c === 'I' ? 'IPC-BNS' : c === 'D' ? 'दारूबंदी' : c ? 'SLL' : '';
   return { acts: acts, main: main, type: type, auxFirst: !!(main && acts[0] !== main) };
 }
-function headSuggest(type, k) {
+function headSuggest(type, k, rulesOnly) {
   var inf = kalamInfo(k); if (!inf.main) return { head: '', type: '' };
   var t = inf.type || type, r = { type: t, kalam: inf.main.txt, acts: [{ code: inf.main.code }] };
+  var L = !rulesOnly && typeof lrnHead === 'function' ? lrnHead(k) : null;
+  if (L) return { head: L.head, type: L.type || t, learn: L };
   var h = ''; try { h = headGuess(r); } catch (e) {}
   return { head: h, type: t };
 }
 function hsecOf(head) { var h = canonHead(head) || String(head || '').toUpperCase().trim(); return (D.hsec || {})[h] || null; }
 function ipcBnsSuggest(head, k) {
-  var inf = kalamInfo(k), m = hsecOf(head), out = { ipc: m ? m[0] : '', bns: m ? m[1] : '' };
+  var inf = kalamInfo(k), m = hsecOf(head), L = typeof lrnIb === 'function' ? lrnIb(k, head) : null, out = L ? { ipc: L.ipc, bns: L.bns, learn: L } : { ipc: m ? m[0] : '', bns: m ? m[1] : '' };
   if (inf.main && (inf.main.code === 'B' || inf.main.code === 'I') && inf.main.secs.length) {
     var n = /^(\d+)/.exec(inf.main.secs[0])[1];
     if (inf.main.code === 'B') out.bns = n; else out.ipc = n;
@@ -4207,7 +4214,7 @@ function healthChecks() {
     ['ipc', '01-07-2024 नंतर भादवि (IPC) कलम', R.filter(function (o) { return !o.ad && o.date >= '2024-07-01' && kalamInfo(o.kalam).acts.some(function (a) { return a.code === 'I'; }); }), function (o) { return o.kalam; }],
     ['bns', '01-07-2024 पूर्वी बीएनएस कलम', R.filter(function (o) { return !o.ad && o.date && o.date < '2024-07-01' && kalamInfo(o.kalam).acts.some(function (a) { return a.code === 'B'; }); }), function (o) { return o.kalam; }],
     ['type', 'कलम व प्रकार जुळत नाहीत', P.filter(function (o) { if (o.ad) return false; var t = kalamInfo(o.kalam).type; return t && t !== o.type && !(o.head === 'DANGER OBSTRUCTION'); }), function (o) { return T_L[o.type] + ' • ' + o.kalam; }],
-    ['head', 'कलम व Head जुळत नाहीत (तपासा)', P.filter(function (o) { if (o.ad || !HEADMAP[o.head]) return false; var s = headSuggest(o.type, o.kalam).head; return s && s !== o.head && HEADMAP[s] && HEADMAP[s].t === o.type && kalamSecs(o.kalam).t.length === 1; }), function (o) { return o.head + ' ← कलमावरून ' + headSuggest(o.type, o.kalam).head; }],
+    ['head', 'कलम व Head जुळत नाहीत (तपासा)', P.filter(function (o) { if (o.ad || !HEADMAP[o.head]) return false; var s = headSuggest(o.type, o.kalam, true).head; return s && s !== o.head && HEADMAP[s] && HEADMAP[s].t === o.type && kalamSecs(o.kalam).t.length === 1; }), function (o) { return o.head + ' ← कलमावरून ' + headSuggest(o.type, o.kalam).head; }],
     ['nohead', 'Head यादीत नाही', P.filter(function (o) { return !o.ad && o.head && !HEADMAP[o.head]; }), function (o) { return o.head; }],
     ['date', 'तारखा चुकीच्या (दो.प. / निपटारा दाखल तारखेपूर्वी, वर्ष न जुळणे)', R.filter(function (o) { return (o.csDate && o.csDate < o.date) || (o.closeDate && o.closeDate < o.date) || (o.date && +o.date.slice(0, 4) !== +o.year); }), function (o) { return 'दाखल ' + fmtD(o.date) + (o.csDate ? ' • दो.प. ' + fmtD(o.csDate) : '') + (o.closeDate ? ' • निपटारा ' + fmtD(o.closeDate) : ''); }],
     ['crno', 'अप. क्र. टायपो? (इतरांपेक्षा खूप मोठा)', R.filter(function (o) { var m = mx[o.ps + o.year + (o.ad ? 'A' : 'C')]; return m >= 20 && +o.crno > m * 3; }), function (o) { return 'अप. क्र. ' + o.crno; }],
@@ -4361,6 +4368,38 @@ function wireIoMr(root) {
     })();
   };
 }
+
+/* ===================== ॲप शिकते: आधी भरलेल्या गुन्ह्यांवरून कलम → Head / उप-शीर्ष / जुना गट / IPC-BNS ===================== */
+var LRN = { n: -1, m: null };
+function lrnKeys(k) {
+  var inf = kalamInfo(k); if (!inf.main || !inf.main.secs.length) return null;
+  var c = inf.main.code || '?', s = inf.main.secs.map(function (x) { return x.replace(/[()]/g, '').toLowerCase(); });
+  return { exact: c + ':' + s.slice().sort().join('+'), loose: c + ':' + /^\d+/.exec(s[0])[0] };
+}
+function lrnMap() {
+  var n = ROWS.length + '|' + (LOG.length || 0); if (LRN.n === n) return LRN.m;
+  var m = {};
+  function bump(o, key, v) { if (!v) return; o[key] = o[key] || {}; o[key][v] = (o[key][v] || 0) + 1; }
+  ROWS.forEach(function (o) {
+    if (o.del || o.ad || !o.head) return;
+    var ks = lrnKeys(o.kalam); if (!ks) return;
+    var h = canonHead(o.head) || String(o.head).toUpperCase().trim();
+    (ks.exact === ks.loose ? [ks.exact] : [ks.exact, ks.loose]).forEach(function (key) {
+      var e = m[key] = m[key] || { t: 0 }; e.t++;
+      bump(e, 'head', h); bump(e, 'type', o.type);
+      bump(e, 'sub:' + h, o.sub); bump(e, 'bhag', o.bhag ? String(o.bhag) : '');
+      if (o.type === 'IPC-BNS' && (o.ipc || o.bns)) bump(e, 'ib:' + h, (o.ipc || '') + '|' + (o.bns || ''));
+    });
+  });
+  LRN.n = n; LRN.m = m; return m;
+}
+function lrnTop(e, f) { var o = e && e[f]; if (!o) return null; var best = null; Object.keys(o).forEach(function (v) { if (!best || o[v] > best.n) best = { v: v, n: o[v] }; }); if (best) best.t = Object.keys(o).reduce(function (a, v) { return a + o[v]; }, 0); return best; }
+/* पुरेसे उदाहरण असलेली नोंद: आधी नेमके कलम, नसेल तर मुख्य कलम क्रमांक */
+function lrnFor(k) { var ks = lrnKeys(k); if (!ks) return null; var m = lrnMap(), e = m[ks.exact]; if (!e || e.t < 3) e = m[ks.loose] && m[ks.loose].t >= 3 ? m[ks.loose] : e; return e || null; }
+function lrnHead(k) { var e = lrnFor(k), b = lrnTop(e, 'head'); return b && b.n >= 3 && b.n / e.t >= 0.6 ? { head: b.v, n: b.n, t: e.t, type: (lrnTop(e, 'type') || {}).v || '' } : null; }
+function lrnSub(k, head) { var h = canonHead(head) || String(head || '').toUpperCase().trim(), b = lrnTop(lrnFor(k), 'sub:' + h); return b && b.n >= 2 && b.n / b.t >= 0.5 ? b : null; }
+function lrnBhag(k) { var e = lrnFor(k), b = lrnTop(e, 'bhag'); return b && b.n >= 2 && b.n / e.t >= 0.5 ? b : null; }
+function lrnIb(k, head) { var h = canonHead(head) || String(head || '').toUpperCase().trim(), b = lrnTop(lrnFor(k), 'ib:' + h); if (!b || b.n < 2 || b.n / b.t < 0.6) return null; var p = b.v.split('|'); return { ipc: p[0], bns: p[1], n: b.n }; }
 
 /* ===================== v6: "विचारा" सहाय्यक (ॲपमध्येच, नियमांवर आधारित, इंटरनेट/AI शिवाय) ===================== */
 var ASK = { log: [], busy: false };
