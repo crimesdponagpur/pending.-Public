@@ -861,6 +861,22 @@ svg.masc{width:42px;height:42px;flex:none;border-radius:50%}
 .mic6.on{background:var(--bad);color:#fff;border-color:var(--bad);animation:ping2 1.2s infinite}
 .ioen{display:block;font-size:.78em;color:var(--muted);font-weight:400;line-height:1.3}
 [data-skin=clean] details.card>summary{padding:14px 20px;margin:0!important}[data-skin=clean] details.card[open]>summary{border-bottom:1px solid var(--bg2);margin-bottom:0}[data-skin=clean] details.card>.tw{margin:0}[data-skin=clean] details.card>.tw td:first-child,[data-skin=clean] details.card>.tw th:first-child{padding-left:20px}
+/* v6: तक्ते (सर्वत्र एकसारखे, स्पष्ट) */
+[data-skin=clean] th{background:var(--bg);color:var(--ink2);font-weight:600;font-size:12.5px;letter-spacing:.01em;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:bottom}
+[data-skin=clean] td{padding:10px 12px}
+[data-skin=clean] thead th:first-child{border-top-left-radius:0}[data-skin=clean] thead th:last-child{border-top-right-radius:0}
+[data-skin=clean] td.n{font-family:var(--num);font-weight:500;font-size:14.5px}
+[data-skin=clean] tr.tot td{font-weight:700;background:var(--bg);border-top:2px solid var(--line);border-bottom:0}
+[data-skin=clean] tbody tr:not(.tot):hover td{background:color-mix(in srgb,var(--brand) 4%,var(--card))}
+table.dt th.n,table.dt td.n{width:1%;min-width:88px;white-space:nowrap;text-align:right}
+table.dt td.k{font-weight:500}
+table.dt .tc{background:color-mix(in srgb,var(--brand) 5%,transparent);font-weight:700}
+table.dt tr.tot .tc{background:color-mix(in srgb,var(--brand) 10%,var(--bg))}
+table.dt .z{color:var(--muted);opacity:.55;font-weight:400}
+.psh{display:inline-flex;align-items:center;gap:6px;color:var(--ink);font-weight:700}
+.psh:before{content:"";width:8px;height:8px;border-radius:2px;background:var(--pc,var(--brand))}
+[data-skin=clean] .card>.tw table.dt th:first-child,[data-skin=clean] .card>.tw table.dt td:first-child{padding-left:20px}
+[data-skin=clean] .card>.tw table.dt th:last-child,[data-skin=clean] .card>.tw table.dt td:last-child{padding-right:20px}
 
 </style>
 </head>
@@ -1137,7 +1153,7 @@ var PER_S = { '-3': '<3 म', '3-6': '3-6 म', '6-12': '6-12 म', '12+': '12+ 
 var PER_X = { '-3': '-3 Months', '3-6': '3-6 Months', '6-12': '6-12 Months', '12+': '+12 Months' };
 var PER_C = { '-3': 'a1', '3-6': 'a2', '6-12': 'a3', '12+': 'a4' };
 var ST_L = { IO: 'तपासावर (IO)', CC: 'CC क्र. बाकी', CLOSED: 'निपटारा' };
-var SEC_L = { all: 'सर्व प्रलंबित (ALL PL)', io: 'IO पेंडिंग', cc: 'CC क्र. बाकी', disp: 'निपटारा (Disposal)', any: 'सर्व गुन्हे' };
+var SEC_L = { all: 'सर्व प्रलंबित (ALL PL)', io: 'IO पेंडिंग', cc: 'CC क्र. बाकी', disp: 'निपटारा (Disposal)', del: 'हटवलेले गुन्हे', any: 'सर्व गुन्हे' };
 var T_L = { 'IPC-BNS': 'IPC-BNS', SLL: 'SLL', 'दारूबंदी': 'PROHIBITION', AD: 'AD (मर्ग)' };
 var T_C = { 'IPC-BNS': '--t-IPC', SLL: '--t-SLL', 'दारूबंदी': '--t-PRO', AD: '--t-AD' };
 var OG_ORDER = ['15', '6', 'O6', 'J', 'D', 'M'], OG_C = { '15': '--g15', '6': '--g6', O6: '--gO6', J: '--gJ', D: '--gD', M: '--gM' };
@@ -1228,7 +1244,8 @@ function prep() {
 }
 function inSec(o, sec) {
   if (sec === 'any') return true;
-  if (sec === 'disp') return o.del || o.status === 'CLOSED';
+  if (sec === 'disp') return !o.del && o.status === 'CLOSED';
+  if (sec === 'del') return o.del;
   if (o.del) return false;
   if (sec === 'all') return o.status !== 'CLOSED';
   if (sec === 'io') return o.status === 'IO';
@@ -1248,6 +1265,7 @@ var NAV = [
   ['list:io', 'cop', 'IO पेंडिंग'],
   ['list:cc', 'filecheck', 'CC क्र. बाकी'],
   ['list:disp', 'check', 'निपटारा'],
+  ['list:del', 'trash', 'हटवलेले'],
   ['newe', 'plus', 'नवीन नोंदी'],
   ['elec', 'bolt', 'वीज कायदा (इतर तपास)'],
   ['health', 'shield', 'माहिती तपासणी'],
@@ -1266,7 +1284,7 @@ function showApp() {
   renderShell(); render();
 }
 function renderShell() {
-  var cnt = {}; ['all', 'io', 'cc', 'disp'].forEach(function (s) { cnt[s] = ROWS.filter(function (o) { return inSec(o, s); }).length; });
+  var cnt = {}; ['all', 'io', 'cc', 'disp', 'del'].forEach(function (s) { cnt[s] = ROWS.filter(function (o) { return inSec(o, s); }).length; });
   var nav = NAV.filter(function (n) { return n[0] !== 'set' || can('admin'); });
   $('side').innerHTML = '<div class="sd-brand"><img src="' + logoSrc() + '" alt=""><div><b>' + esc(BRAND.title) + ' ' + esc(BRAND.city) + '</b><span>' + esc(BRAND.app) + '</span></div><button class="sd-pin" id="sdPin" title="मेनू ' + (PREF.pin ? 'लहान करा' : 'उघडा ठेवा') + ' (Ctrl+B)">' + ic(PREF.pin ? 'back' : 'pin', 's') + '</button></div>' +
     '<div class="sd-nav"><div class="sd-sec">मेनू</div>' + nav.map(function (n) {
@@ -1579,7 +1597,7 @@ function pwForm(force) {
 function moreMenu() {
   modal('<div class="uhead"><div class="av">' + esc(initials(D.user.name)) + '</div><div><b>' + esc(D.user.name) + '</b><span>' + esc(D.user.post || roleLabel()) + '</span></div></div><div class="menu">' +
     '<button data-k="search">' + ic('search') + 'गुन्हा शोधा</button><button data-k="ask">' + ic('spark') + 'विचारा (सहाय्यक)</button>' +
-    '<button data-k="list:io">' + ic('cop') + 'IO पेंडिंग</button><button data-k="list:cc">' + ic('filecheck') + 'CC क्र. बाकी</button><button data-k="list:disp">' + ic('check') + 'निपटारा</button>' +
+    '<button data-k="list:io">' + ic('cop') + 'IO पेंडिंग</button><button data-k="list:cc">' + ic('filecheck') + 'CC क्र. बाकी</button><button data-k="list:disp">' + ic('check') + 'निपटारा</button><button data-k="list:del">' + ic('trash') + 'हटवलेले</button>' +
     '<button data-k="act">' + ic('activity') + 'रोजचे बदल</button>' + (can('admin') ? '<button data-k="set">' + ic('gear') + 'सेटिंग्ज</button>' : '') +
     '<div class="sep"></div><button data-k="user">' + ic('user') + 'माझे खाते, थीम, आवाज</button><button data-k="out" style="color:var(--bad)">' + ic('logout') + 'लॉगआउट</button></div>', function (ov, close) {
       qa(ov, '[data-k]').forEach(function (b) {
@@ -1880,23 +1898,23 @@ function list(sec) {
   var pool = ROWS.filter(function (o) { return inSec(o, sec); }), rows = filtered(sec);
   var base = pool.filter(function (o) { return !F.ps || o.ps === F.ps; });
  var nF = Object.keys(F).filter(function (k) { return F[k] && k !== 'q'; }).length;
-  var h = '<div><div class="toolbar"><div class="seg" id="lsec">' + ['all', 'io', 'cc', 'disp'].map(function (s) { return '<button data-v="' + s + '" class="' + (sec === s ? 'on' : '') + '">' + { all: 'सर्व प्रलंबित', io: 'IO पेंडिंग', cc: 'CC बाकी', disp: 'निपटारा' }[s] + ' <span class="n">' + nf(ROWS.filter(function (o) { return inSec(o, s); }).length) + '</span></button>'; }).join('') + (sec === 'any' ? '<button class="on">सर्व गुन्हे</button>' : '') + '</div><span class="sp"></span>' +
+  var h = '<div><div class="toolbar"><div class="seg" id="lsec">' + ['all', 'io', 'cc', 'disp', 'del'].map(function (s) { return '<button data-v="' + s + '" class="' + (sec === s ? 'on' : '') + '">' + { all: 'सर्व प्रलंबित', io: 'IO पेंडिंग', cc: 'CC बाकी', disp: 'निपटारा', del: 'हटवलेले' }[s] + ' <span class="n">' + nf(ROWS.filter(function (o) { return inSec(o, s); }).length) + '</span></button>'; }).join('') + (sec === 'any' ? '<button class="on">सर्व गुन्हे</button>' : '') + '</div><span class="sp"></span>' +
     '<button class="btn s" id="bIo2">' + ic('cop', 's') + ' IO निहाय</button><button class="btn s p" id="xl">' + ic('download', 's') + ' Excel</button><button class="btn s" id="pdf">' + ic('print', 's') + ' PDF</button></div>';
   h += '<div class="card" style="padding:12px 14px"><div class="toolbar" style="margin:0">';
   h += '<label class="fsearch">' + ic('search', 's') + '<input type="search" data-f="q" placeholder="या यादीत शोधा: अप.क्र., कलम, IO, ठिकाण…" value="' + esc(F.q || '') + '"></label><button class="btn s mob-only" id="fTog">' + ic('filter', 's') + ' फिल्टर' + (nF ? ' (' + nF + ')' : '') + '</button><div class="fsels" id="fsels">';
   if (can('all')) h += '<select class="fsel" data-f="ps">' + opts(D.psList, F.ps, 'सर्व पो.स्टे.', psName) + '</select>';
   h += '<select class="fsel" data-f="type">' + opts(D.types.filter(function (t) { return base.some(function (o) { return o.type === t; }); }), F.type, 'सर्व प्रकार', function (t) { return T_L[t]; }) + '</select>';
   h += '<select class="fsel" data-f="og">' + opts(OG_ORDER.filter(function (g) { return base.some(function (o) { return o.og === g; }); }), F.og, 'जुना गट (सर्व)', ogName) + '</select>';
-  if (sec === 'disp' || sec === 'any') h += '<select class="fsel" data-f="status"><option value="">' + (sec === 'any' ? 'सर्व स्थिती' : 'निपटारा + हटवलेले') + '</option>' + (sec === 'any' ? '<option value="IO"' + (F.status === 'IO' ? ' selected' : '') + '>तपासावर</option><option value="CC"' + (F.status === 'CC' ? ' selected' : '') + '>CC बाकी</option>' : '') + '<option value="CLOSED"' + (F.status === 'CLOSED' ? ' selected' : '') + '>फक्त निपटारा</option><option value="DEL"' + (F.status === 'DEL' ? ' selected' : '') + '>फक्त हटवलेले</option></select>';
+  if (sec === 'any') h += '<select class="fsel" data-f="status"><option value="">' + (sec === 'any' ? 'सर्व स्थिती' : 'निपटारा + हटवलेले') + '</option>' + (sec === 'any' ? '<option value="IO"' + (F.status === 'IO' ? ' selected' : '') + '>तपासावर</option><option value="CC"' + (F.status === 'CC' ? ' selected' : '') + '>CC बाकी</option>' : '') + '<option value="CLOSED"' + (F.status === 'CLOSED' ? ' selected' : '') + '>फक्त निपटारा</option><option value="DEL"' + (F.status === 'DEL' ? ' selected' : '') + '>फक्त हटवलेले</option></select>';
   if (sec === 'disp') h += '<select class="fsel" data-f="month"><option value="">सर्व महिने</option><option value="1"' + (F.month ? ' selected' : '') + '>या महिन्यातील</option></select>';
   h += '<select class="fsel" data-f="io">' + opts(uniq(base, 'io'), F.io, 'सर्व IO', function (v) { var o = base.filter(function (x) { return x.io === v; })[0], m = o ? (D.iomr || {})[o.ps + '|' + v] : ''; return m && m !== v ? m + ' (' + v + ')' : v; }) + '</select>';
   h += '<select class="fsel" data-f="hk">' + opts(uniq(base, 'hk'), F.hk, 'सर्व Head') + '</select>';
   var subs = uniq(base.filter(function (o) { return !F.hk || o.hk === F.hk; }), 'sub'); if (subs.length) h += '<select class="fsel" data-f="sub">' + opts(subs, F.sub, 'सर्व उप-शीर्ष') + '</select>';
-  if (sec !== 'disp') h += '<select class="fsel" data-f="rg">' + opts(uniq(base, 'rg'), F.rg, 'सर्व कारणे') + '</select>';
-  h += '</div></div>' + (sec === 'disp' ? '' : ageSel(F.per ? F.per.split(',') : [])) + '</div>';
+  if (sec !== 'disp' && sec !== 'del') h += '<select class="fsel" data-f="rg">' + opts(uniq(base, 'rg'), F.rg, 'सर्व कारणे') + '</select>';
+  h += '</div></div>' + (sec === 'disp' || sec === 'del' ? '' : ageSel(F.per ? F.per.split(',') : [])) + '</div>';
   var act = Object.keys(F).filter(function (k) { return F[k]; });
   h += '<div class="fchips"><span class="muted" style="align-self:center">' + nf(rows.length) + ' / ' + nf(pool.length) + ' गुन्हे</span>' + act.map(function (k) { return '<button data-rm="' + k + '">' + esc(F_L[k] || k) + (fval(k) ? ': ' + esc(fval(k)) : '') + ' ' + ic('x', 's') + '</button>'; }).join('') + (act.length > 1 ? '<button data-rm="*">सर्व फिल्टर काढा</button>' : '') + '</div>';
-  var disp = sec === 'disp';
+  var disp = sec === 'disp' || sec === 'del';
   h += '<div class="card tblv" style="padding:0;overflow:hidden"><div class="tw"><table class="list"><thead><tr><th>गुन्हा</th><th>प्रकार / Head</th><th>कलम</th><th>दाखल</th><th>तपास अधिकारी</th><th>' + (disp ? 'निपटारा' : 'प्रलंबित कारण') + '</th><th>स्थिती</th></tr></thead><tbody>';
   var sh = rows.slice(0, SHOWN);
   sh.forEach(function (o) {
@@ -1934,7 +1952,7 @@ function list(sec) {
   qa($('main'), '[data-rm]').forEach(function (b) { b.onclick = function () { if (b.dataset.rm === '*') F = {}; else delete F[b.dataset.rm]; list(sec); }; });
   if ($('more')) $('more').onclick = function () { SHOWN += 300; list(sec); };
   qa($('main'), '[data-id]').forEach(function (b) { b.onclick = function () { detail(byId(b.dataset.id)); }; });
-  $('xl').onclick = function () { excelBook(rows, sec === 'any' ? 'all' : sec === 'cc' ? 'all' : sec, filtTxt()); };
+  $('xl').onclick = function () { excelBook(rows, sec === 'any' ? 'all' : sec === 'cc' ? 'all' : sec === 'del' ? 'disp' : sec, filtTxt()); };
   $('pdf').onclick = function () { printList(sec, rows); };
   $('bIo2').onclick = ioDlg;
 }
@@ -2235,7 +2253,7 @@ function reports() {
   var cards = [
     ['all', 'download', '--ok', 'ALL PL (SP ऑफिस यादी)', 'मूळ यादीप्रमाणे IPC-BNS / SLL / PROHIBITION / AD शीट्स, सारांशासह. ' + nf(n('all')) + ' गुन्हे.', [['xl:all', 'Excel', 'p'], ['pdf:all', 'PDF', '']]],
     ['io', 'cop', '--warn', 'IO पेंडिंग', 'दोषारोपपत्र अजून न गेलेले गुन्हे. ' + nf(n('io')) + ' गुन्हे.', [['xl:io', 'Excel', 'p'], ['pdf:io', 'PDF', '']]],
-    ['disp', 'check', '--t-SLL', 'निपटारा (Disposal)', 'CC / फायनल / वर्ग झालेले व हटवलेले गुन्हे.', [['xl:disp', 'Excel', 'p'], ['pdf:disp', 'PDF', '']]],
+    ['disp', 'check', '--t-SLL', 'निपटारा (Disposal)', 'CC / फायनल / वर्ग झालेले गुन्हे (हटवलेले वेगळे: मेनू → हटवलेले).', [['xl:disp', 'Excel', 'p'], ['pdf:disp', 'PDF', '']]],
     ['sum', 'chart', '--a2', 'सारांश अहवाल', 'पो.स्टे., कालावधी, कारण, Head व IO निहाय सारांश (PDF).', [['sum', 'PDF', 'p']]],
     ['iopl', 'users', '--t-PRO', 'IO निहाय PL', 'प्रत्येक IO चे नाव व त्याखाली त्याचे गुन्हे (जुने आधी).', [['iopl', 'उघडा', 'p']]],
     ['rem', 'bell', '--a4', 'IO स्मरणपत्र', 'निवडलेल्या कालावधीपासून प्रलंबित गुन्ह्यांबाबत IO ला पत्र (PDF) किंवा WhatsApp. कालावधी: 3-6, 6-12, 1 वर्षावरील…', [['rem', 'उघडा', 'p']]],
@@ -2260,7 +2278,7 @@ function reports() {
     b.onclick = function () {
       var r = b.dataset.r, p = r.split(':');
       if (p[0] === 'xl') excelSec(p[1]);
-      else if (p[0] === 'pdf') printList(p[1], scopeRows().filter(function (o) { return p[1] === 'disp' ? (o.status === 'CLOSED' || o.del) : inSec(o, p[1]); }).sort(sortRows));
+      else if (p[0] === 'pdf') printList(p[1], scopeRows().filter(function (o) { return inSec(o, p[1]); }).sort(sortRows));
       else if (r === 'sum') printSummary(); else if (r === 'iopl') ioDlg(); else if (r === 'rem') remDlg(); else if (r === 'nik') nikalDlg(); else if (r === 'rdp') rdpDlg(); else if (r === 'rank') rankDlg(); else if (r === 'fir') firDlg(); else if (r === 'adfir') adConvDlg(); else if (r === 'extra') extraDlg(); else if (r === 'newe' || r === 'elec') navTo(r);
     };
   });
@@ -2584,7 +2602,7 @@ function printRows(rows, kind) {
   return h || '<p>काही नोंद नाही</p>';
 }
 function printList(sec, rows) {
-  var kind = sec === 'disp' ? 'disp' : 'all';
+  var kind = sec === 'disp' || sec === 'del' ? 'disp' : 'all';
   doPrint(printHead(SEC_L[sec], scopeName(rows) + filtTxt() + ' • एकूण ' + rows.length) + (kind === 'disp' ? '' : '<h4>कालावधी निहाय सारांश</h4>' + perTable(rows)) + printRows(rows, kind) + printFoot(), ({ all: 'ALL_PL', io: 'IO_Pending', cc: 'CC_Baki', disp: 'Nipatara', any: 'Gunhe' }[sec] || 'PL') + '_' + fmtD(D.today));
 }
 function printSummary() {
@@ -3732,11 +3750,23 @@ function delReqOf(o) { if (!o.delReq) return null; try { return JSON.parse(o.del
 function delReqs() { return ROWS.filter(function (o) { return !o.del && o.delReq; }); }
 
 /* ---------- अहवाल: सामायिक PDF / Excel ---------- */
-function tblHtml(head, rows) {
-  return '<table><thead><tr>' + head.map(function (x) { return '<th>' + esc(x) + '</th>'; }).join('') + '</tr></thead><tbody>' +
-    (rows.length ? rows.map(function (r) { var tot = r[0] === 'एकूण' || r[1] === 'एकूण'; return '<tr>' + r.map(function (v) { return '<td' + (typeof v === 'number' ? ' class="n"' : '') + '>' + (tot ? '<b>' + esc(v) + '</b>' : esc(v)) + '</td>'; }).join('') + '</tr>'; }).join('') : '<tr><td colspan="' + head.length + '">काही नोंद नाही</td></tr>') + '</tbody></table>';
+function tblHtml(head, rows, print) {
+  /* आकड्यांचे रकाने उजवीकडे (शीर्षकासह), पो.स्टे. रंगीत शीर्षक, 0 फिके, एकूण ठळक */
+  var num = head.map(function (h, c) { return rows.length && rows.every(function (r) { return typeof r[c] === 'number' || r[c] === '' || r[c] == null; }) && rows.some(function (r) { return typeof r[c] === 'number'; }); });
+  var psOf = {}; (D.psList || []).forEach(function (p) { psOf[psName(p)] = p; });
+  var last = head.length - 1, totCol = head[last] === 'एकूण' && num[last];
+  function th(h, c) { var p = !print && psOf[h]; return '<th class="' + (num[c] ? 'n' : '') + (c === last && totCol ? ' tc' : '') + '">' + (p ? '<span class="psh" style="--pc:var(--ps-' + p + ')">' + esc(h) + '</span>' : esc(h)) + '</th>'; }
+  return '<table class="dt"><thead><tr>' + head.map(th).join('') + '</tr></thead><tbody>' +
+    (rows.length ? rows.map(function (r) {
+      var tot = r[0] === 'एकूण' || r[1] === 'एकूण';
+      return '<tr' + (tot ? ' class="tot"' : '') + '>' + r.map(function (v, c) {
+        var cls = (num[c] ? 'n' : '') + (c === last && totCol ? ' tc' : '') + (c === 0 && !tot ? ' k' : '');
+        var t = !print && num[c] && v === 0 ? '<span class="z">0</span>' : esc(v);
+        return '<td class="' + cls.trim() + '">' + (tot && print ? '<b>' + t + '</b>' : t) + '</td>';
+      }).join('') + '</tr>';
+    }).join('') : '<tr><td colspan="' + head.length + '" class="empty">काही नाही</td></tr>') + '</tbody></table>';
 }
-function partsPdf(title, sub, parts, file) { doPrint(printHead(title, sub) + parts.map(function (p) { return '<h4>' + esc(p.h) + '</h4>' + tblHtml(p.head, p.rows); }).join('') + printFoot(), file); }
+function partsPdf(title, sub, parts, file) { doPrint(printHead(title, sub) + parts.map(function (p) { return '<h4>' + esc(p.h) + '</h4>' + tblHtml(p.head, p.rows, true); }).join('') + printFoot(), file); }
 function partsXl(title, sub, parts, file) {
   if (!xlOk()) return;
   var wb = XLSX.utils.book_new();
