@@ -1295,9 +1295,9 @@ function rpc(fn, args) {
     }
     if (!PL.api) { rej(new Error('config.js मध्ये Apps Script ची /exec लिंक टाका')); return; }
     fetch(PL.api, { method: 'POST', body: JSON.stringify({ fn: fn, args: args }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' })
-      .then(function (r) { return r.json(); })
+      .then(function (r) { return r.text().then(function (t) { try { return JSON.parse(t); } catch (x) { throw new Error('SRV:' + r.status + ' ' + t.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160)); } }); })
       .then(function (j) { if (j.ok) res(j.d); else rej(new Error(j.e)); })
-      .catch(function (e) { rej(new Error(e && e.message && e.message.indexOf('LOGIN:') >= 0 ? e.message : 'सर्व्हरशी संपर्क झाला नाही. इंटरनेट तपासा.')); });
+      .catch(function (e) { rej(new Error(e && e.message && e.message.indexOf('LOGIN:') >= 0 ? e.message : (e && e.message && e.message.indexOf('SRV:') === 0 ? 'सर्व्हरने चुकीचे उत्तर दिले (' + fn + ') ' + e.message.slice(4) : 'सर्व्हरशी संपर्क झाला नाही (' + fn + '). इंटरनेट तपासा.'))); });
   });
 }
 function call(fn, args, ok, fail) {
