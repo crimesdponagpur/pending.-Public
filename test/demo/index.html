@@ -6702,6 +6702,7 @@ var NTC = (function () {
   }
   /* वर्षाच्या बेरजेसाठी मागील महिन्याचे आकडे पुढे: [sheet, fromCol1, toCol1, ncols, rowFrom, rowTo] */
   var CARRY = [[SH.IPC, 'BF', 'DH', 50, 10, 370], [SH.SLL, 'AJ', 'BQ', 30, 10, 115]];
+  var RDP_ROWS = [5, 6, 7, 8, 10, 11, 12, 13, 15, 16, 17, 18, 20, 21, 22, 23, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 36, 37, 38];
   function carry(E) {
     var out = {};
     CARRY.forEach(function (c) {
@@ -6711,6 +6712,9 @@ var NTC = (function () {
         var v = E.get(c[0], cl(f + k) + r); if (typeof v === 'number') s[cl(t + k) + r] = v;
       }
     });
+    // RDP: मागील महिन्याचे "अखेर पेंडींग" (K) हे या महिन्याचे "अखेर पेंडींग" (C, मागील) होते
+    var rd = out['RDP'] = {};
+    RDP_ROWS.forEach(function (r) { if (!E.isInput('RDP', 'C' + r)) return; var v = E.get('RDP', 'K' + r); if (typeof v === 'number') rd['C' + r] = v; });
     return out;
   }
   return { init: init, row: row, rows: rows, suggest: suggest, fill: fill, autoCells: autoCells, carry: carry, SH: SH, PSG: PSG, ci: ci, cl: cl, CARRY: CARRY };
@@ -6728,6 +6732,7 @@ var NT_MON_L = ['जानेवारी', 'फेब्रुवारी', '�
 var NT_HF = 'https://cdn.jsdelivr.net/npm/hyperformula@2.7.1/dist/hyperformula.full.min.js';
 var NT_ZIP = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
 var NT_PS = ['BELA', 'BORI', 'MIDC'];
+var NT_CLR = ['ATAK AROPI', 'preventive', 'PREVENTIVE INT, FIN', 'MUDDEMAL', 'NC HURT& HM'], NT_CLR_WHY = 'नवीन महिन्यासाठी साफ';
 var NT_SRC_L = { title: 'शीर्षकातील महिना (आपोआप)', auto: 'गुन्ह्यांवरून आपोआप', carry: 'मागील महिन्यापर्यंतची बेरीज', hand: 'हाताने भरलेले', edit: 'तुम्ही बदललेले', old: 'मागील महिन्याच्या फाइलमधील (बदलले नाही)' };
 var NT_WHY = ['पो.स्टे. कडून खात्री केली', 'PL मध्ये नोंद नाही', 'PL / रजिस्टरमध्ये चूक', 'जुन्या Noting प्रमाणे', 'इतर'];
 
@@ -7202,13 +7207,50 @@ function ntSheets() {
   var S = null; M.sheets.forEach(function (x) { if (x.x === NT.sheet) S = x; });
   var h = '<div>' + ntTabs() + '<div class="nt-shwrap"><aside class="nt-shl"><div class="inp nt-q">' + ic('search', 's') + '<input id="shQ" placeholder="पत्रक शोधा"></div><div id="shList">' +
     M.sheets.filter(function (x) { return !x.st; }).map(function (x) { var st = ntSheetStat(x.x); return '<button data-sh="' + esc(x.x) + '" class="' + (x.x === NT.sheet ? 'on' : '') + '"><b>' + esc(x.x.trim()) + '</b><small>' + st + '</small></button>'; }).join('') + '</div></aside>' +
-    '<section class="nt-shr"><div class="nt-shh"><b>' + esc(NT.sheet.trim()) + '</b><span class="nt-leg"><i class="s-auto"></i>आपोआप<i class="s-carry"></i>बेरीज पुढे<i class="s-hand"></i>हाताने / बदलले<i class="s-old"></i>मागील फाइलमधील<i class="s-f"></i>सूत्र</span></div>' +
+    '<section class="nt-shr"><div class="nt-shh"><b>' + esc(NT.sheet.trim()) + '</b><span class="sp"></span>' + ntClrBtns() + '<span class="nt-leg"><i class="s-auto"></i>आपोआप<i class="s-carry"></i>बेरीज पुढे<i class="s-hand"></i>हाताने / बदलले<i class="s-old"></i>मागील फाइलमधील<i class="s-f"></i>सूत्र</span></div>' +
     '<div class="nt-grid" id="ntGrid">' + ntGrid(S) + '</div></section></div></div>';
   $('main').innerHTML = h;
   ntWireTop();
   qa($('main'), '[data-sh]').forEach(function (b) { b.onclick = function () { NT.sheet = b.dataset.sh; ntSheets(); }; });
   $('shQ').oninput = function () { var q = this.value.toLowerCase(); qa($('shList'), 'button').forEach(function (b) { b.hidden = b.dataset.sh.toLowerCase().indexOf(q) < 0; }); };
+  if ($('ntClr')) $('ntClr').onclick = ntClrDlg;
+  if ($('ntClrU')) $('ntClrU').onclick = ntClrUndo;
   $('ntGrid').onclick = function (e) { var td = e.target.closest('td[data-a]'); if (td) ntCellDlg(NT.sheet, td.dataset.a); };
+}
+/* हाताने भरायच्या पत्रकातील मागील महिन्याचे आकडे एकदम साफ करणे (अ.क्र. स्तंभ A व वरील 6 ओळी सोडून) */
+function ntClrOk() { var cl = NT.d.mon[NT.ym] && NT.d.mon[NT.ym].state === 'closed', ar = NT.d.tpl && NT.d.tpl.ym && NT.ym <= NT.d.tpl.ym; return can('admin') && !cl && !ar && NT_CLR.indexOf(NT.sheet) >= 0; }
+function ntClrBtns() {
+  if (!ntClrOk()) return '';
+  var done = NT.d.cells.filter(function (x) { return x[1] === NT.sheet && x[5] === NT_CLR_WHY; }).length;
+  return '<button class="btn s" id="ntClr">' + ic('trash', 's') + ' मागील आकडे साफ करा</button>' + (done ? '<button class="btn s" id="ntClrU">' + ic('undo', 's') + ' साफ केलेले परत (' + done + ')</button>' : '');
+}
+function ntClrCells(S) {
+  var out = [];
+  Object.keys(S.v).forEach(function (a) {
+    if (a in S.f) return; var p = NE.split(a), k = S.x + '!' + a, v = k in NT.set ? NT.set[k] : S.v[a];
+    if (typeof v !== 'number' || v === 0 || p[1] <= 6 || p[0] <= 1) return;
+    var src = NT.src[k]; if (src === 'auto' || src === 'title' || src === 'carry') return;
+    out.push(a);
+  });
+  return out;
+}
+function ntClrSend(list, src, why, msg) {
+  var i = 0; toast('जतन करत आहे…');
+  (function next() {
+    if (i >= list.length) { toast(msg); ntLoad(NT.ym); return; }
+    rpc('ntAct', [sGet('t7_pl_tok'), 'cell', { ym: NT.ym, list: list.slice(i, i + 400) }]).then(function () { i += 400; next(); }, function (e) { toast(e.message || String(e), true); ntLoad(NT.ym); });
+  })();
+}
+function ntClrDlg() {
+  var S = null; NT.model.sheets.forEach(function (x) { if (x.x === NT.sheet) S = x; });
+  var cells = ntClrCells(S); if (!cells.length) return toast('या पत्रकात साफ करायला आकडे नाहीत');
+  modal('<h3>' + esc(NT.sheet.trim()) + ': मागील आकडे साफ करायचे?</h3><p>' + cells.length + ' आकडे रिकामे होतील (अ.क्र. स्तंभ A, वरच्या 6 ओळी व सूत्रे सोडून). ' + ntMonL(NT.ym) + ' साठी तुम्ही नवीन आकडे भराल.</p><p class="nt-mut">आपोआप भरणारे व बेरीज पुढे आलेले आकडे यात येत नाहीत. नंतर "साफ केलेले परत" ने सगळे मागील आकडे परत येतात. दुसऱ्या महिन्यावर परिणाम नाही.</p><div class="nt-row end"><button class="btn p" id="clrY">' + ic('trash') + ' साफ करा</button></div>', function (ov, close) {
+    $('clrY').onclick = function () { close(); ntClrSend(cells.map(function (a) { return { sheet: NT.sheet, cell: a, v: '', why: NT_CLR_WHY, src: 'hand' }; }), 0, 0, cells.length + ' आकडे साफ केले'); };
+  });
+}
+function ntClrUndo() {
+  var L = NT.d.cells.filter(function (x) { return x[1] === NT.sheet && x[5] === NT_CLR_WHY; }).map(function (x) { return { sheet: x[1], cell: x[2], v: '', why: 'साफ केलेले परत', src: 'auto' }; });
+  ntClrSend(L, 0, 0, L.length + ' आकडे परत आले');
 }
 function ntGrid(S) {
   var E = NT.eng, maxR = 0, maxC = 0, cov = {}, mg = {};
