@@ -2288,7 +2288,8 @@ function firSave_(who, p) {
  * NCELL = हाताने भरलेले / बदललेले आकडे • NMON = महिना खुला / बंद
  * Noting ची Excel फाइल (नमुना) Drive मधील "Noting App" फोल्डरमध्ये; सूत्रे ॲप ब्राउझरमध्ये चालवते.
  * ===================================================================== */
-var NT_CASE = ['key', 'ps', 'reg', 'year', 'cr', 'sec', 'date', 'act', 'head', 'sh1', 'sh2', 'sh3', 'row', 'det', 'detDate', 'acus', 'ok', 'okBy', 'okAt', 'by', 'upd'];
+var NT_CASE = ['key', 'ps', 'reg', 'year', 'cr', 'sec', 'date', 'act', 'head', 'sh1', 'sh2', 'sh3', 'row', 'det', 'detDate', 'acus', 'ok', 'okBy', 'okAt', 'by', 'upd', 'mcr', 'mdis'];
+var NT_REC = ['key', 'side', 'act', 'pair', 'note', 'by', 'at'];
 var NT_EV = ['ym', 'key', 'ps', 'reg', 'row', 'prev', 'acc', 'notice', 'arrest', 'by', 'at'];
 var NT_CELL = ['ym', 'sheet', 'cell', 'v', 'src', 'why', 'by', 'at'];
 var NT_MON = ['ym', 'state', 'by', 'at', 'file'];
@@ -2311,7 +2312,14 @@ function ntSS_() {
   });
   return ss;
 }
-function ntSh_(name) { return ntSS_().getSheetByName(name); }
+function ntSh_(name) {
+  var ss = ntSS_(), sh = ss.getSheetByName(name);
+  if (!sh && name === 'NREC') { // ताळमेळ नोंदी: नंतर जोडलेले पत्रक
+    sh = ss.insertSheet('NREC'); sh.getRange(1, 1, 1, NT_REC.length).setValues([NT_REC]).setFontWeight('bold'); sh.setFrozenRows(1);
+    sh.getRange(1, 1, sh.getMaxRows(), NT_REC.length).setNumberFormat('@');
+  }
+  return sh;
+}
 function ntRead_(name, cols) {
   var sh = ntSh_(name), n = sh.getLastRow();
   if (n < 2) return [];
@@ -2393,6 +2401,15 @@ function ntAct(t, action, p) {
       var I = (p.list || []).map(function (c) { c.by = by; c.upd = stamp; c.ok = '1'; c.okBy = by; c.okAt = stamp; return c; });
       var added = ntUpsert_('NCASE', NT_CASE, function (r) { return r[0]; }, I);
       return { n: I.length, added: added };
+    }
+    if (action === 'recget') { // ताळमेळ: MCR रजिस्टरचे गुन्हे (संक्षिप्त) व तुम्ही ठरवलेल्या नोंदी
+      var M = ntRead_('NCASE', NT_CASE).filter(function (r) { return r[21] === '1'; }).map(function (r) { return [r[0], r[1], r[2], r[3], r[4], r[6], r[8], r[9], r[22], r[5].slice(0, 80)]; });
+      return { mcr: M, rec: ntRead_('NREC', NT_REC) };
+    }
+    if (action === 'rec') { // ताळमेळ: कृती / जोडी / टीप (फक्त नोंद, कोणताही आकडा बदलत नाही)
+      var RL = (p.list || []).map(function (x) { return { key: x.key, side: x.side, act: x.act, pair: x.pair, note: x.note, by: by, at: stamp }; });
+      ntUpsert_('NREC', NT_REC, function (r) { return r[0]; }, RL);
+      return { n: RL.length, at: stamp };
     }
     if (action === 'tpl') { // Noting ची Excel फाइल (नमुना)
       var blob = Utilities.newBlob(Utilities.base64Decode(p.b64), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', p.name || 'NOTING_BREAKUP.xlsx');
@@ -6706,7 +6723,7 @@ var NTC = (function () {
  * ===================================================================== */
 var NT = { ym: '', d: null, eng: null, model: null, tpl: null, tplName: '', src: {}, set: {}, busy: false, err: '', sheet: '', ps: '', zero: true, q: '', stale: true };
 NTC.init(NT_MAPS);
-var NT_VIEWS = { pl: 1, nt: 1, nta: 1, nte: 1, nts: 1, ntb: 1 };
+var NT_VIEWS = { pl: 1, nt: 1, nta: 1, nte: 1, nts: 1, ntb: 1, ntr: 1 };
 var NT_MON_L = ['जानेवारी', 'फेब्रुवारी', 'मार्च', 'एप्रिल', 'मे', 'जून', 'जुलै', 'ऑगस्ट', 'सप्टेंबर', 'ऑक्टोबर', 'नोव्हेंबर', 'डिसेंबर'];
 var NT_HF = 'https://cdn.jsdelivr.net/npm/hyperformula@2.7.1/dist/hyperformula.full.min.js';
 var NT_ZIP = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
@@ -6876,7 +6893,7 @@ function portal() {
 /* ---------- Noting चे वरचे भाग ---------- */
 function ntTabs() {
   var all = can('all'), pend = (NT.list || []).filter(function (it) { return !it.ok; }).length;
-  var T = [['nt', 'आढावा'], ['nta', 'मंजुरी' + (pend ? ' <b class="nt-b">' + pend + '</b>' : '')], ['nte', 'पो.स्टे. नोंदी']].concat(all ? [['nts', 'पत्रके (54)'], ['ntb', 'Breakup']] : []);
+  var T = [['nt', 'आढावा'], ['nta', 'मंजुरी' + (pend ? ' <b class="nt-b">' + pend + '</b>' : '')], ['nte', 'पो.स्टे. नोंदी']].concat(all ? [['nts', 'पत्रके (54)'], ['ntb', 'Breakup'], ['ntr', 'ताळमेळ']] : []);
   var mon = NT.d && NT.d.mon[NT.ym], closed = mon && mon.state === 'closed';
   var opts = []; for (var i = -12; i <= 0; i++) opts.push(ntAddM(D.today.slice(0, 7), i));
   return '<div class="nt-top"><div class="seg">' + T.map(function (t) { return '<button data-ntv="' + t[0] + '" class="' + (VIEW === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
@@ -6890,6 +6907,7 @@ function ntWireTop() {
 function ntRender() {
   if (VIEW === 'pl') { dash(); return; }
   var m = $('main');
+  if (VIEW === 'ntr' && NT.d) { ntRecon(); return; }
   if (!NT.d) {
     m.innerHTML = '<div><div class="card nt-load">' + (NT.err ? ic('alert') + '<b>' + esc(NT.err) + '</b><button class="btn s" id="ntRetry">पुन्हा प्रयत्न</button>' : '<span class="spin"></span><span id="ntBusy">Noting ची माहिती आणत आहे…</span>') + '</div></div>';
     if ($('ntRetry')) $('ntRetry').onclick = function () { NT.err = ''; ntLoad(NT.ym); render(); };
@@ -7019,8 +7037,8 @@ function ntImportMcr(buf) {
       function rows(n) { var ws = wb.Sheets[n]; if (!ws) throw new Error('"' + n + '" पत्रक सापडले नाही'); return XLSX.utils.sheet_to_json(ws, { header: 1, raw: true }).slice(1).filter(function (r) { return r[1] && r[3] && r[6]; }); }
       function dt(d) { if (!(d instanceof Date)) return ''; var x = new Date(d.getTime() + 6 * 36e5); return x.getFullYear() + '-' + ('0' + (x.getMonth() + 1)).slice(-2) + '-' + ('0' + x.getDate()).slice(-2); }
       function s(v) { return v == null ? '' : String(v).trim(); }
-      rows('IPC-BNS REGISTER').forEach(function (r) { var c = { reg: 'IPC', ps: s(r[1]).toUpperCase(), year: +r[2], cr: +r[3], sec: s(r[4]), date: dt(r[5]), head: s(r[6]), sh1: s(r[7]), sh2: s(r[8]), sh3: s(r[9]), act: s(r[10]).toUpperCase() || 'BNS', det: s(r[11]).toUpperCase() === 'Y' ? 'Y' : '', acus: s(r[12]) }; c.key = ntKey('IPC', c.ps, c.year, c.cr); c.row = NTC.row('IPC', c.head, c.sh1, c.sh2, c.sh3); list.push(c); });
-      rows('SLL REGISTER').forEach(function (r) { var c = { reg: 'SLL', ps: s(r[1]).toUpperCase(), year: +r[2], cr: +r[3], sec: s(r[4]), date: dt(r[5]), head: s(r[6]), sh1: s(r[7]), sh2: s(r[8]), sh3: '', act: 'SLL', det: s(r[9]).toUpperCase() === 'Y' ? 'Y' : '', acus: s(r[10]) }; c.key = ntKey('SLL', c.ps, c.year, c.cr); c.row = NTC.row('SLL', c.head, c.sh1, c.sh2, ''); list.push(c); });
+      rows('IPC-BNS REGISTER').forEach(function (r) { var c = { reg: 'IPC', ps: s(r[1]).toUpperCase(), year: +r[2], cr: +r[3], sec: s(r[4]), date: dt(r[5]), head: s(r[6]), sh1: s(r[7]), sh2: s(r[8]), sh3: s(r[9]), act: s(r[10]).toUpperCase() || 'BNS', det: s(r[11]).toUpperCase() === 'Y' ? 'Y' : '', acus: s(r[12]), mcr: '1', mdis: s(r[13]) }; c.key = ntKey('IPC', c.ps, c.year, c.cr); c.row = NTC.row('IPC', c.head, c.sh1, c.sh2, c.sh3); list.push(c); });
+      rows('SLL REGISTER').forEach(function (r) { var c = { reg: 'SLL', ps: s(r[1]).toUpperCase(), year: +r[2], cr: +r[3], sec: s(r[4]), date: dt(r[5]), head: s(r[6]), sh1: s(r[7]), sh2: s(r[8]), sh3: '', act: 'SLL', det: s(r[9]).toUpperCase() === 'Y' ? 'Y' : '', acus: s(r[10]), mcr: '1', mdis: s(r[11]) }; c.key = ntKey('SLL', c.ps, c.year, c.cr); c.row = NTC.row('SLL', c.head, c.sh1, c.sh2, ''); list.push(c); });
       var i = 0, tot = list.length, added = 0;
       (function next() {
         if (i >= tot) { close(); toast(tot + ' गुन्हे MCR रजिस्टरमधून आले (' + added + ' नवीन).'); ntLoad(NT.ym); return; }
@@ -7330,16 +7348,16 @@ function ntCloseDlg() {
   NAV.splice(1, 0, ['pl', 'list', 'प्रलंबित (PL) डॅशबोर्ड']);
   var ri = -1; NAV.forEach(function (n, i) { if (n[0] === 'reports') ri = i; });
   NAV.splice(ri, 0, ['nt', 'book', 'Noting'], ['ntb', 'grid', 'Breakup']);
-  TITLES.home = 'मुख्य पान'; TITLES.pl = 'प्रलंबित (PL) डॅशबोर्ड'; TITLES.nt = 'Noting'; TITLES.nta = 'Noting • मंजुरी'; TITLES.nte = 'Noting • पो.स्टे. नोंदी'; TITLES.nts = 'Noting • पत्रके'; TITLES.ntb = 'Breakup';
+  TITLES.home = 'मुख्य पान'; TITLES.pl = 'प्रलंबित (PL) डॅशबोर्ड'; TITLES.nt = 'Noting'; TITLES.nta = 'Noting • मंजुरी'; TITLES.nte = 'Noting • पो.स्टे. नोंदी'; TITLES.nts = 'Noting • पत्रके'; TITLES.ntb = 'Breakup'; TITLES.ntr = 'ताळमेळ (PL • MCR)';
   NAV_K.pl = 'Alt+9';
   var _render = render;
   render = function () {
     if (VIEW === 'home') { portal(); $('main').firstElementChild && $('main').firstElementChild.classList.add('page'); return; }
-    if (NT_VIEWS[VIEW]) { if (VIEW !== 'pl' && !can('all') && (VIEW === 'nts' || VIEW === 'ntb')) VIEW = 'nt'; ntRender(); return; }
+    if (NT_VIEWS[VIEW]) { if (VIEW !== 'pl' && !can('all') && (VIEW === 'nts' || VIEW === 'ntb' || VIEW === 'ntr')) VIEW = 'nt'; ntRender(); return; }
     _render();
   };
   var _curKey = curKey;
-  curKey = function () { var k = _curKey(); return k === 'nta' || k === 'nte' || k === 'nts' ? 'nt' : k; };
+  curKey = function () { var k = _curKey(); return k === 'nta' || k === 'nte' || k === 'nts' || k === 'ntr' ? 'nt' : k; };
   var _rs = renderShell;
   renderShell = function () { _rs(); if (!can('all')) qa($('side'), '[data-nav="ntb"]').forEach(function (b) { b.remove(); }); };
   var NT0 = JSON.stringify(NT), _out = logout;
@@ -7347,6 +7365,120 @@ function ntCloseDlg() {
   var _load = load;
   load = function () { NT.stale = true; var a = arguments; if (a[1] && NT.d) { NT.d = null; NT.eng = NT.eng; } return _load.apply(this, a); };
 })();
+
+/* =====================================================================
+ * ताळमेळ: PL (प्रलंबित) व MCR रजिस्टरमधील फरक. फक्त SDPO कार्यालय.
+ * PL किंवा MCR चा कोणताही आकडा/नोंद यातून बदलत नाही; तुम्ही काय ठरवले/केले तेवढेच NREC मध्ये साठते.
+ * A = PL मध्ये प्रलंबित, MCR मध्ये नाही. B = MCR मध्ये प्रलंबित, PL मध्ये नाही.
+ * जोडी: सारखे वर्ष + head चा B गुन्हा काढून त्याजागी A जोडला की MCR चे एकूण आकडे तसेच राहतात.
+ * ===================================================================== */
+var NR_ACT = {
+  A: [['', 'बाकी'], ['add', 'MCR मध्ये जोडले'], ['disp', 'निकाल झाला (PL मधून काढणार)'], ['wait', 'तपासत आहे']],
+  B: [['', 'बाकी'], ['rem', 'MCR मध्ये निकाल दाखवला / काढले'], ['pl', 'प्रलंबित (PL मध्ये परत घेतले)'], ['wait', 'तपासत आहे']]
+};
+function ntRecLoad(after) {
+  NT.recBusy = true; NT.recErr = '';
+  rpc('ntAct', [sGet('t7_pl_tok'), 'recget', {}]).then(function (r) {
+    var m = {}; (r.rec || []).forEach(function (x) { m[x[0]] = { key: x[0], side: x[1], act: x[2], pair: x[3], note: x[4], by: x[5], at: x[6] }; });
+    NT.rec = { mcr: r.mcr || [], rec: m, log: r.rec || [] }; NT.recBusy = false; after();
+  }, function (e) { NT.recBusy = false; NT.recErr = e.message || String(e); after(); });
+}
+function ntRecCalc() {
+  var R = NT.rec, pl = {}, plAll = {}, mc = {}, mp = {};
+  ROWS.forEach(function (o) {
+    if (o.del || o.ad || !ntReg(o)) return;
+    var k = o.ps + '|' + o.year + '|' + (+o.crno || o.crno); plAll[k] = o; if (o.status !== 'CLOSED') pl[k] = o;
+  });
+  R.mcr.forEach(function (r) {
+    var k = r[1] + '|' + r[3] + '|' + (+r[4]), o = { key: k, ps: r[1], reg: r[2], year: +r[3], cr: +r[4], date: r[5], head: r[6], sh1: r[7], mdis: r[8], sec: r[9] };
+    mc[k] = o; if (!o.mdis) mp[k] = o;
+  });
+  var A = Object.keys(pl).filter(function (k) { return !mp[k]; }).map(function (k) {
+    var o = pl[k], reg = ntReg(o), s = NTC.suggest(o.kalam, reg, ntAct0(reg, o.date));
+    return { key: k, side: 'A', ps: o.ps, year: +o.year, cr: +o.crno, date: o.date, sec: o.kalam, reg: reg, head: s ? s.head : '', io: o.io || '', note0: mc[k] ? 'MCR मध्ये निकाली दिसतो' : 'MCR मध्ये नाही' };
+  });
+  var B = Object.keys(mp).filter(function (k) { return !pl[k]; }).map(function (k) {
+    var m = mp[k]; return { key: k, side: 'B', ps: m.ps, year: m.year, cr: m.cr, date: m.date, sec: m.sec, reg: m.reg, head: m.head, note0: plAll[k] ? 'PL मध्ये निकाली' : 'PL मध्ये नाही' };
+  });
+  var key = function (x) { return x.ps + '|' + x.year + '|' + x.cr; }; A.sort(function (a, b) { return a.key < b.key ? -1 : 1; }); B.sort(function (a, b) { return a.key < b.key ? -1 : 1; });
+  var Bk = {}; B.forEach(function (b) { Bk[b.key] = b; });
+  var usedB = {}, pair = {};
+  A.forEach(function (a) { var r = R.rec[a.key]; if (r && r.pair && Bk[r.pair] && !usedB[r.pair]) { pair[a.key] = [r.pair, 'ठरवली']; usedB[r.pair] = 1; } });
+  [['पूर्ण जुळते (पो.स्टे., वर्ष, head)', function (a, b) { return a.ps === b.ps && a.year === b.year && a.head && a.head === b.head; }],
+   ['वर्ष व head जुळते (पो.स्टे. वेगळे)', function (a, b) { return a.year === b.year && a.head && a.head === b.head; }],
+   ['पो.स्टे. व वर्ष जुळते (head वेगळा)', function (a, b) { return a.ps === b.ps && a.year === b.year; }]].forEach(function (p) {
+    A.forEach(function (a) {
+      if (pair[a.key]) return;
+      for (var i = 0; i < B.length; i++) { var b = B[i]; if (!usedB[b.key] && p[1](a, b)) { pair[a.key] = [b.key, p[0]]; usedB[b.key] = 1; return; } }
+    });
+  });
+  return { A: A, B: B, pair: pair, Bk: Bk };
+}
+function ntRecDone(x) { var r = NT.rec.rec[x.key]; return !!(r && r.act && r.act !== 'wait'); }
+function ntRecSave(list) {
+  list.forEach(function (x) { var o = NT.rec.rec[x.key] || { key: x.key }; ['side', 'act', 'pair', 'note'].forEach(function (f) { if (x[f] !== undefined) o[f] = x[f]; }); NT.rec.rec[x.key] = o; });
+  call('ntAct', [sGet('t7_pl_tok'), 'rec', { list: list }], function () { }, function () { toast('जतन झाले नाही, पुन्हा प्रयत्न करा', true); });
+}
+function ntRecon() {
+  if (!NT.rec) {
+    $('main').innerHTML = '<div>' + ntTabs() + '<div class="card nt-load">' + (NT.recErr ? ic('alert') + '<b>' + esc(NT.recErr) + '</b><button class="btn s" id="ntRRetry">पुन्हा प्रयत्न</button>' : '<span class="spin"></span><span>PL व MCR ची तुलना करत आहे…</span>') + '</div></div>';
+    ntWireTop(); if ($('ntRRetry')) $('ntRRetry').onclick = function () { NT.recErr = ''; ntRecon(); };
+    if (!NT.recBusy && !NT.recErr) ntRecLoad(function () { if (VIEW === 'ntr') ntRecon(); });
+    return;
+  }
+  var C = ntRecCalc(), ps = NT.rps || '', f = NT.rf || '';
+  function stat(list, p) { return list.filter(function (x) { return !p || x.ps === p; }); }
+  var tbl = NT_PS.map(function (p) {
+    var a = stat(C.A, p), b = stat(C.B, p);
+    return '<tr><td>' + psB(p) + '</td><td>' + a.length + '</td><td>' + a.filter(ntRecDone).length + '</td><td>' + b.length + '</td><td>' + b.filter(ntRecDone).length + '</td><td><b>' + (a.length + b.length - a.filter(ntRecDone).length - b.filter(ntRecDone).length) + '</b></td></tr>';
+  }).join('');
+  var nPair = Object.keys(C.pair).length, left = C.A.concat(C.B).filter(function (x) { return !ntRecDone(x); }).length;
+  var h = '<div>' + ntTabs();
+  h += '<div class="kpis"><div class="kpi nt-k"><span>PL मध्ये आहे, MCR मध्ये नाही</span><b>' + C.A.length + '</b><em>' + C.A.filter(ntRecDone).length + ' ठरले</em></div>' +
+    '<div class="kpi nt-k"><span>MCR मध्ये आहे, PL मध्ये नाही</span><b>' + C.B.length + '</b><em>' + C.B.filter(ntRecDone).length + ' ठरले</em></div>' +
+    '<div class="kpi nt-k"><span>सुचवलेल्या जोड्या</span><b>' + nPair + '</b><em>काढा + जोडा = एकूण तसेच</em></div>' +
+    '<div class="kpi nt-k"><span>अजून बाकी</span><b>' + left + '</b><em>' + (left ? 'महिनाअखेर MCR मध्ये दुरुस्ती करा' : 'सर्व ठरले') + '</em></div></div>';
+  h += '<div class="card nt-tbl"><div class="tw"><table style="min-width:520px"><thead><tr><th>पो.स्टे.</th><th>PL आहे / MCR नाही</th><th>ठरले</th><th>MCR आहे / PL नाही</th><th>ठरले</th><th>बाकी</th></tr></thead><tbody>' + tbl + '</tbody></table></div></div>';
+  h += '<p class="nt-mut">येथे काहीही बदलले तरी PL, MCR किंवा Noting चा कोणताही आकडा बदलत नाही. फक्त तुम्ही काय ठरवले ते साठते. MCR मध्ये प्रत्यक्ष दुरुस्ती तुम्ही स्वतः (महिनाअखेर) करायची.</p>';
+  h += '<div class="nt-bar"><div class="seg" id="ntRPs">' + [''].concat(NT_PS).map(function (p) { return '<button data-p="' + p + '" class="' + (ps === p ? 'on' : '') + '">' + (p ? esc(psName(p)) : 'सर्व') + '</button>'; }).join('') + '</div>' +
+    '<div class="seg" id="ntRF">' + [['', 'सर्व'], ['open', 'बाकी']].map(function (x) { return '<button data-f="' + x[0] + '" class="' + (f === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div><span class="sp"></span><button class="btn" id="ntRXl">' + ic('download') + ' Excel</button><button class="btn" id="ntRRef">' + ic('refresh') + ' पुन्हा तुलना</button></div>';
+  function rowsOf(list) { return stat(list, ps).filter(function (x) { return f !== 'open' || !ntRecDone(x); }); }
+  function sel(x) { var r = NT.rec.rec[x.key] || {}; return '<select class="nt-sel" data-rk="' + esc(x.key) + '" data-rs="' + x.side + '">' + NR_ACT[x.side].map(function (a) { return '<option value="' + a[0] + '"' + ((r.act || '') === a[0] ? ' selected' : '') + '>' + esc(a[1]) + '</option>'; }).join('') + '</select>'; }
+  function note(x) { var r = NT.rec.rec[x.key] || {}; return '<input class="nt-n" style="width:150px" data-nk="' + esc(x.key) + '" data-ns="' + x.side + '" value="' + esc(r.note || '') + '" placeholder="टीप">'; }
+  var HA = rowsOf(C.A);
+  h += '<h3 class="nt-h3">PL मध्ये प्रलंबित, MCR मध्ये नाही (' + HA.length + ')</h3><div class="card nt-tbl"><div class="tw"><table><thead><tr><th>पो.स्टे.</th><th>अप.क्र.</th><th>दाखल</th><th>कलम</th><th>MCR head (सुचवलेला)</th><th>सुचवलेली जोडी (MCR मधून काढायचा)</th><th>कृती</th><th>टीप</th></tr></thead><tbody>' +
+    (HA.length ? HA.map(function (a) {
+      var p = C.pair[a.key], b = p && C.Bk[p[0]], pr = b ? '<b class="nt-mono">' + b.cr + '/' + b.year + '</b> ' + psB(b.ps) + '<br><small>' + esc(String(b.head).split(' ').slice(0, 3).join(' ')) + ' • ' + esc(p[1]) + '</small>' + (p[1] !== 'ठरवली' ? ' <button class="btn s" data-pk="' + esc(a.key) + '" data-pv="' + esc(b.key) + '">मान्य</button>' : '') : '<small>जोडी नाही</small>';
+      return '<tr class="' + (ntRecDone(a) ? 'nt-g' : '') + '"><td>' + psB(a.ps) + '</td><td class="nt-mono">' + a.cr + '/' + a.year + '</td><td>' + esc(a.date || '') + '</td><td class="nt-sec">' + esc(a.sec) + '</td><td>' + esc(String(a.head).split(' ').slice(0, 3).join(' ')) + '<br><small>' + esc(a.note0) + '</small></td><td>' + pr + '</td><td>' + sel(a) + '</td><td>' + note(a) + '</td></tr>';
+    }).join('') : '<tr><td colspan="8" class="nt-empty">फरक नाही</td></tr>') + '</tbody></table></div></div>';
+  var HB = rowsOf(C.B), inv = {}; Object.keys(C.pair).forEach(function (k) { inv[C.pair[k][0]] = k; });
+  h += '<h3 class="nt-h3">MCR मध्ये प्रलंबित, PL मध्ये नाही (' + HB.length + ')</h3><div class="card nt-tbl"><div class="tw"><table><thead><tr><th>पो.स्टे.</th><th>अप.क्र.</th><th>दाखल</th><th>MCR head</th><th>PL मध्ये</th><th>जोडी</th><th>कृती</th><th>टीप</th></tr></thead><tbody>' +
+    (HB.length ? HB.map(function (b) {
+      var a = inv[b.key] && C.A.filter(function (x) { return x.key === inv[b.key]; })[0];
+      return '<tr class="' + (ntRecDone(b) ? 'nt-g' : '') + '"><td>' + psB(b.ps) + '</td><td class="nt-mono">' + b.cr + '/' + b.year + '</td><td>' + esc(b.date || '') + '</td><td>' + esc(String(b.head).split(' ').slice(0, 3).join(' ')) + '<br><small class="nt-sec">' + esc(String(b.sec).slice(0, 60)) + '</small></td><td>' + esc(b.note0) + '</td><td>' + (a ? '<span class="nt-mono">' + a.cr + '/' + a.year + '</span> ' + psB(a.ps) : '<small>–</small>') + '</td><td>' + sel(b) + '</td><td>' + note(b) + '</td></tr>';
+    }).join('') : '<tr><td colspan="8" class="nt-empty">फरक नाही</td></tr>') + '</tbody></table></div></div>';
+  var lg = (NT.rec.log || []).filter(function (r) { return r[2]; }).sort(function (a, b) { return a[6] < b[6] ? 1 : -1; }).slice(0, 15);
+  if (lg.length) h += '<h3 class="nt-h3">अलीकडील नोंदी</h3><div class="card nt-tbl"><div class="tw"><table style="min-width:520px"><tbody>' + lg.map(function (r) { var k = r[0].split('|'), l = (NR_ACT[r[1]] || []).filter(function (a) { return a[0] === r[2]; })[0]; return '<tr><td>' + psB(k[0]) + '</td><td class="nt-mono">' + k[2] + '/' + k[1] + '</td><td>' + esc(l ? l[1] : r[2]) + '</td><td>' + esc(r[4] || '') + '</td><td><small>' + esc(r[5]) + ' • ' + esc(r[6]) + '</small></td></tr>'; }).join('') + '</tbody></table></div></div>';
+  $('main').innerHTML = h + '</div>';
+  ntWireTop();
+  qa($('main'), '#ntRPs button').forEach(function (b) { b.onclick = function () { NT.rps = b.dataset.p; ntRecon(); }; });
+  qa($('main'), '#ntRF button').forEach(function (b) { b.onclick = function () { NT.rf = b.dataset.f; ntRecon(); }; });
+  qa($('main'), '[data-rk]').forEach(function (s) { s.onchange = function () { ntRecSave([{ key: s.dataset.rk, side: s.dataset.rs, act: s.value }]); ntRecon(); }; });
+  qa($('main'), '[data-nk]').forEach(function (s) { s.onchange = function () { ntRecSave([{ key: s.dataset.nk, side: s.dataset.ns, note: s.value }]); }; });
+  qa($('main'), '[data-pk]').forEach(function (b) { b.onclick = function () { ntRecSave([{ key: b.dataset.pk, side: 'A', pair: b.dataset.pv }]); ntRecon(); }; });
+  $('ntRRef').onclick = function () { NT.rec = null; ntRecon(); };
+  $('ntRXl').onclick = function () { ntRecXl(C); };
+}
+function ntRecXl(C) {
+  var lab = function (side, x) { var r = NT.rec.rec[x.key] || {}, l = NR_ACT[side].filter(function (a) { return a[0] === (r.act || ''); })[0]; return [l ? l[1] : '', r.note || '']; };
+  var A = [['पो.स्टे.', 'सन', 'अप.क्र.', 'दाखल', 'कलम', 'MCR head (सुचवलेला)', 'स्थिती', 'जोडी (MCR मधून काढायचा)', 'कृती', 'टीप']].concat(C.A.map(function (a) { var p = C.pair[a.key]; return [a.ps, a.year, a.cr, a.date, a.sec, a.head, a.note0, p ? p[0] : ''].concat(lab('A', a)); }));
+  var B = [['पो.स्टे.', 'सन', 'अप.क्र.', 'दाखल', 'MCR head', 'कलम', 'PL मध्ये', 'कृती', 'टीप']].concat(C.B.map(function (b) { return [b.ps, b.year, b.cr, b.date, b.head, b.sec, b.note0].concat(lab('B', b)); }));
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(A), 'PL आहे MCR नाही'); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(B), 'MCR आहे PL नाही');
+  var out = XLSX.write(wb, { type: 'array', bookType: 'xlsx' }), blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'PL_MCR_ताळमेळ_' + D.today + '.xlsx'; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  toast('Excel डाउनलोड झाली');
+}
 
 boot();
 
