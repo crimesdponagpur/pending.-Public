@@ -1286,6 +1286,8 @@ function toast(m, err, undo) {
 }
 
 /* ---------- सर्व्हरशी संपर्क: Apps Script (google.script.run) / स्वतःचे ॲप (fetch) / नमुना ---------- */
+/* मोठे उत्तर सर्व्हर gzip+base64 करून पाठवतो */
+function gunz(b64) { var bin = atob(b64), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).text().then(JSON.parse); }
 function rpc(fn, args) {
   return new Promise(function (res, rej) {
     if (PL.mode === 'demo') { window.DEMO(fn, args).then(res, function (e) { rej(new Error(e.message || String(e))); }); return; }
@@ -1294,10 +1296,18 @@ function rpc(fn, args) {
       return;
     }
     if (!PL.api) { rej(new Error('config.js मध्ये Apps Script ची /exec लिंक टाका')); return; }
-    fetch(PL.api, { method: 'POST', body: JSON.stringify({ fn: fn, args: args }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' })
-      .then(function (r) { return r.text().then(function (t) { try { return JSON.parse(t); } catch (x) { throw new Error('SRV:' + r.status + ' ' + t.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160)); } }); })
-      .then(function (j) { if (j.ok) res(j.d); else rej(new Error(j.e)); })
-      .catch(function (e) { rej(new Error(e && e.message && e.message.indexOf('LOGIN:') >= 0 ? e.message : (e && e.message && e.message.indexOf('SRV:') === 0 ? 'सर्व्हरने चुकीचे उत्तर दिले (' + fn + ') ' + e.message.slice(4) : 'सर्व्हरशी संपर्क झाला नाही (' + fn + '). इंटरनेट तपासा.'))); });
+    var RD = { getData: 1, ntGet: 1, brand: 1, ntFile: 1 }, tries = RD[fn] ? 3 : 1;
+    (function go(n) {
+      fetch(PL.api, { method: 'POST', body: JSON.stringify({ fn: fn, args: args }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' })
+        .then(function (r) { return r.text().then(function (t) { try { return JSON.parse(t); } catch (x) { throw new Error('SRV:' + r.status + ' ' + t.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160)); } }); })
+        .then(function (j) { return j && j.z ? gunz(j.d) : j; })
+        .then(function (j) { if (j.ok) res(j.d); else rej(new Error(j.e)); })
+        .catch(function (e) {
+          if (e && e.message && e.message.indexOf('LOGIN:') >= 0) return rej(e);
+          if (n < tries) return setTimeout(function () { go(n + 1); }, 1500 * n);
+          rej(new Error(e && e.message && e.message.indexOf('SRV:') === 0 ? 'सर्व्हरने चुकीचे उत्तर दिले (' + fn + ') ' + e.message.slice(4) : 'सर्व्हरशी संपर्क झाला नाही (' + fn + '). इंटरनेट तपासा. ' + ((e && e.message) || '')));
+        });
+    })(1);
   });
 }
 function call(fn, args, ok, fail) {
