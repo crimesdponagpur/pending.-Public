@@ -1115,6 +1115,17 @@ table.nt-led{border-collapse:separate;border-spacing:0;min-width:820px;width:100
 .nf-wrap>*{min-width:0}
 .nf-msel{display:none;width:100%;margin-bottom:10px;font-size:1em;padding:10px}
 @media (max-width:820px){.nf-msel{display:block}.nf-left{display:none}.nf-flds{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
+/* PL मंजुरी */
+.pq-t td{vertical-align:top}.pq-t td small{color:var(--muted)}
+.pq-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;bottom:8px;padding:10px 14px;margin:10px 0;z-index:3}
+.pq-bar .sp{flex:1}
+.pq-cnt{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:8px}
+.pq-cnt>div{display:grid;grid-template-columns:auto auto 1fr;gap:2px 10px;align-items:center}
+.pq-cnt>div>:first-child{grid-row:span 2}
+.pq-cnt b{font-size:1.1em}.pq-cnt span{color:var(--muted);font-size:.84em}
+.pq-one{margin:10px 0;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.pq-one summary{cursor:pointer;font-weight:600}
+.nf-dlg select{border:1px solid var(--line2);border-radius:8px;padding:8px 10px;font:inherit;color:var(--ink);background:var(--card)}
 </style>
 </head>
 <body>
@@ -5290,7 +5301,35 @@ var NX = (function () {
       });
     });
   }
-  return { build: build, patchSheet: patchSheet };
+  /* फक्त एक पत्रक ठेवा (बाकी काढा), सूत्रे काढून फक्त आकडे: SP कार्यालयाचे रूप, रंग, रुंदी तसेच */
+  function only(zip, keep) {
+    var W = 'xl/workbook.xml', RL = 'xl/_rels/workbook.xml.rels', CT = '[Content_Types].xml';
+    return Promise.all([zip.file(W).async('string'), zip.file(RL).async('string'), zip.file(CT).async('string')]).then(function (x) {
+      var wb = x[0], rels = x[1], ct = x[2], rid = {}, idx = -1, i = 0, drop = [], keepPath = '';
+      rels.replace(/<Relationship\b[^>]*>/g, function (m) { var id = /Id="([^"]+)"/.exec(m), t = /Target="([^"]+)"/.exec(m); if (id && t) rid[id[1]] = 'xl/' + t[1].replace(/^\/?xl\//, ''); });
+      wb = wb.replace(/<sheet\b[^>]*\/>/g, function (m) {
+        var n = /name="([^"]+)"/.exec(m)[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'"), id = /r:id="([^"]+)"/.exec(m)[1], me = i++;
+        if (n === keep) { idx = me; keepPath = rid[id]; return m.replace(/\s+state="[^"]*"/, ''); }
+        drop.push({ id: id, p: rid[id] }); return '';
+      });
+      if (idx < 0) throw new Error('पत्रक सापडले नाही: ' + keep);
+      wb = wb.replace(/<definedName\b[^>]*>[^<]*<\/definedName>/g, function (m) { var l = /localSheetId="(\d+)"/.exec(m); return l && +l[1] === idx ? m.replace(/localSheetId="\d+"/, 'localSheetId="0"') : ''; })
+        .replace(/<definedNames>\s*<\/definedNames>/, '').replace(/\s(activeTab|firstSheet)="\d+"/g, '').replace(/<calcPr[^>]*\/>/, '');
+      drop.forEach(function (d) {
+        rels = rels.replace(new RegExp('<Relationship\\b[^>]*Id="' + d.id + '"[^>]*/>'), '');
+        if (d.p) { zip.remove(d.p); var rp = d.p.replace(/([^\/]+)$/, '_rels/$1.rels'); if (zip.file(rp)) zip.remove(rp); ct = ct.replace(new RegExp('<Override[^>]*PartName="/' + d.p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"[^>]*/>'), ''); }
+      });
+      zip.file(W, wb); zip.file(RL, rels); zip.file(CT, ct);
+      return zip.file(keepPath).async('string').then(function (xml) {
+        xml = xml.replace(/<f\b[^>]*\/>|<f\b[^>]*>[^<]*<\/f>/g, '').replace(/<c r="([A-Z]+\d+)"([^>]*?)\s+t="str"><\/c>/g, '<c r="$1"$2/>')
+          .replace(/<dataValidations\b[\s\S]*?<\/dataValidations>/, '').replace(/<conditionalFormatting\b[\s\S]*?<\/conditionalFormatting>/g, function (m) { return m.indexOf('!') >= 0 ? '' : m; })
+          .replace(/<sheetView\b([^>]*?)\stabSelected="\d"/, '<sheetView$1');
+        zip.file(keepPath, xml.replace(/<sheetView\b/, '<sheetView tabSelected="1"'));
+        return zip;
+      });
+    });
+  }
+  return { build: build, patchSheet: patchSheet, only: only };
 })();
 
 /* ---------- Noting: head नकाशा, कलमावरून head, महिन्याचे आकडे (ब्राउझर व चाचणी दोन्हीकडे) ---------- */
@@ -5595,7 +5634,7 @@ var NFC = (function () {
  * ===================================================================== */
 var NT = { ym: '', d: null, eng: null, model: null, tpl: null, tplName: '', src: {}, set: {}, busy: false, err: '', sheet: '', ps: '', zero: true, q: '', stale: true };
 NTC.init(NT_MAPS);
-var NT_VIEWS = { pl: 1, nt: 1, nta: 1, nte: 1, ntf: 1, nts: 1, ntb: 1, ntr: 1 };
+var NT_VIEWS = { pl: 1, plq: 1, nt: 1, nta: 1, nte: 1, ntf: 1, nts: 1, ntb: 1, ntr: 1 };
 var NT_MON_L = ['जानेवारी', 'फेब्रुवारी', 'मार्च', 'एप्रिल', 'मे', 'जून', 'जुलै', 'ऑगस्ट', 'सप्टेंबर', 'ऑक्टोबर', 'नोव्हेंबर', 'डिसेंबर'];
 var NT_HF = 'https://cdn.jsdelivr.net/npm/hyperformula@2.7.1/dist/hyperformula.full.min.js';
 var NT_ZIP = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
@@ -5764,6 +5803,7 @@ function portal() {
   if (NT.d && pend) todo.push(['nta', all ? pend + ' गुन्ह्यांचा MCR head मंजूर करायचा' : pend + ' गुन्ह्यांचा head SDPO कडे मंजुरीसाठी', 'Noting • मंजुरी', 'warn']);
   if (NT.d && can('w')) todo.push(['nte', 'उघड, अटक, सूचनापत्र भरा', 'Noting • पो.स्टे. नोंदी', '']);
   if (NT.d && NT.d.schema && can('w')) todo.push(['ntf', all ? 'भरणा केंद्र: पो.स्टे.चे फॉर्म तपासा व अंतिम सबमिट' : 'भरणा केंद्र: महिन्याचे फॉर्म भरा (' + nfPct(D.ps) + '%)', 'Noting • भरणा केंद्र', '']);
+  if (typeof plqTodo === 'function') { if (!PLQ.q && !PLQ.busy && !PLQ.err) plqLoad(function () { if (VIEW === 'home') portal(); }); todo = plqTodo().concat(todo); }
   if (all && NT.d && !NT.d.tpl) todo.push(['nt', 'Noting ची Excel फाइल जोडा (एकदाच)', 'Noting • सुरुवात', 'warn']);
   if (todo.length) h += '<h3 class="nt-h3">आज करायचे</h3><div class="nt-todo">' + todo.map(function (t) { return '<button class="' + t[3] + '" data-pt="' + t[0] + '"><span><b>' + esc(t[1]) + '</b><small>' + esc(t[2]) + '</small></span>' + ic('chev', 's') + '</button>'; }).join('') + '</div>';
   if (!NT.d && !NT.busy) h += '<p class="nt-mut">' + (NT.err ? esc(NT.err) : 'Noting ची माहिती आणत आहे…') + '</p>';
@@ -5790,6 +5830,7 @@ function ntWireTop() {
 }
 function ntRender() {
   if (VIEW === 'pl') { dash(); return; }
+  if (VIEW === 'plq') { plqView(); return; }
   var m = $('main');
   if (VIEW === 'ntr' && NT.d) { ntRecon(); return; }
   if (!NT.d) {
@@ -6311,9 +6352,9 @@ function ntCloseDlg() {
 
 /* ---------- ॲपमध्ये जोडणी: मेनू, मुख्य पान ---------- */
 (function () {
-  NAV.splice(1, 0, ['pl', 'list', 'प्रलंबित (PL) डॅशबोर्ड']);
+  NAV.splice(1, 0, ['pl', 'list', 'प्रलंबित (PL) डॅशबोर्ड'], ['plq', 'filecheck', 'PL मंजुरी / भरायचे बाकी']);
   var ri = -1; NAV.forEach(function (n, i) { if (n[0] === 'reports') ri = i; });
-  TITLES.home = 'मुख्य पान'; TITLES.pl = 'प्रलंबित (PL) डॅशबोर्ड'; TITLES.nt = 'Noting'; TITLES.nta = 'Noting • मंजुरी'; TITLES.nte = 'Noting • पो.स्टे. नोंदी'; TITLES.ntf = 'Noting • भरणा केंद्र'; TITLES.nts = 'Noting • पत्रके'; TITLES.ntb = 'Breakup'; TITLES.ntr = 'ताळमेळ (PL • MCR)';
+  TITLES.home = 'मुख्य पान'; TITLES.pl = 'प्रलंबित (PL) डॅशबोर्ड'; TITLES.plq = 'PL मंजुरी'; TITLES.nt = 'Noting'; TITLES.nta = 'Noting • मंजुरी'; TITLES.nte = 'Noting • पो.स्टे. नोंदी'; TITLES.ntf = 'Noting • भरणा केंद्र'; TITLES.nts = 'Noting • पत्रके'; TITLES.ntb = 'Breakup'; TITLES.ntr = 'ताळमेळ (PL • MCR)';
   NAV_K.pl = 'Alt+9';
   var _render = render;
   render = function () {
@@ -7021,6 +7062,344 @@ function nfSettings() {
     return _call(fn, args, ok, fail);
   };
 })();
+
+/* =====================================================================
+ * PL मंजुरी (v7.2): पो.स्टे.ने भरलेली नवी नोंद / निपटारा / CC थेट PL मध्ये जात नाही;
+ * SDPO एकेक किंवा सर्व निवडून मंजूर केल्यावरच PL मध्ये. CCTNS Excel वरून SDPO
+ * अर्धवट गुन्हे जोडतात; पो.स्टे. IO, कारण, उप-शीर्ष भरून मंजुरीसाठी पाठवतात.
+ * ===================================================================== */
+var PLQ = { q: null, dr: null, busy: false, draft: '', kind: '', ps: '', sel: {} };
+var PLQ_K = { save: 'नवीन गुन्हा', close: 'निपटारा', cc: 'CC क्र.' };
+var PLQ_S = { pending: ['st-IO', 'मंजुरी बाकी'], approved: ['st-CLOSED', 'मंजूर'], rejected: ['st-DEL', 'नाकारले'], cancelled: ['', 'मागे घेतले'] };
+
+function plqObj(cols, r) { var o = {}; cols.forEach(function (c, i) { o[c] = r[i]; }); return o; }
+function plqLoad(cb) {
+  if (PLQ.busy) return; PLQ.busy = true;
+  rpc('ntAct', [sGet('t7_pl_tok'), 'qlist', {}]).then(function (d) {
+    PLQ.busy = false; PLQ.q = d.q.map(function (r) { return plqObj(d.qc, r); }); PLQ.dr = d.dr.map(function (r) { return plqObj(d.dc, r); });
+    cb && cb();
+  }, function (e) { PLQ.busy = false; PLQ.err = e.message || String(e); cb && cb(); });
+}
+function plqPend() { return (PLQ.q || []).filter(function (x) { return x.state === 'pending'; }); }
+function plqOpenDr() { return (PLQ.dr || []).filter(function (x) { return x.state === 'open'; }); }
+function plqPay(x) { try { return JSON.parse(x.payload || '{}'); } catch (e) { return {}; } }
+function plqNeed() { return can('w') && !can('admin'); }
+
+/* ---------- पो.स्टे.ची नवी नोंद / निपटारा → मंजुरीसाठी ---------- */
+function plqLabel(kind, p) {
+  if (kind === 'save') { var c = p.c || {}; return psName(c.ps || D.ps) + ' अप. ' + c.crno + '/' + c.year + ' • ' + (c.kalam || ''); }
+  var o = byId(p.id); return o ? psName(o.ps) + ' ' + crTxt(o) + ' • ' + (o.kalam || '') : p.id;
+}
+function plqSend(list, ok) {
+  rpc('ntAct', [sGet('t7_pl_tok'), 'qadd', { list: list }]).then(function (r) {
+    if (PLQ.q) r.rows.forEach(function (row) { PLQ.q.unshift(plqObj(NT_Q_COLS, row)); });
+    PLQ.draft = '';
+    if (PLQ.dr) list.forEach(function (x) { if (x.draft) PLQ.dr.forEach(function (d) { if (d.id === x.draft) d.state = 'submitted'; }); });
+    snd('ok'); ok && ok({ msg: list.length > 1 ? list.length + ' नोंदी SDPO मंजुरीसाठी पाठवल्या' : 'SDPO मंजुरीसाठी पाठवले. मंजूर झाल्यावर PL मध्ये दिसेल.' });
+  }, function (e) { toast(e.message || String(e), true); snd('err'); });
+}
+var NT_Q_COLS = ['id', 'kind', 'ps', 'cid', 'label', 'payload', 'state', 'by', 'at', 'dby', 'dat', 'note', 'draft'];
+(function () {
+  var _call = call;
+  call = function (fn, args, ok, fail) {
+    var a = args && args[1], p = (args && args[2]) || {};
+    if (fn === 'act' && plqNeed()) {
+      var L = null;
+      if (a === 'save' && !p.id) {
+        var c = p.c || {}, dup = (PLQ.q || []).filter(function (x) { if (x.state !== 'pending' || x.kind !== 'save') return false; var y = plqPay(x).c || {}; return String(y.crno) === String(c.crno) && String(y.year) === String(c.year) && y.type === c.type; });
+        if (dup.length) { toast('हा गुन्हा आधीच SDPO मंजुरीसाठी पाठवलेला आहे', true); if (fail) fail(''); return; }
+        L = [{ kind: 'save', ps: c.ps || D.ps, cid: '', label: plqLabel('save', p), payload: p, draft: PLQ.draft || '' }];
+      } else if (a === 'close' || a === 'cc') {
+        var o = byId(p.id); L = [{ kind: a, ps: o ? o.ps : D.ps, cid: p.id, label: plqLabel(a, p), payload: p }];
+      } else if (a === 'bulk' && p.op === 'cc') {
+        L = (p.items || []).map(function (it) { var o2 = byId(it.id); return { kind: 'cc', ps: o2 ? o2.ps : D.ps, cid: it.id, label: plqLabel('cc', it), payload: it }; });
+      }
+      if (L) {
+        var wait = (PLQ.q || []).filter(function (x) { return x.state === 'pending' && x.cid && L.some(function (y) { return y.cid === x.cid; }); });
+        if (wait.length) { toast('या गुन्ह्याची एक विनंती आधीच SDPO कडे मंजुरीसाठी आहे', true); if (fail) fail(''); return; }
+        return plqSend(L, function (res) { if (a === 'bulk') { toast(res.msg); if (fail) fail(''); var ov = qa(document, '.ov').pop(); if (ov) ov.remove(); return; } if (ok) ok(res); });
+      }
+    }
+    return _call(fn, args, ok, fail);
+  };
+})();
+
+/* ---------- SDPO: मंजूर करा (PL मध्ये आता जाते) ---------- */
+function plqApprove(items, done) {
+  var i = 0, okN = 0, errs = [], dec = [];
+  var bar = modal('<h3>मंजूर करत आहे</h3><p id="pqP">…</p>', null, true);
+  (function next() {
+    if (i >= items.length) {
+      var fin = function () { bar(); PLQ.q.forEach(function (x) { dec.forEach(function (d) { if (d.id === x.id) { x.state = d.state; if (x.draft) (PLQ.dr || []).forEach(function (r) { if (r.id === x.draft) r.state = 'done'; }); } }); }); toast(okN + ' मंजूर, PL मध्ये गेले' + (errs.length ? ' • ' + errs.length + ' राहिले: ' + errs.slice(0, 2).join('; ') : ''), !!errs.length); snd(okN ? 'done' : 'err'); done && done(); };
+      if (!dec.length) return fin();
+      return rpc('ntAct', [sGet('t7_pl_tok'), 'qdec', { list: dec }]).then(fin, function (e) { bar(); toast(e.message || String(e), true); });
+    }
+    var x = items[i++], p = plqPay(x); if ($('pqP')) $('pqP').textContent = i + ' / ' + items.length + ': ' + x.label;
+    var o = x.cid ? byId(x.cid) : null; if (o && p.updated !== undefined) p.updated = o.updated; // मधल्या काळातील बदल: नवीनतम वापरा
+    rpc('act', [KEY, x.kind, p]).then(function (res) {
+      applyRes(res);
+      okN++; dec.push({ id: x.id, state: 'approved' }); next();
+    }, function (e) { errs.push(x.label.split(' • ')[0] + ': ' + (e.message || e)); next(); });
+  })();
+}
+function plqReject(items, done) {
+  modal('<h3>' + items.length + ' विनंत्या नाकारा</h3><p class="nt-mut">पो.स्टे.ला कारण दिसेल. नवीन गुन्हा असेल तर तो पुन्हा "भरायचे बाकी" मध्ये जातो.</p><div class="inp"><input id="pqNote" placeholder="कारण (उदा. Head चुकीचा: 303(2) चोरी आहे)"></div><div class="nt-row end"><button class="btn" data-close>रद्द</button><button class="btn d f" id="pqR">नाकारा</button></div>', function (ov, close) {
+    $('pqNote').focus();
+    $('pqR').onclick = function () {
+      var n = $('pqNote').value.trim(); if (!n) return toast('कारण लिहा', true);
+      close(); call('ntAct', [sGet('t7_pl_tok'), 'qdec', { list: items.map(function (x) { return { id: x.id, state: 'rejected', note: n }; }) }], function () { items.forEach(function (x) { x.state = 'rejected'; x.note = n; }); toast('नाकारले'); done && done(); });
+    };
+  });
+}
+function plqDesc(x) {
+  var p = plqPay(x);
+  if (x.kind === 'save') { var c = p.c || {}; return { cr: 'अप. ' + c.crno + '/' + c.year, kal: c.kalam, head: [c.head, c.sub].filter(Boolean).join(' • '), io: c.io, rs: c.reason, ex: fmtD(c.date) + (c.place ? ' • ' + c.place : '') }; }
+  var o = byId(x.cid) || {};
+  return { cr: o.crno ? crTxt(o) : x.cid, kal: o.kalam, head: [o.head, o.sub].filter(Boolean).join(' • '), io: o.io, rs: o.reason, ex: x.kind === 'cc' ? 'CC ' + (p.ccNo || '') + ' दि. ' + fmtD(p.ccDate) + (p.accCount ? ' • आरोपी ' + p.accCount : '') : (p.closeCode || p.closeType || '') + (p.closeNo ? ' क्र. ' + p.closeNo : '') + ' दि. ' + fmtD(p.closeDate) };
+}
+
+/* ---------- पान: PL मंजुरी ---------- */
+function plqView() {
+  var m = $('main');
+  if (!PLQ.q) { m.innerHTML = '<div class="page"><div class="card nt-load"><span class="spin"></span><span>माहिती आणत आहे…</span></div></div>'; plqLoad(function () { if (VIEW === 'plq') plqView(); }); return; }
+  return can('admin') ? plqAdmin() : plqPs();
+}
+function plqAdmin() {
+  var P = plqPend().filter(function (x) { return (!PLQ.ps || x.ps === PLQ.ps) && (!PLQ.kind || x.kind === PLQ.kind); }), dr = plqOpenDr(), sub = (PLQ.dr || []).filter(function (d) { return d.state === 'submitted'; });
+  var h = '<div class="page"><div class="nt-bar"><div class="seg" id="pqPs">' + [''].concat(NT_PS).map(function (p) { return '<button data-p="' + p + '" class="' + (PLQ.ps === p ? 'on' : '') + '">' + (p ? esc(psName(p)) : 'सर्व') + '</button>'; }).join('') + '</div>' +
+    '<div class="seg" id="pqK">' + [['', 'सर्व'], ['save', 'नवीन'], ['close', 'निपटारा'], ['cc', 'CC']].map(function (k) { return '<button data-k="' + k[0] + '" class="' + (PLQ.kind === k[0] ? 'on' : '') + '">' + k[1] + '</button>'; }).join('') + '</div><span class="sp"></span>' +
+    '<button class="btn" id="pqDr">' + ic('plus') + ' नवे गुन्हे (CCTNS Excel)</button><button class="btn gh" id="pqRe">' + ic('refresh') + '</button></div>';
+  h += '<p class="nt-mut">पो.स्टे.ने भरलेली नवी नोंद, निपटारा व CC इथे थांबतात. Head, उप-शीर्ष, IO, कारण तपासा आणि एकेक किंवा सर्व निवडून मंजूर करा; मंजूर झाल्यावरच ते PL मध्ये जातात.</p>';
+  h += '<div class="card nt-tbl"><div class="tw"><table class="pq-t"><thead><tr><th><input type="checkbox" id="pqAll"' + (P.length && P.every(function (x) { return PLQ.sel[x.id]; }) ? ' checked' : '') + '></th><th>पो.स्टे.</th><th>प्रकार</th><th>गुन्हा</th><th>कलम</th><th>Head / उप-शीर्ष</th><th>IO</th><th>कारण / निपटारा</th><th>कोणी</th></tr></thead><tbody>' +
+    (P.length ? P.map(function (x) { var d = plqDesc(x); return '<tr><td><input type="checkbox" data-q="' + esc(x.id) + '"' + (PLQ.sel[x.id] ? ' checked' : '') + '></td><td>' + psB(x.ps) + '</td><td><span class="chip ' + (x.kind === 'save' ? 'st-IO' : 'st-CLOSED') + '">' + PLQ_K[x.kind] + '</span>' + (x.draft ? '<br><small>CCTNS वरून</small>' : '') + '</td><td class="nt-mono">' + esc(d.cr) + '</td><td class="nt-sec">' + esc(d.kal || '') + '</td><td>' + esc(d.head || '–') + '</td><td>' + esc(d.io || '') + '</td><td>' + esc(x.kind === 'save' ? (d.rs || '') + (d.ex ? ' • ' + d.ex : '') : d.ex) + '</td><td><small>' + esc(x.by) + '<br>' + esc(String(x.at).slice(0, 16)) + '</small></td></tr>'; }).join('')
+      : '<tr><td colspan="9" class="nt-empty">' + ic('check') + ' मंजुरीसाठी काही बाकी नाही</td></tr>') + '</tbody></table></div></div>';
+  if (P.length) h += '<div class="pq-bar card"><span id="pqN">' + Object.keys(PLQ.sel).filter(function (k) { return PLQ.sel[k] && P.some(function (x) { return x.id === k; }); }).length + ' निवडले</span><span class="sp"></span><button class="btn d" id="pqRj">' + ic('x') + ' निवडलेले नाकारा</button><button class="btn p" id="pqOk">' + ic('check') + ' निवडलेले मंजूर करा</button><button class="btn g" id="pqOkAll">' + ic('check') + ' सर्व (' + P.length + ') मंजूर</button></div>';
+  h += '<h3 class="nt-h3">पो.स्टे.ने भरायचे बाकी (CCTNS वरून जोडलेले)</h3>' + (dr.length + sub.length ? '<div class="card"><div class="pq-cnt">' + NT_PS.map(function (p) { var a = dr.filter(function (d) { return d.ps === p; }).length, b = sub.filter(function (d) { return d.ps === p; }).length; return '<div>' + psB(p) + '<b>' + a + '</b><span>भरायचे बाकी</span><b>' + b + '</b><span>मंजुरीसाठी आले</span></div>'; }).join('') + '</div>' +
+    (dr.length ? '<details><summary>भरायचे बाकी गुन्हे (' + dr.length + ')</summary><div class="tw"><table><tbody>' + dr.map(function (d) { return '<tr><td>' + psB(d.ps) + '</td><td class="nt-mono">' + esc(d.crno + '/' + d.year) + '</td><td>' + fmtD(d.date) + '</td><td class="nt-sec">' + esc(d.kalam) + '</td><td><button class="btn gh s" data-ddel="' + esc(d.id) + '" title="यादीतून काढा">' + ic('trash', 's') + '</button></td></tr>'; }).join('') + '</tbody></table></div></details>' : '') + '</div>' : '<div class="card nt-empty">काही बाकी नाही</div>');
+  var dec = (PLQ.q || []).filter(function (x) { return x.state !== 'pending'; }).slice(0, 40);
+  if (dec.length) h += '<details class="card nt-tbl"><summary>अलीकडील निर्णय (' + dec.length + ')</summary><div class="tw"><table><tbody>' + dec.map(function (x) { var s = PLQ_S[x.state] || ['', x.state]; return '<tr><td>' + psB(x.ps) + '</td><td>' + PLQ_K[x.kind] + '</td><td>' + esc(x.label) + '</td><td><span class="chip ' + s[0] + '">' + s[1] + '</span>' + (x.note ? '<br><small>' + esc(x.note) + '</small>' : '') + '</td><td><small>' + esc(x.dby || '') + ' ' + esc(String(x.dat || '').slice(0, 16)) + '</small></td></tr>'; }).join('') + '</tbody></table></div></details>';
+  $('main').innerHTML = h + '</div>';
+  var m = $('main');
+  qa(m, '#pqPs button').forEach(function (b) { b.onclick = function () { PLQ.ps = b.dataset.p; plqAdmin(); }; });
+  qa(m, '#pqK button').forEach(function (b) { b.onclick = function () { PLQ.kind = b.dataset.k; plqAdmin(); }; });
+  qa(m, '[data-q]').forEach(function (c) { c.onchange = function () { PLQ.sel[c.dataset.q] = c.checked; if ($('pqN')) $('pqN').textContent = qa(m, '[data-q]').filter(function (x) { return x.checked; }).length + ' निवडले'; }; });
+  if ($('pqAll')) $('pqAll').onchange = function () { var on = this.checked; P.forEach(function (x) { PLQ.sel[x.id] = on; }); plqAdmin(); };
+  function chosen() { return P.filter(function (x) { return PLQ.sel[x.id]; }); }
+  if ($('pqOk')) $('pqOk').onclick = function () { var c = chosen(); if (!c.length) return toast('आधी गुन्हे निवडा', true); plqApprove(c, function () { PLQ.sel = {}; plqAdmin(); }); };
+  if ($('pqOkAll')) $('pqOkAll').onclick = function () { plqApprove(P, function () { PLQ.sel = {}; plqAdmin(); }); };
+  if ($('pqRj')) $('pqRj').onclick = function () { var c = chosen(); if (!c.length) return toast('आधी गुन्हे निवडा', true); plqReject(c, function () { PLQ.sel = {}; plqAdmin(); }); };
+  $('pqDr').onclick = plqDraftDlg;
+  $('pqRe').onclick = function () { PLQ.q = null; plqView(); };
+  qa(m, '[data-ddel]').forEach(function (b) { b.onclick = function () { call('ntAct', [sGet('t7_pl_tok'), 'draftdel', { ids: [b.dataset.ddel] }], function () { PLQ.dr = PLQ.dr.filter(function (d) { return d.id !== b.dataset.ddel; }); plqAdmin(); }); }; });
+}
+function plqPs() {
+  var dr = plqOpenDr(), mine = (PLQ.q || []).slice(0, 60);
+  var h = '<div class="page"><h3 class="nt-h3">भरायचे बाकी गुन्हे (SDPO ने CCTNS वरून जोडलेले)</h3><p class="nt-mut">IO, प्रलंबित कारण, उप-शीर्ष व उरलेली माहिती भरून पाठवा. SDPO मंजूर केल्यावर गुन्हा PL मध्ये येईल.</p>';
+  h += dr.length ? '<div class="nt-cl">' + dr.map(function (d) { return '<div class="card nt-cc"><div class="nt-c1">' + psB(d.ps) + '<b class="nt-mono">' + esc(d.crno + '/' + d.year) + '</b><span class="chip st-IO">भरायचे बाकी</span></div><div class="nt-sec">' + esc(d.kalam) + '</div><div class="nf-kv"><span>दाखल <b>' + fmtD(d.date) + '</b></span>' + (d.place ? '<span>' + esc(d.place) + '</span>' : '') + '</div><div class="nt-row end"><button class="btn p s" data-fill="' + esc(d.id) + '">' + ic('edit', 's') + ' भरा व पाठवा</button></div></div>'; }).join('') + '</div>' : '<div class="card nt-empty">' + ic('check') + ' काही बाकी नाही</div>';
+  h += '<h3 class="nt-h3">SDPO मंजुरीसाठी पाठवलेले</h3>' + (mine.length ? '<div class="card nt-tbl"><div class="tw"><table><tbody>' + mine.map(function (x) { var s = PLQ_S[x.state] || ['', x.state]; return '<tr><td>' + PLQ_K[x.kind] + '</td><td>' + esc(x.label) + '</td><td><span class="chip ' + s[0] + '">' + s[1] + '</span>' + (x.note ? '<br><small>' + esc(x.note) + '</small>' : '') + '</td><td><small>' + esc(String(x.at).slice(0, 16)) + '</small></td><td>' + (x.state === 'pending' ? '<button class="btn gh s" data-qc="' + esc(x.id) + '">' + ic('undo', 's') + ' मागे घ्या</button>' : '') + '</td></tr>'; }).join('') + '</tbody></table></div></div>' : '<div class="card nt-empty">काही नाही</div>');
+  $('main').innerHTML = h + '</div>';
+  qa($('main'), '[data-fill]').forEach(function (b) { b.onclick = function () { plqFill(b.dataset.fill); }; });
+  qa($('main'), '[data-qc]').forEach(function (b) { b.onclick = function () { call('ntAct', [sGet('t7_pl_tok'), 'qcancel', { ids: [b.dataset.qc] }], function () { PLQ.q = null; plqLoad(function () { if (VIEW === 'plq') plqView(); }); toast('मागे घेतले'); }); }; });
+}
+/* अर्धवट गुन्हा → नेहमीचा नवीन गुन्हा फॉर्म (माहिती आधीच भरलेली) */
+function plqFill(id) {
+  var d = (PLQ.dr || []).filter(function (x) { return x.id === id; })[0]; if (!d) return;
+  var pre = { ps: d.ps, crno: d.crno, year: d.year, date: d.date, kalam: d.kalam, place: d.place, io: d.io, acc: d.acc };
+  if (d.type) pre.type = d.type;
+  PLQ.draft = id; editForm(null, '', { pre: pre, src: 'excel' });
+  setTimeout(function () { var ov = qa(document, '.ov').pop(); if (ov) { var x = ov.querySelector('[data-close]'); var fix = function () { setTimeout(function () { if (!qa(document, '.ov').length) PLQ.draft = PLQ.draft === id ? '' : PLQ.draft; }, 50); }; qa(ov, '[data-close]').forEach(function (b) { b.addEventListener('click', fix); }); } }, 0);
+}
+/* ---------- SDPO: CCTNS Excel वरून नवे गुन्हे (IO / कारण / उप-शीर्ष पो.स्टे. भरतील) ---------- */
+function plqDraftDlg() {
+  var recs = [];
+  modal('<h2>' + ic('plus') + ' नवे गुन्हे (पो.स्टे. उरलेली माहिती भरतील)</h2><p class="muted">CCTNS मधून काढलेली तीनही पो.स्टे.ची FIR यादी (Excel / CSV) निवडा, किंवा एकच गुन्हा खाली भरा. IO, कारण, उप-शीर्ष भरायची गरज नाही; ते गुन्हे पो.स्टे.च्या डॅशबोर्डवर "भरायचे बाकी" म्हणून दिसतील.</p>' +
+    '<label class="drop"><input type="file" accept=".xlsx,.xls,.csv" multiple class="hide" id="pdF">' + ic('download', 'l') + '<b>CCTNS Excel निवडा</b><span>एकापेक्षा जास्त फाइल चालतील</span></label>' +
+    '<details class="pq-one"><summary>एकच गुन्हा भरा</summary><div class="nf-dlg"><label>पो.स्टे.<select id="p1Ps">' + NT_PS.map(function (p) { return '<option value="' + p + '">' + esc(psName(p)) + '</option>'; }).join('') + '</select></label><label>प्रकार<select id="p1T">' + (D.types || ['IPC-BNS', 'SLL', 'दारूबंदी']).filter(function (t) { return t !== 'AD'; }).map(function (t) { return '<option value="' + esc(t) + '">' + esc((window.T_L && T_L[t]) || t) + '</option>'; }).join('') + '</select></label><label>अप. क्र.<input id="p1C" type="number"></label><label>सन<input id="p1Y" type="number" value="' + D.today.slice(0, 4) + '"></label><label>दाखल तारीख<input id="p1D" type="date" value="' + D.today + '"></label><label class="full">कलम<input id="p1K"></label><label class="full">घटनास्थळ<input id="p1P"></label></div><div class="nt-row end"><button class="btn" id="p1A">' + ic('plus', 's') + ' यादीत घ्या</button></div></details>' +
+    '<div id="pdL"></div><div class="acts"><button class="btn" data-close>रद्द</button><button class="btn p" id="pdS" disabled>' + ic('send', 's') + ' पो.स्टे.ना पाठवा</button></div>', function (ov, close) {
+    function key(r) { return r.ps + '|' + (r.type || '') + '|' + r.year + '|' + r.crno; }
+    function inPl(r) { return ROWS.some(function (o) { return !o.del && o.ps === r.ps && String(o.year) === String(r.year) && String(o.crno) === String(r.crno) && (!r.type || o.type === r.type); }); }
+    function draw() {
+      recs.forEach(function (r) { r.dup = inPl(r) ? 'PL मध्ये आहे' : (PLQ.dr || []).some(function (d) { return d.ps === r.ps && String(d.year) === String(r.year) && String(d.crno) === String(r.crno); }) ? 'आधीच पाठवला' : !r.ps ? 'पो.स्टे. ओळखले नाही' : ''; });
+      var ok = recs.filter(function (r) { return !r.dup && r.on !== false; });
+      $('pdL').innerHTML = recs.length ? '<div class="tw" style="max-height:44vh;overflow:auto"><table class="tbl"><thead><tr><th></th><th>पो.स्टे.</th><th>अप. क्र.</th><th>दाखल</th><th>कलम</th><th></th></tr></thead><tbody>' + recs.map(function (r, i) { return '<tr' + (r.dup ? ' class="muted"' : '') + '><td><input type="checkbox" data-i="' + i + '"' + (r.dup ? ' disabled' : r.on === false ? '' : ' checked') + '></td><td>' + (r.ps ? psB(r.ps) : '?') + '</td><td class="nt-mono">' + esc(r.crno + '/' + r.year) + '</td><td>' + fmtD(r.date) + '</td><td class="nt-sec">' + esc(r.kalam) + '</td><td>' + (r.dup ? '<span class="chip">' + r.dup + '</span>' : '') + '</td></tr>'; }).join('') + '</tbody></table></div><p class="muted">' + ok.length + ' नवे गुन्हे पाठवले जातील.</p>' : '';
+      $('pdS').disabled = !ok.length;
+      qa(ov, '[data-i]').forEach(function (c) { c.onchange = function () { recs[+c.dataset.i].on = c.checked; draw(); }; });
+    }
+    $('pdF').onchange = function () {
+      var fs = [].slice.call(this.files), n = fs.length; this.value = '';
+      fs.forEach(function (f) {
+        var fr = new FileReader();
+        fr.onload = function () {
+          try {
+            var wb = XLSX.read(fr.result, { type: 'array', cellDates: false });
+            wb.SheetNames.forEach(function (sn) { var aoa = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, raw: true, defval: '' }); var R = tableRecs(aoa) || []; R.forEach(function (r) { if (!r.ps && fs.length === 1 && wb.SheetNames.length === 1) r.ps = psFromTxt(f.name); if (!recs.some(function (x) { return key(x) === key(r); })) recs.push(r); }); });
+          } catch (e) { toast(f.name + ': ' + (e.message || e), true); }
+          if (--n === 0) draw();
+        };
+        fr.readAsArrayBuffer(f);
+      });
+    };
+    $('p1A').onclick = function () {
+      var r = { ps: $('p1Ps').value, type: $('p1T').value, crno: $('p1C').value.trim(), year: $('p1Y').value.trim(), date: $('p1D').value, kalam: $('p1K').value.trim(), place: $('p1P').value.trim() };
+      if (!r.crno || !r.year || !r.kalam) return toast('अप. क्र., सन, कलम भरा', true);
+      recs.push(r); $('p1C').value = ''; $('p1K').value = ''; $('p1P').value = ''; draw();
+    };
+    $('pdS').onclick = function () {
+      var L = recs.filter(function (r) { return !r.dup && r.on !== false; }).map(function (r) { return { ps: r.ps, year: r.year, crno: r.crno, kalam: r.kalam, date: r.date, place: r.place, io: r.io || '', acc: r.acc || '', type: r.type || '' }; });
+      $('pdS').disabled = true;
+      call('ntAct', [sGet('t7_pl_tok'), 'draftadd', { list: L }], function (res) { close(); toast(res.n + ' गुन्हे पो.स्टे.ना भरण्यासाठी पाठवले' + (res.skip ? ' (' + res.skip + ' आधीच होते)' : '')); snd('ok'); PLQ.q = null; plqView(); }, function () { $('pdS').disabled = false; });
+    };
+  }, false, { dlg: 'wide' });
+}
+
+/* ---------- डॅशबोर्ड / मुख्य पानावर सूचना ---------- */
+function plqTodo() {
+  if (!PLQ.q) return [];
+  if (can('admin')) { var n = plqPend().length; return n ? [['plq', n + ' नोंदी / निपटारे मंजुरीसाठी', 'PL • मंजुरी', 'warn']] : []; }
+  var out = [], d = plqOpenDr().length, rj = (PLQ.q || []).filter(function (x) { return x.state === 'rejected' && String(x.dat).slice(0, 10) >= ntAddM(D.today.slice(0, 7), -1); }).length;
+  if (d) out.push(['plq', d + ' नवे गुन्हे: IO, कारण, उप-शीर्ष भरा', 'PL • SDPO ने जोडलेले', 'warn']);
+  if (rj) out.push(['plq', rj + ' नोंदी SDPO ने परत पाठवल्या', 'PL • कारण पहा', 'warn']);
+  return out;
+}
+(function () {
+  var _out = logout;
+  logout = function () { PLQ.q = null; PLQ.dr = null; PLQ.busy = false; PLQ.err = ''; PLQ.draft = ''; PLQ.sel = {}; PLQ.ps = ''; PLQ.kind = ''; return _out.apply(this, arguments); };
+  if (typeof dash !== 'function') return;
+  var _dash = dash;
+  dash = function () {
+    _dash.apply(this, arguments);
+    var paint = function () {
+      var t = plqTodo(), m = $('main'), f = m && m.firstElementChild; if (!f || VIEW !== 'pl' || !t.length || $('pqBan')) return;
+      f.insertAdjacentHTML('afterbegin', '<div class="nt-todo" id="pqBan">' + t.map(function (x) { return '<button class="' + x[3] + '" data-pq="1"><span><b>' + esc(x[1]) + '</b><small>' + esc(x[2]) + '</small></span>' + ic('chev', 's') + '</button>'; }).join('') + '</div>');
+      qa(m, '[data-pq]').forEach(function (b) { b.onclick = function () { navTo('plq'); }; });
+    };
+    if (PLQ.q) paint(); else plqLoad(paint);
+  };
+  if (typeof addMenu === 'function') {
+    var _am = addMenu;
+    addMenu = function () {
+      _am.apply(this, arguments);
+      if (!can('admin')) return;
+      var g = qa(document, '.addm').pop(); if (!g) return;
+      g.insertAdjacentHTML('beforeend', '<button data-k="PQD" class="wide">' + ic('users') + 'नवे गुन्हे: पो.स्टे. IO / कारण भरतील<span>CCTNS Excel किंवा फक्त अप.क्र., कलम, तारीख</span></button>');
+      g.lastElementChild.onclick = function () { var ov = g.closest('.ov'); if (ov) ov.remove(); plqDraftDlg(); };
+    };
+  }
+})();
+
+/* Kruti Dev (010 वगैरे) जुना फॉन्ट → Unicode मराठी. PS Noting फाइलमधील शीर्षके वाचण्यासाठी व PDF साठी. */
+var KD = (function () {
+  var P = [['ñ', '॰'], ['’', 'श्'], ['Q+Z', 'QZ+'], ['sas', 'sa'], ['aa', 'a'], [')Z', 'र्द्ध'], ['ZZ', 'Z'],
+    ['å', '०'], ['ƒ', '१'], ['„', '२'], ['…', '३'], ['†', '४'], ['‡', '५'], ['ˆ', '६'], ['‰', '७'], ['Š', '८'], ['‹', '९'],
+    ['¶+', 'फ़्'], ['d+', 'क़'], ['[+k', 'ख़'], ['[+', 'ख़्'], ['x+', 'ग़'], ['T+', 'ज़्'], ['t+', 'ज़'], ['M+', 'ड़'], ['<+', 'ढ़'], ['Q+', 'फ़'], [';+', 'य़'], ['j+', 'ऱ'], ['u+', 'ऩ'],
+    ['Ùk', 'त्त'], ['Ù', 'त्त्'], ['Dr', 'क्त'], ['–', 'दृ'], ['—', 'कृ'], ['é', 'न्न'], ['™', 'न्न्'], ['=kk', '=k'], ['f=k', 'f='],
+    ['à', 'ह्न'], ['á', 'ह्य'], ['â', 'हृ'], ['ã', 'ह्म'], ['ºz', 'ह्र'], ['º', 'ह्'], ['í', 'द्द'], ['{k', 'क्ष'], ['{', 'क्ष्'], ['=', 'त्र'], ['«', 'त्र्'],
+    ['Nî', 'छ्य'], ['Vî', 'ट्य'], ['Bî', 'ठ्य'], ['Mî', 'ड्य'], ['<î', 'ढ्य'], ['|', 'द्य'], ['K', 'ज्ञ'], ['}', 'द्व'],
+    ['J', 'श्र'], ['Vª', 'ट्र'], ['Mª', 'ड्र'], ['<ª', 'ढ्र'], ['Nª', 'छ्र'], ['Ø', 'क्र'], ['Ý', 'फ्र'], ['nzZ', 'र्द्र'], ['æ', 'द्र'], ['ç', 'प्र'], ['Á', 'प्र'], ['xz', 'ग्र'], ['#', 'रु'], [':', 'रू'],
+    ['v‚', 'ऑ'], ['vks', 'ओ'], ['vkS', 'औ'], ['vk', 'आ'], ['v', 'अ'], ['b±', 'ईं'], ['Ã', 'ई'], ['bZ', 'ई'], ['b', 'इ'], ['m', 'उ'], ['Å', 'ऊ'], [',s', 'ऐ'], [',', 'ए'], ['_', 'ऋ'],
+    ['ô', 'क्क'], ['Dk', 'क'], ['d', 'क'], ['D', 'क्'], ['[k', 'ख'], ['[', 'ख्'], ['Xk', 'ग'], ['x', 'ग'], ['X', 'ग्'], ['Ä', 'घ'], ['?k', 'घ'], ['?', 'घ्'], ['³', 'ङ'],
+    ['pkS', 'चै'], ['Pk', 'च'], ['p', 'च'], ['P', 'च्'], ['N', 'छ'], ['Tk', 'ज'], ['t', 'ज'], ['T', 'ज्'], ['>', 'झ'], ['÷', 'झ्'], ['¥', 'ञ'],
+    ['ê', 'ट्ट'], ['ë', 'ट्ठ'], ['V', 'ट'], ['B', 'ठ'], ['ì', 'ड्ड'], ['ï', 'ड्ढ'], ['M', 'ड'], ['<', 'ढ'], ['.k', 'ण'], ['.', 'ण्'],
+    ['Rk', 'त'], ['r', 'त'], ['R', 'त्'], ['Fk', 'थ'], ['F', 'थ्'], [')', 'द्ध'], ['n', 'द'], ['/k', 'ध'], ['èk', 'ध'], ['/', 'ध्'], ['Ë', 'ध्'], ['è', 'ध्'], ['Uk', 'न'], ['u', 'न'], ['U', 'न्'],
+    ['Ik', 'प'], ['i', 'प'], ['I', 'प्'], ['Q', 'फ'], ['¶', 'फ्'], ['Ck', 'ब'], ['c', 'ब'], ['C', 'ब्'], ['Hk', 'भ'], ['H', 'भ्'], ['Ek', 'म'], ['e', 'म'], ['E', 'म्'],
+    [';', 'य'], ['¸', 'य्'], ['j', 'र'], ['Yk', 'ल'], ['y', 'ल'], ['Y', 'ल्'], ['G', 'ळ'], ['Ok', 'व'], ['o', 'व'], ['O', 'व्'],
+    ["'k", 'श'], ["'", 'श्'], ['"k', 'ष'], ['"', 'ष्'], ['Lk', 'स'], ['l', 'स'], ['L', 'स्'], ['g', 'ह'],
+    ['È', 'ीं'], ['z', '्र'], ['ª', '्र'],
+    ['Ì', 'द्द'], ['Í', 'ट्ट'], ['Î', 'ट्ठ'], ['Ï', 'ड्ड'], ['Ñ', 'कृ'], ['Ò', 'भ'], ['Ó', '्य'], ['Ô', 'ड्ढ'], ['Ö', 'झ्'], ['Ük', 'श'], ['Ü', 'श्'],
+    ['‚', 'ॉ'], ['ks', 'ो'], ['kS', 'ौ'], ['k', 'ा'], ['h', 'ी'], ['q', 'ु'], ['w', 'ू'], ['`', 'ृ'], ['s', 'े'], ['S', 'ै'],
+    ['a', 'ं'], ['¡', 'ँ'], ['%', 'ः'], ['W', 'ॅ'], ['•', 'ऽ'], ['·', 'ऽ'], ['~j', '्र'], ['~', '्'], ['\\', '?'], ['+', '़'],
+    ['^', '‘'], ['*', '’'], ['Þ', '“'], ['ß', '”'], ['(', ';'], ['¼', '('], ['½', ')'], ['¿', '{'], ['À', '}'], ['¾', '='], ['A', '।'], ['-', '.'], ['&', '-'], ['Œ', '॰'], [']', ','], ['@', '/']];
+  var C = '[\\u0915-\\u0939\\u0958-\\u095F]\\u093C?', CL = '((?:' + C + '\\u094D)*' + C + ')', MT = '([\\u093E-\\u094C\\u0901-\\u0903]*)';
+  var reF = new RegExp('f' + CL, 'g'), reZ = new RegExp(CL + MT + 'Z', 'g');
+  var EN = /\b(IPC|BNSS|BNS|NCR|NC|NDPS|SLL|CrPC|CRPC|MCR|ADR|RDP|FIR|POCSO|Hurt|Act|ACT|MV|MPDA|SC|ST|PS|SDPO|PI|PSI|API)\b/g;
+  function conv(s) {
+    if (s == null) return s; s = String(s);
+    if (!/[A-Za-z\[\];'",<>\/?{}|=+\-~`@#%^&*()_]/.test(s) || /[ऀ-ॿ]/.test(s)) return s;
+    var keep = []; s = s.replace(EN, function (w) { keep.push(w); return '\u0001' + (keep.length - 1) + '\u0002'; });
+    P.forEach(function (p) { if (s.indexOf(p[0]) >= 0) s = s.split(p[0]).join(p[1]); });
+    s = s.replace(reF, '$1ि').replace(/f/g, 'ि');
+    s = s.replace(reZ, 'र्$1$2').replace(/Z/g, 'र्');
+    return s.replace(/\u0001(\d+)\u0002/g, function (m, i) { return keep[+i]; });
+  }
+  /* शब्द खरोखर Kruti मध्ये आहे का? (इंग्रजी नाही) */
+  function looks(s) { s = String(s || ''); if (/[ऀ-ॿ]/.test(s) || !/[a-z]/.test(s)) return false; return /(k|h|q|s|\[|;|"|'|@)/.test(s) && !/^[A-Za-z .,&()\/-]+$/.test(s.replace(/[kqhs]/g, '')) || /[kq]$|ks|kj|dz|[a-z][A-Z]|[\[;"'~]/.test(s); }
+  return { conv: conv, looks: looks };
+})();
+
+/* प्रत्येक पत्रकाजवळ PDF / Excel डाउनलोड (SP कार्यालयाचे रूप तसेच). */
+function dlText(v, z) { var s = ntFmt(v, z); return typeof KD !== 'undefined' && KD.looks(s) ? KD.conv(s) : s; }
+function dlZip(sheet) {
+  if (!NT.eng) { toast('Excel इंजिन तयार नाही', true); return Promise.reject(); }
+  return ntScript(NT_ZIP, 'JSZip').then(function () {
+    var archive = NT.d.tpl && NT.d.tpl.ym && NT.ym <= NT.d.tpl.ym, inp = {}, opt;
+    if (!archive) { inp = ntInputs(); var L = nfExport(); Object.keys(L.inp).forEach(function (s) { inp[s] = Object.assign(inp[s] || {}, L.inp[s]); }); opt = L.opt; }
+    return NX.build(JSZip, NT.tpl, NT.eng, inp, opt);
+  }).then(function (zip) { return NX.only(zip, sheet); });
+}
+function dlXl(sheet) {
+  toast('Excel बनवत आहे…');
+  dlZip(sheet).then(function (zip) { return zip.generateAsync({ type: 'blob', compression: 'DEFLATE', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }); }).then(function (out) {
+    var name = String(sheet).trim().replace(/[^A-Za-z0-9ऀ-ॿ]+/g, '_') + '_' + NT.ym + '.xlsx', a = document.createElement('a');
+    a.href = URL.createObjectURL(out); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000); toast(name + ' डाउनलोड झाली');
+  }, function (e) { if (e) toast('Excel अडचण: ' + (e.message || e), true); });
+}
+function dlPdf(sheet) {
+  var S = null; NT.model.sheets.forEach(function (x) { if (x.x === sheet) S = x; }); if (!S || !NT.eng) return toast('पत्रक तयार नाही', true);
+  var E = NT.eng, maxR = 0, maxC = 0, cov = {}, mg = {};
+  function bump(a) { var p = NE.split(a); if (p[1] > maxR) maxR = p[1]; if (p[0] > maxC) maxC = p[0]; }
+  Object.keys(S.v).forEach(bump); Object.keys(S.f).forEach(bump);
+  S.m.forEach(function (rg) { var p = rg.split(':'), a = NE.split(p[0]), b = NE.split(p[1] || p[0]); bump(p[0]); bump(p[1] || p[0]); mg[p[0]] = [b[1] - a[1] + 1, b[0] - a[0] + 1]; for (var r = a[1]; r <= b[1]; r++) for (var c = a[0]; c <= b[0]; c++) if (r !== a[1] || c !== a[0]) cov[NE.cl(c) + r] = 1; });
+  var tw = 0, cw = []; for (var c = 1; c <= maxC; c++) { var w = S.w[c] === 0 ? 0 : (S.w[c] || 9); cw[c] = w; tw += w; }
+  var fs = Math.max(5, Math.min(11, 1000 / (tw * 1.1 || 1))).toFixed(1);
+  var h = '<style>.dlt{border-collapse:collapse;font-size:' + fs + 'px;table-layout:fixed;width:100%}.dlt td{border:.5px solid #888;padding:1px 2px;overflow:hidden;word-break:break-word;vertical-align:middle;text-align:center}.dlt td.t{text-align:left}@page{size:A3 landscape;margin:8mm}</style>';
+  h += printHead(String(sheet).trim(), ntMonL(NT.ym)) + '<table class="dlt"><colgroup>';
+  for (c = 1; c <= maxC; c++) h += '<col style="width:' + (tw ? (cw[c] * 100 / tw).toFixed(2) : 1) + '%">';
+  h += '</colgroup><tbody>';
+  for (var r = 1; r <= maxR; r++) {
+    if (S.h[r] === 0) continue; h += '<tr>';
+    for (c = 1; c <= maxC; c++) {
+      var a = NE.cl(c) + r; if (cov[a] || cw[c] === 0) continue;
+      var isF = a in S.f, k = sheet + '!' + a, v = isF ? E.get(S.n, a) : (k in NT.set ? NT.set[k] : S.v[a]), fill = S.fill[a];
+      var sp = mg[a] ? (mg[a][0] > 1 ? ' rowspan="' + mg[a][0] + '"' : '') + (mg[a][1] > 1 ? ' colspan="' + mg[a][1] + '"' : '') : '';
+      h += '<td' + sp + (typeof v === 'string' && v.length > 12 ? ' class="t"' : '') + (fill ? ' style="background:#' + fill + '"' : '') + '>' + esc(dlText(v, S.z[a])) + '</td>';
+    }
+    h += '</tr>';
+  }
+  doPrint(h + '</tbody></table>' + printFoot(), String(sheet).trim() + '_' + NT.ym);
+}
+function dlBtns(sheet) { return '<button class="btn s" data-dlx="' + esc(sheet) + '">' + ic('download', 's') + ' Excel</button><button class="btn s" data-dlp="' + esc(sheet) + '">' + ic('print', 's') + ' PDF</button>'; }
+function dlWire(root) {
+  qa(root, '[data-dlx]').forEach(function (b) { b.onclick = function () { dlXl(b.dataset.dlx); }; });
+  qa(root, '[data-dlp]').forEach(function (b) { b.onclick = function () { dlPdf(b.dataset.dlp); }; });
+}
+(function () {
+  var _s = ntSheets;
+  ntSheets = function () {
+    _s.apply(this, arguments); var h = document.querySelector('.nt-shh .sp'); if (!h || !NT.sheet) return;
+    h.insertAdjacentHTML('afterend', dlBtns(NT.sheet)); dlWire($('main'));
+  };
+  var _b = ntBreak;
+  ntBreak = function () {
+    _b.apply(this, arguments); var x = $('ntXl'); if (!x) return;
+    x.insertAdjacentHTML('afterend', '<button class="btn" data-dlp="BREAK UP ">' + ic('print') + ' PDF</button>'); dlWire($('main'));
+  };
+  var _f = nfForm;
+  nfForm = function (sheet) {
+    _f.apply(this, arguments); var d = $('nfDl'); if (!d) return;
+    d.insertAdjacentHTML('afterend', '<button class="btn s" id="nfPdf">' + ic('print', 's') + ' PDF</button>');
+    $('nfPdf').onclick = function () { nfFlush(); nfFormPdf(sheet); };
+  };
+})();
+/* भरणा केंद्रातील फॉर्मचा PDF (पो.स्टे. + महिना) */
+function nfFormPdf(sheet) {
+  var F = nfSch().forms[sheet]; if (!F) return;
+  var L = nfCellsOf(sheet, NF.ps), M = nfCellMap(), rows = [], cols = [], R = {}, C = {};
+  L.forEach(function (x) { if (!R[x[2]]) { R[x[2]] = {}; rows.push(x[2]); } R[x[2]][x[3]] = x; if (!C[x[3]]) { C[x[3]] = 1; cols.push(x[3]); } });
+  rows.sort(function (a, b) { return a - b; }); cols.sort(function (a, b) { return a - b; });
+  var h = printHead(nfName(sheet), nfPsL(NF.ps) + ' • ' + ntMonL(NT.ym)) + '<table class="dlt" style="border-collapse:collapse;font-size:10px;width:100%"><thead><tr><th style="border:.5px solid #888">अ.क्र.</th><th style="border:.5px solid #888">बाब</th>' + cols.map(function (c) { return '<th style="border:.5px solid #888">' + esc(F.cols[c] || '') + '</th>'; }).join('') + '</tr></thead><tbody>' +
+    rows.map(function (r, i) { return '<tr><td style="border:.5px solid #888;text-align:center">' + (i + 1) + '</td><td style="border:.5px solid #888">' + esc(F.rows[r] || '') + '</td>' + cols.map(function (c) { var x = R[r][c], m = x && M[sheet + '!' + x[0]]; return '<td style="border:.5px solid #888;text-align:center">' + (m ? esc(m.v) : '') + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>' + printFoot();
+  doPrint(h, nfName(sheet) + '_' + NF.ps + '_' + NT.ym);
+}
 
 /* =====================================================================
  * ताळमेळ: PL (प्रलंबित) व MCR रजिस्टरमधील फरक. फक्त SDPO कार्यालय.
