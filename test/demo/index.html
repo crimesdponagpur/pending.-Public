@@ -1004,6 +1004,24 @@ table.nt-led{border-collapse:separate;border-spacing:0;min-width:820px;width:100
 .nt-led td.pc{text-align:right;color:var(--ink2);width:80px}
 @media (max-width:600px){.nt-top .seg{max-width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}.nt-top .seg button{flex:0 0 auto}
 .nt-led th.sr,.nt-led td.sr{display:none}.nt-led th.hd,.nt-led td.hd{min-width:150px;max-width:170px;white-space:normal;padding:6px 8px}table.nt-led{min-width:640px;font-size:.85em}.nt-led td.v{width:48px;padding:6px 7px}}
+
+/* v7: जलद नोंद (पो.स्टे. नोंदी) */
+.nt-saved{color:var(--ok);font-size:.88em;font-weight:600}
+.nt-cl{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr));gap:12px}
+.nt-cc{padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.nt-cc .nt-sec{max-width:none;font-size:.84em}
+.nt-c1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.nt-c2{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.nt-det{display:inline-flex;align-items:center;gap:5px;font:inherit;font-weight:600;border:1.5px solid var(--line2);background:var(--card);color:var(--muted);border-radius:99px;padding:8px 12px;cursor:pointer;min-height:40px}
+.nt-det .i{opacity:.35}
+.nt-det.on{background:color-mix(in srgb,var(--ok) 15%,var(--card));border-color:var(--ok);color:var(--ok)}.nt-det.on .i{opacity:1}
+.nt-st{display:inline-flex;align-items:center;gap:0;border:1.5px solid var(--line2);border-radius:12px;overflow:hidden;background:var(--card)}
+.nt-st span{font-size:.74em;color:var(--muted);padding:0 6px;white-space:nowrap}
+.nt-st button{width:34px;height:40px;border:0;background:var(--bg2);color:var(--ink);font-size:1.2em;cursor:pointer;font-family:inherit}
+.nt-st button:active{background:var(--line2)}
+.nt-st input.nt-n{width:42px;height:40px;border:0;text-align:center;font:inherit;font-weight:700;background:transparent;color:var(--ink);-moz-appearance:textfield}
+.nt-st input::-webkit-outer-spin-button,.nt-st input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.nt-empty{padding:22px;text-align:center;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -7133,49 +7151,89 @@ function ntHeadDlg(it) {
 }
 
 /* ---------- पो.स्टे. नोंदी: उघड, आरोपी, सूचनापत्र, अटक ---------- */
+/* हेड नुसार नेहमीचे उघड / सूचनापत्र (ND ने सांगितल्याप्रमाणे) */
+var NT_ALW = { IPC: { 'F.49': 1, 'F.52': 1, 'A.3': 1 }, SLL: { '11': 1, '18': 1, '27': 1, '28': 1, '29': 1, '52': 1, '60': 1, '61': 1 } };
+var NT_MST = { IPC: { 'A.5': 1, 'A.7': 1, 'A.11': 1, 'A.15': 1, 'A.16': 1, 'A.25': 1, 'D.43': 1 }, SLL: { '5': 1 } };
+var NT_NTC = { IPC: { 'F.50': 1 }, SLL: { '28': 1, '52': 1, '60': 1, '61': 1 } };
+function ntCode(it) { return String(it.head || '').split(' ')[0]; }
+function ntIn(M, it) { return !!(M[it.reg] && M[it.reg][ntCode(it)]); }
+/* सुचवलेले: उघड = नेहमी/बहुतेक; सूचनापत्र 1 = ठरावीक हेड */
+function ntSuggestFor(it) {
+  var e = NT.ev[it.key] || {}, s = {};
+  if (!it.ok) return null;
+  if ((ntIn(NT_ALW, it) || ntIn(NT_MST, it)) && !(it.nc && it.nc.det === 'Y')) s.det = true;
+  if (ntIn(NT_NTC, it) && !+e.notice && !+e.arrest) s.notice = 1;
+  return s.det || s.notice ? s : null;
+}
 function ntEntry() {
   var all = can('all'), w = can('w'), mon = NT.d.mon[NT.ym], closed = mon && mon.state === 'closed' && !can('admin');
+  var ed = w && !closed;
   var L = NT.list.filter(function (it) { return !NT.ps || it.ps === NT.ps; });
   var olds = Object.keys(NT.ev).filter(function (k) { return NT.ev[k].prev === '1' && (!NT.ps || NT.ev[k].ps === NT.ps); });
+  var sg = ed ? L.filter(function (it) { return ntSuggestFor(it); }) : [];
   var h = '<div>' + ntTabs();
-  h += '<div class="nt-bar">' + (all ? '<div class="seg" id="ntPs">' + [''].concat(NT_PS).map(function (p) { return '<button data-p="' + p + '" class="' + (NT.ps === p ? 'on' : '') + '">' + (p ? esc(psName(p)) : 'सर्व') + '</button>'; }).join('') + '</div>' : '') + '<span class="sp"></span>' +
-    (w && !closed ? '<button class="btn" id="ntOld">' + ic('plus') + ' जुन्या गुन्ह्यात अटक</button><button class="btn p" id="ntSaveE">' + ic('check') + ' जतन करा</button>' : '') + '</div>';
-  h += '<p class="nt-mut">' + ntMonL(NT.ym) + ' मध्ये दाखल गुन्हे. उघड झाला असल्यास "उघड" निवडा, आणि या महिन्यात झालेली अटक / सूचनापत्र भरा. आकडे Noting मध्ये head नुसार आपोआप जातात.' + (closed ? ' <b>हा महिना बंद आहे.</b>' : '') + '</p>';
-  function num(k, f, v) { return '<input class="nt-n" type="number" min="0" inputmode="numeric" data-k="' + esc(k) + '" data-f="' + f + '" value="' + esc(v || '') + '"' + (w && !closed ? '' : ' disabled') + '>'; }
-  h += '<div class="card nt-tbl"><div class="tw"><table><thead><tr><th>पो.स्टे.</th><th>अप.क्र.</th><th>कलम</th><th>उघड</th><th>आरोपी</th><th>सूचनापत्र</th><th>अटक</th><th>head</th></tr></thead><tbody>' +
-    (L.length ? L.map(function (it) {
-      var e = NT.ev[it.key] || {}, det = it.nc ? it.nc.det : '';
-      return '<tr><td>' + psB(it.ps) + '</td><td class="nt-mono">' + it.cr + '/' + it.year + '</td><td class="nt-sec">' + esc(it.sec) + '</td>' +
-        '<td><label class="nt-sw"><input type="checkbox" data-det="' + esc(it.key) + '"' + (det === 'Y' ? ' checked' : '') + (w && !closed ? '' : ' disabled') + '><span></span></label></td>' +
-        '<td>' + num(it.key, 'acc', e.acc) + '</td><td>' + num(it.key, 'notice', e.notice) + '</td><td>' + num(it.key, 'arrest', e.arrest) + '</td>' +
-        '<td>' + (it.ok ? '<span class="chip st-CLOSED">✓ ' + esc(String(it.nc.head).split(' ')[0]) + '</span>' : '<span class="chip st-IO">मंजुरी बाकी</span>') + '</td></tr>';
-    }).join('') : '<tr><td colspan="8" class="nt-empty">या महिन्यात दाखल गुन्हे नाहीत</td></tr>') + '</tbody></table></div></div>';
-  if (olds.length) h += '<h3 class="nt-h3">मागील वर्षांच्या गुन्ह्यांत अटक</h3><div class="card nt-tbl"><div class="tw"><table><tbody>' + olds.map(function (k) { var e = NT.ev[k], p = k.split('|'); return '<tr><td>' + psB(e.ps) + '</td><td class="nt-mono">' + p[3] + '/' + p[2] + '</td><td>' + e.reg + '</td><td>अटक ' + num(k, 'arrest', e.arrest) + '</td></tr>'; }).join('') + '</tbody></table></div></div>';
+  h += '<div class="nt-bar">' + (all ? '<div class="seg" id="ntPs">' + [''].concat(NT_PS).map(function (p) { return '<button data-p="' + p + '" class="' + (NT.ps === p ? 'on' : '') + '">' + (p ? esc(psName(p)) : 'सर्व') + '</button>'; }).join('') + '</div>' : '') + '<span class="sp"></span><span class="nt-saved" id="ntSv"></span>' +
+    (ed && sg.length ? '<button class="btn p" id="ntSug">' + ic('bolt') + ' सुचवलेले भरा (' + sg.length + ')</button>' : '') +
+    (ed ? '<button class="btn" id="ntOld">' + ic('plus') + ' जुन्या गुन्ह्यात अटक</button>' : '') + '</div>';
+  h += '<p class="nt-mut">' + ntMonL(NT.ym) + ' मध्ये दाखल गुन्हे. फक्त बटण दाबा: उघड असेल तर "उघड", तसेच सूचनापत्र / अटक यांची संख्या + वरून वाढवा. आपोआप जतन होते.' + (closed ? ' <b>हा महिना बंद आहे.</b>' : '') + '</p>';
+  function step(k, f, v, lab) {
+    return '<div class="nt-st"><span>' + lab + '</span><button type="button" data-s="-1"' + (ed ? '' : ' disabled') + '>−</button><input class="nt-n" type="number" min="0" inputmode="numeric" data-k="' + esc(k) + '" data-f="' + f + '" value="' + esc(v || 0) + '"' + (ed ? '' : ' disabled') + '><button type="button" data-s="1"' + (ed ? '' : ' disabled') + '>+</button></div>';
+  }
+  h += '<div class="nt-cl">' + (L.length ? L.map(function (it) {
+    var e = NT.ev[it.key] || {}, det = it.nc ? it.nc.det === 'Y' : false;
+    return '<div class="card nt-cc"><div class="nt-c1">' + psB(it.ps) + '<b class="nt-mono">' + it.cr + '/' + it.year + '</b>' +
+      (it.ok ? '<span class="chip st-CLOSED">✓ ' + esc(String(it.head).split(' ').slice(0, 3).join(' ')) + '</span>' : '<span class="chip st-IO">मंजुरी बाकी</span>') + '</div>' +
+      '<div class="nt-sec">' + esc(it.sec) + '</div>' +
+      '<div class="nt-c2"><button type="button" class="nt-det' + (det ? ' on' : '') + '" data-det="' + esc(it.key) + '"' + (ed ? '' : ' disabled') + '>' + ic('check', 's') + ' उघड</button>' +
+      step(it.key, 'notice', e.notice, 'सूचनापत्र') + step(it.key, 'arrest', e.arrest, 'अटक') + '</div></div>';
+  }).join('') : '<div class="card nt-empty">या महिन्यात दाखल गुन्हे नाहीत</div>') + '</div>';
+  if (olds.length) h += '<h3 class="nt-h3">मागील वर्षांच्या गुन्ह्यांत अटक</h3><div class="nt-cl">' + olds.map(function (k) { var e = NT.ev[k], p = k.split('|'); return '<div class="card nt-cc"><div class="nt-c1">' + psB(e.ps) + '<b class="nt-mono">' + p[3] + '/' + p[2] + '</b><span class="chip">' + e.reg + '</span></div><div class="nt-c2">' + step(k, 'arrest', e.arrest, 'अटक') + '</div></div>'; }).join('') + '</div>';
   $('main').innerHTML = h + '</div>';
   ntWireTop();
   qa($('main'), '#ntPs button').forEach(function (b) { b.onclick = function () { NT.ps = b.dataset.p; ntEntry(); }; });
-  if ($('ntSaveE')) $('ntSaveE').onclick = ntSaveEntry;
   if ($('ntOld')) $('ntOld').onclick = ntOldDlg;
+  if ($('ntSug')) $('ntSug').onclick = function () { sg.forEach(function (it) { var s = ntSuggestFor(it), card = qa($('main'), '[data-det="' + it.key + '"]')[0]; if (!card) return; if (s.det && !card.classList.contains('on')) card.classList.add('on'); if (s.notice) { var i = qa($('main'), 'input[data-k="' + it.key + '"][data-f="notice"]')[0]; if (i) i.value = s.notice; } }); ntAutoSave(0); };
+  qa($('main'), '.nt-det').forEach(function (b) { b.onclick = function () { b.classList.toggle('on'); ntAutoSave(500); }; });
+  qa($('main'), '.nt-st').forEach(function (s) {
+    var i = s.querySelector('input');
+    qa(s, 'button').forEach(function (b) { b.onclick = function () { i.value = Math.max(0, (+i.value || 0) + (+b.dataset.s)); ntAutoSave(700); }; });
+    i.oninput = function () { ntAutoSave(900); };
+  });
+}
+var ntSvT = null, ntSvBusy = false;
+function ntAutoSave(ms) {
+  var sv = $('ntSv'); if (sv) sv.textContent = 'जतन करत आहे…';
+  clearTimeout(ntSvT); ntSvT = setTimeout(ntSaveEntry, ms);
 }
 function ntSaveEntry() {
+  if (ntSvBusy) { ntSvT = setTimeout(ntSaveEntry, 400); return; }
   var ev = {}, dets = [];
   qa($('main'), 'input[data-f]').forEach(function (i) { var k = i.dataset.k; (ev[k] = ev[k] || {})[i.dataset.f] = i.value; });
-  qa($('main'), 'input[data-det]').forEach(function (i) {
-    var it = ntFind(i.dataset.det), was = it.nc ? it.nc.det === 'Y' : false;
-    if (was !== i.checked) { var o = ntCaseOut(it, it.ok); o.det = i.checked ? 'Y' : ''; o.detDate = i.checked ? D.today : ''; delete o.head; delete o.sh1; delete o.sh2; delete o.sh3; delete o.row; delete o.ok; dets.push(o); }
+  qa($('main'), '.nt-det').forEach(function (b) {
+    var it = ntFind(b.dataset.det), was = it.nc ? it.nc.det === 'Y' : false, now = b.classList.contains('on');
+    if (was !== now) { var o = ntCaseOut(it, it.ok); o.det = now ? 'Y' : ''; o.detDate = now ? D.today : ''; delete o.head; delete o.sh1; delete o.sh2; delete o.sh3; delete o.row; delete o.ok; dets.push(o); }
   });
   var EV = [];
   Object.keys(ev).forEach(function (k) {
-    var x = ev[k], old = NT.ev[k] || {};
-    if ((x.acc || '') === (old.acc || '') && (x.notice || '') === (old.notice || '') && (x.arrest || '') === (old.arrest || '')) return;
+    var x = ev[k], old = NT.ev[k] || {}, n = +x.notice || 0, a = +x.arrest || 0;
+    if (n === (+old.notice || 0) && a === (+old.arrest || 0)) return;
     var it = ntFind(k), p = k.split('|'), reg = p[0], row = it ? NTC.row(reg, it.head, it.sh1, it.sh2, it.sh3) : (+old.row || 0);
-    EV.push({ key: k, ps: p[1], reg: reg, row: row, prev: old.prev === '1' || (+p[2] < +NT.ym.slice(0, 4)), acc: x.acc, notice: x.notice, arrest: x.arrest });
+    var prev = old.prev === '1' || (+p[2] < +NT.ym.slice(0, 4));
+    EV.push({ key: k, ps: p[1], reg: reg, row: row, prev: prev, acc: String(n + a), notice: n ? String(n) : '', arrest: a ? String(a) : '' });
   });
-  if (!EV.length && !dets.length) return toast('काही बदल नाही');
+  var sv = $('ntSv');
+  if (!EV.length && !dets.length) { if (sv) sv.textContent = ''; return; }
   var jobs = [];
   if (dets.length) jobs.push(rpc('ntAct', [sGet('t7_pl_tok'), 'case', { list: dets }]));
   if (EV.length) jobs.push(rpc('ntAct', [sGet('t7_pl_tok'), 'ev', { ym: NT.ym, list: EV }]));
-  Promise.all(jobs).then(function () { toast('जतन केले: ' + (dets.length + EV.length) + ' गुन्हे'); snd('ok'); ntLoad(NT.ym); }, function (e) { toast(e.message || String(e), true); });
+  ntSvBusy = true;
+  Promise.all(jobs).then(function () {
+    ntSvBusy = false;
+    dets.forEach(function (o) { var it = ntFind(o.key); if (it && it.nc) { it.nc.det = o.det; it.nc.detDate = o.detDate; it.det = o.det; } });
+    EV.forEach(function (e) { var old = NT.ev[e.key] || {}; NT.ev[e.key] = { ym: NT.ym, key: e.key, ps: e.ps, reg: e.reg, row: e.row, prev: e.prev ? '1' : '', acc: e.acc, notice: e.notice, arrest: e.arrest }; });
+    NT.stale = true;
+    if ($('ntSv')) $('ntSv').textContent = '✓ जतन झाले'; snd('ok');
+  }, function (e) { ntSvBusy = false; if ($('ntSv')) $('ntSv').textContent = ''; toast(e.message || String(e), true); });
 }
 function ntOldDlg() {
   var y = +NT.ym.slice(0, 4);
@@ -7190,9 +7248,8 @@ function ntOldDlg() {
           var o = byId(b.dataset.r), reg = ntReg(o), k = ntKey(reg, o.ps, o.year, o.crno), nc = NT.nc[k], oldR = NT.d.old[k];
           var row = nc ? +nc.row : oldR ? +oldR[1] : 0;
           if (!row) { toast('या गुन्ह्याचा MCR head मंजूर नाही. आधी MCR रजिस्टर जोडा किंवा head मंजूर करा.', true); return; }
-          var n = prompt('किती आरोपी अटक?', '1');
-          n = n == null ? '1' : n; close();
-          call('ntAct', [sGet('t7_pl_tok'), 'ev', { ym: NT.ym, list: [{ key: k, ps: o.ps, reg: reg, row: row, prev: +o.year < y, arrest: n }] }], function () { toast('जतन केले'); ntLoad(NT.ym); });
+          close();
+          call('ntAct', [sGet('t7_pl_tok'), 'ev', { ym: NT.ym, list: [{ key: k, ps: o.ps, reg: reg, row: row, prev: +o.year < y, arrest: '1' }] }], function () { toast('जतन केले (अटक 1). संख्या खाली बदला.'); ntLoad(NT.ym); });
         };
       });
     };
@@ -7389,7 +7446,6 @@ function ntCloseDlg() {
 (function () {
   NAV.splice(1, 0, ['pl', 'list', 'प्रलंबित (PL) डॅशबोर्ड']);
   var ri = -1; NAV.forEach(function (n, i) { if (n[0] === 'reports') ri = i; });
-  NAV.splice(ri, 0, ['nt', 'book', 'Noting'], ['ntb', 'grid', 'Breakup']);
   TITLES.home = 'मुख्य पान'; TITLES.pl = 'प्रलंबित (PL) डॅशबोर्ड'; TITLES.nt = 'Noting'; TITLES.nta = 'Noting • मंजुरी'; TITLES.nte = 'Noting • पो.स्टे. नोंदी'; TITLES.nts = 'Noting • पत्रके'; TITLES.ntb = 'Breakup'; TITLES.ntr = 'ताळमेळ (PL • MCR)';
   NAV_K.pl = 'Alt+9';
   var _render = render;
@@ -7399,9 +7455,24 @@ function ntCloseDlg() {
     _render();
   };
   var _curKey = curKey;
-  curKey = function () { var k = _curKey(); return k === 'nta' || k === 'nte' || k === 'nts' || k === 'ntr' ? 'nt' : k; };
-  var _rs = renderShell;
-  renderShell = function () { _rs(); if (!can('all')) qa($('side'), '[data-nav="ntb"]').forEach(function (b) { b.remove(); }); };
+  curKey = function () { var k = _curKey(); return k; };
+  var NAV_PL = NAV.slice(), _rs = renderShell;
+  /* डावा मेनू विभागानुसार: PL / Noting / Breakup */
+  function ntSecNav() {
+    var back = ['home', 'home', 'मुख्य पान (4 विभाग)'];
+    if (VIEW === 'ntb') return [back, ['ntb', 'grid', 'Breakup'], ['nt', 'book', 'Noting']];
+    if (VIEW === 'nt' || VIEW === 'nta' || VIEW === 'nte' || VIEW === 'nts' || VIEW === 'ntr') {
+      var n = [back, ['nt', 'book', 'आढावा'], ['nta', 'filecheck', 'मंजुरी'], ['nte', 'cop', 'पो.स्टे. नोंदी']];
+      if (can('all')) n.push(['nts', 'list', 'पत्रके (54)'], ['ntb', 'grid', 'Breakup'], ['ntr', 'activity', 'ताळमेळ (PL • MCR)']);
+      return n;
+    }
+    return null;
+  }
+  renderShell = function () {
+    var sn = ntSecNav();
+    if (sn) { NAV.length = 0; sn.forEach(function (x) { NAV.push(x); }); }
+    try { _rs(); } finally { NAV.length = 0; NAV_PL.forEach(function (x) { NAV.push(x); }); }
+  };
   var NT0 = JSON.stringify(NT), _out = logout;
   logout = function () { Object.keys(NT).forEach(function (k) { delete NT[k]; }); Object.assign(NT, JSON.parse(NT0)); return _out.apply(this, arguments); };
   var _load = load;
