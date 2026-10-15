@@ -7415,7 +7415,21 @@ var PSF_SH = [
   { x: 'SLL PART 1 ', n: 'SLL भाग 1', by: 'label', cols: { 0: [0], 1: [1], 2: [4], 3: [3] }, tat: { 5: 0, 6: 1 }, prev: { 18: 0, 19: 1 } },
   { x: 'PREVENTIVE ', n: 'प्रतिबंधात्मक कारवाई', by: 'row', dv: 'preventive', cols: { 0: [0], 1: [1] }, tat: { 2: 0, 3: 1 }, prev: {} }
 ];
-function psfNorm(s) { return String(s == null ? '' : s).replace(/[\s.,()\-\/।:]/g, '').toLowerCase(); }
+/* आणखी पत्रके: विभागाच्या फॉर्मशी ओळी नावावरून आपोआप, स्तंभ SDPO एकदा ठरवतात (सेटिंग 'psmap') */
+var PSF_PAIRS = [
+  { x: 'GAMBLING', n: 'जुगार', dv: 'GAMBLING', by: 'label' }, { x: 'PROHIBITION', n: 'दारूबंदी', dv: 'DARU', by: 'label' },
+  { x: 'ACCIDENT', n: 'अपघात', dv: 'ACCIDENT', by: 'label' }, { x: 'RDP', n: 'RDP', dv: 'RDP', by: 'label' }, { x: 'MUDDEMAL', n: 'मुद्देमाल', dv: 'MUDDEMAL', by: 'label' }
+];
+function psfSpecs() {
+  var M = nfSet('psmap', {}) || {}, out = PSF_SH.slice();
+  PSF_PAIRS.forEach(function (pr) {
+    var m = M[pr.x]; if (!m || !PSF.an || !PSF.an.forms[pr.x] || !nfSch().forms[pr.dv]) return;
+    var cols = {}; Object.keys(m).forEach(function (pi) { if (m[pi] !== '' && m[pi] != null) cols[pi] = [+m[pi]]; });
+    if (Object.keys(cols).length) out.push({ x: pr.x, n: pr.n, by: 'label', dv: pr.dv, cols: cols, tat: {}, prev: {} });
+  });
+  return out;
+}
+function psfNorm(s) { return String(s == null ? '' : s).replace(/आॅ/g, 'ऑ').replace(/ाॅ/g, 'ॉ').replace(/[\u093C\u200B-\u200D]/g, '').replace(/[ईऐ]/g, 'इ').replace(/ी/g, 'ि').replace(/[ऊ]/g, 'उ').replace(/ू/g, 'ु').replace(/[ंँ]/g, '').replace(/[\s.,()\-\/।:ऽ*]/g, '').toLowerCase(); }
 function psfTxt(s) { s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); return typeof KD !== 'undefined' && KD.looks(s) ? KD.conv(s) : s; }
 function psfName(ps, ym) { return ps + '_Noting_' + ym.slice(5, 7) + '-' + ym.slice(0, 4) + '.xlsx'; }
 function psfKey(ps, sh, a) { return ps + '|' + sh + '|' + a; }
@@ -7432,7 +7446,7 @@ function psfLoad(cb) {
         var wb = XLSX.read(PSF.tpl, { type: 'array', cellFormula: true, cellStyles: true, cellNF: true });
         PSF.model = NE.fromWorkbook(wb, XLSX);
         PSF.eng = NE.load(PSF.model, HyperFormula);
-        PSF.an = NFC.analyze(PSF.model, function (s, a) { return PSF.eng.get(s, a); }, PSF_SH.map(function (s) { return s.x; }));
+        PSF.an = NFC.analyze(PSF.model, function (s, a) { return PSF.eng.get(s, a); }, PSF_SH.concat(PSF_PAIRS).map(function (s) { return s.x; }));
         PSF.prev = []; PSF.busy = false; cb();
       } catch (e) { PSF.busy = false; PSF.eng = null; PSF.err = 'PS Excel उघडताना अडचण: ' + (e.message || e); toast(PSF.err, true); }
     }, 30);
@@ -7448,9 +7462,14 @@ function psfCode(S, r) { for (var c = 1; c <= 3; c++) { var v = S.v[NE.cl(c) + r
 function psfLabel(S, r, from) { for (var c = from; c <= from + 4; c++) { var v = S.v[NE.cl(c) + r]; if (typeof v === 'string' && v.trim().length > 3 && !/^[A-Z]\.\d/.test(v.trim())) return psfTxt(v); } return ''; }
 
 /* ---------- विभागाच्या Noting मधून PS ओळींची जुळवणी ---------- */
-function psfRowPairs(spec) { // [[psRow, [dvRow...]]], unmatched count
+function psfRowPairs(spec, ps) { // [[psRow, [dvRow...]]], unmatched count
   var pc = psfCells(spec.x), ck = Object.keys(spec.cols), prow = Object.keys(pc).map(Number).filter(function (r) { return ck.some(function (k) { return pc[r][k]; }); }).sort(function (a, b) { return a - b; }), out = [], miss = 0;
   if (spec.by === 'row') { prow.forEach(function (r) { out.push([r, [r]]); }); return { p: out, miss: 0, total: prow.length }; }
+  if (spec.dv) { // विभागाच्या फॉर्ममधून (पो.स्टे. नुसार ओळी) नावावरून क्रमाने
+    var DF = nfSch().forms[spec.dv], drs = {}, P2 = PSF.an.forms[spec.x].rows, ptr2 = 0, pr2 = prow.map(function (r) { return [r, psfNorm(psfTxt(P2[r]))]; });
+    (DF ? DF.cells : []).forEach(function (x) { if (x[1] === ps) drs[x[2]] = 1; });
+    return psfLabelPairs(spec, Object.keys(drs).map(Number).sort(function (a, b) { return a - b; }), DF, pr2, prow);
+  }
   var DM = NT.model, DS = psfModelSheet(DM, spec.x), PS = psfModelSheet(PSF.model, spec.x);
   var dvRows = (NT_MAPS.p2[spec.x === NTC.SH.IPC ? 'IPC' : 'SLL'] || []);
   if (spec.by === 'code') {
@@ -7468,9 +7487,17 @@ function psfRowPairs(spec) { // [[psRow, [dvRow...]]], unmatched count
   });
   return { p: out, miss: prow.length - out.length, total: prow.length };
 }
+function psfLabelPairs(spec, drows, DF, pr, prow) {
+  var out = [], ptr = 0;
+  drows.forEach(function (dr) {
+    var lab = psfNorm(DF.rows[dr] || ''); if (!lab) return;
+    for (var i = ptr; i < pr.length; i++) if (pr[i][1] === lab) { out.push([pr[i][0], [dr]]); ptr = i + 1; return; }
+  });
+  return { p: out, miss: prow.length - out.length, total: prow.length };
+}
 function psfDv(spec, ps, r, off) {
   var E = NT.eng;
-  if (spec.by === 'row') { var f = nfSch().forms[spec.dv], v = 0; (f ? f.cells : []).forEach(function (x) { if (x[1] === ps && x[2] === r && x[3] === off) v = +E.get(spec.dv, x[0]) || 0; }); return v; }
+  if (spec.dv) { var f = nfSch().forms[spec.dv], v = 0; (f ? f.cells : []).forEach(function (x) { if (x[1] === ps && x[2] === r && x[3] === off) v = +E.get(spec.dv, x[0]) || 0; }); return v; }
   var base = NTC.PSG[spec.x === NTC.SH.IPC ? 'IPC' : 'SLL'][ps];
   return +E.get(spec.x, NTC.cl(NTC.ci(base) + off) + r) || 0;
 }
@@ -7493,14 +7520,14 @@ function psfYearSum(ym, ps, sh, a) { // त्या वर्षातील ym
 /* ---------- एका पो.स्टे.ची भरणी ---------- */
 function psfInputs(ps, ym) {
   var inp = {}, chalu = {}, rep = [], prevYm = ntAddM(ym, -1), tatYm = ntAddM(ym, -12);
-  PSF_SH.forEach(function (spec) {
-    var I = inp[spec.x] = {}, C = chalu[spec.x] = {}, pc = psfCells(spec.x), pp = psfRowPairs(spec), tot = pp.total, filled = 0, nz = 0, tatN = 0, prevN = 0, carryN = 0, dvSum = 0, psSum = 0;
+  psfSpecs().forEach(function (spec) {
+    var cm0 = Object.keys(spec.cols)[0], I = inp[spec.x] = {}, C = chalu[spec.x] = {}, pc = psfCells(spec.x), pp = psfRowPairs(spec, ps), tot = pp.total, filled = 0, nz = 0, tatN = 0, prevN = 0, carryN = 0, dvSum = 0, psSum = 0;
     pp.p.forEach(function (pair) {
       var row = pc[pair[0]], any = false;
       Object.keys(spec.cols).forEach(function (pi) {
         var cell = row[pi]; if (!cell) return;
         var v = 0; pair[1].forEach(function (dr) { spec.cols[pi].forEach(function (off) { v += psfDv(spec, ps, dr, off); }); });
-        I[cell[0]] = v; if (v) { C[cell[0]] = v; nz++; } any = true; if (pi === '4' && spec.by === 'code' || pi === '0' && spec.by !== 'code') psSum += v;
+        I[cell[0]] = v; if (v) { C[cell[0]] = v; nz++; } any = true; if (pi === cm0) psSum += v;
         if (cell[5]) { var ys = psfYearSum(ym, ps, spec.x, cell[0]); if (ys !== null) { I[cell[5]] = ys; carryN++; } }
       });
       Object.keys(spec.tat).forEach(function (ti) {
@@ -7514,8 +7541,9 @@ function psfInputs(ps, ym) {
       });
       if (any) filled++;
     });
-    var cm = Object.keys(spec.cols)[0], dvTot = 0;
-    if (spec.by !== 'row') { var seen = {}; pp.p.forEach(function (pr) { pr[1].forEach(function (dr) { if (!seen[dr]) { seen[dr] = 1; spec.cols[cm].forEach(function (off) { dvTot += psfDv(spec, ps, dr, off); }); } }); }); } else pp.p.forEach(function (pr) { spec.cols[cm].forEach(function (off) { dvTot += psfDv(spec, ps, pr[0], off); }); });
+    var cm = cm0, dvTot = 0;
+    if (spec.dv) { var DF2 = nfSch().forms[spec.dv], seenR = {}; (DF2 ? DF2.cells : []).forEach(function (x) { if (x[1] === ps && x[3] === +spec.cols[cm][0]) dvTot += +NT.eng.get(spec.dv, x[0]) || 0; }); }
+    else if (spec.by !== 'row') { var seen = {}; pp.p.forEach(function (pr) { pr[1].forEach(function (dr) { if (!seen[dr]) { seen[dr] = 1; spec.cols[cm].forEach(function (off) { dvTot += psfDv(spec, ps, dr, off); }); } }); }); } else pp.p.forEach(function (pr) { spec.cols[cm].forEach(function (off) { dvTot += psfDv(spec, ps, pr[0], off); }); });
     rep.push({ x: spec.x, n: spec.n, by: spec.by, rows: tot, mapped: filled, miss: pp.miss, nz: nz, tat: tatN, prev: prevN, carry: carryN, tatMonth: psfHasMonth(tatYm, ps, spec.x), dvTot: dvTot, psTot: psSum });
   });
   return { inp: inp, chalu: chalu, rep: rep };
@@ -7561,7 +7589,7 @@ function psfSave(name, buf) {
 }
 function psfRepHtml(all) {
   return '<div class="tw"><table><thead><tr><th>पो.स्टे.</th><th>पत्रक</th><th>ओळी (PS)</th><th>भरल्या</th><th>जुळल्या नाहीत</th><th>तत्सम</th><th>मागील म.</th><th>वर्ष बेरीज</th><th>तपासणी</th></tr></thead><tbody>' + all.map(function (o) {
-    return o.rep.map(function (r) { var okc = r.dvTot === r.psTot || r.by === 'row'; return '<tr><td>' + psB(o.ps) + '</td><td>' + esc(r.n) + '</td><td>' + r.rows + '</td><td>' + r.mapped + '</td><td>' + (r.miss ? '<b class="pf-w">' + r.miss + '</b>' : '0') + '</td><td>' + (r.tatMonth ? r.tat + ' चौकटी' : '<span class="pf-w">आकडे नाहीत</span>') + '</td><td>' + r.prev + '</td><td>' + r.carry + '</td><td>' + (okc ? '✓ एकूण जुळते' : '<b class="pf-w">विभाग ' + r.dvTot + ' / PS ' + r.psTot + '</b>') + '</td></tr>'; }).join('');
+    return o.rep.map(function (r) { var okc = r.dvTot === r.psTot; return '<tr><td>' + psB(o.ps) + '</td><td>' + esc(r.n) + '</td><td>' + r.rows + '</td><td>' + r.mapped + '</td><td>' + (r.miss ? '<b class="pf-w">' + r.miss + '</b>' : '0') + '</td><td>' + (r.tatMonth ? r.tat + ' चौकटी' : '<span class="pf-w">आकडे नाहीत</span>') + '</td><td>' + r.prev + '</td><td>' + r.carry + '</td><td>' + (okc ? '✓ एकूण जुळते' : '<b class="pf-w">विभाग ' + r.dvTot + ' / PS ' + r.psTot + '</b>') + '</td></tr>'; }).join('');
   }).join('') + '</tbody></table></div>';
 }
 
@@ -7592,10 +7620,42 @@ function psfDownDlg(out, final) {
   }, false, { dlg: 'wide' });
 }
 
+/* ---------- आणखी पत्रकांची स्तंभ जुळवणी (SDPO एकदा ठरवतात) ---------- */
+function psfSuggest(pl, dcols, used) {
+  var n = psfNorm(pl), best = '', bl = 0;
+  dcols.forEach(function (d) {
+    if (used[d[0]]) return; var m = psfNorm(d[1]); if (!m) return;
+    if (m === n) { best = d[0]; bl = 999; } else if (bl < 999 && (n.indexOf(m) >= 0 || m.indexOf(n) >= 0) && m.length > bl) { best = d[0]; bl = m.length; }
+  });
+  return best;
+}
+function psfMapDlg() {
+  psfLoad(function () {
+    var M = nfSet('psmap', {}) || {}, h = '<h3>इतर पत्रकांची स्तंभ जुळवणी</h3><p class="nt-mut">PS पत्रकाचा प्रत्येक स्तंभ विभागाच्या कोणत्या स्तंभातून भरायचा ते ठरवा. ओळी नावावरून आपोआप जुळतात. सुचवलेले चुकले असेल तर बदला; नको असेल तर "—". एकदा जतन केल्यावर प्रत्येक महिन्याला आपोआप.</p>';
+    PSF_PAIRS.forEach(function (pr) {
+      var F = PSF.an.forms[pr.x], D = nfSch().forms[pr.dv]; if (!F || !D) { h += '<h4>' + esc(pr.n) + '</h4><p class="nt-mut">या पत्रकाची रचना सापडली नाही.</p>'; return; }
+      var dc = {}; D.cells.forEach(function (x) { dc[x[3]] = 1; });
+      var dcols = Object.keys(dc).map(Number).sort(function (a, b) { return a - b; }).map(function (i) { return [i, D.cols[i]]; });
+      var pcs = {}; F.cells.forEach(function (x) { if (!x[1]) pcs[x[3]] = 1; });
+      var saved = M[pr.x] || {}, used = {};
+      h += '<h4 style="margin:12px 0 4px">' + esc(pr.n) + ' <small class="nt-mut">(PS: ' + esc(pr.x.trim()) + ' ← विभाग: ' + esc(pr.dv) + ')</small></h4><table class="nf-grid"><tbody>' + Object.keys(pcs).map(Number).sort(function (a, b) { return a - b; }).map(function (pi) {
+        var cur = pr.x in M ? saved[pi] : psfSuggest(F.cols[pi] ? psfTxt(F.cols[pi]) : '', dcols, used); if (cur !== '' && cur != null) used[cur] = 1;
+        return '<tr><td class="nf-gl">' + esc(psfTxt(F.cols[pi])) + '</td><td><select class="nt-sel" data-pm="' + esc(pr.x) + '|' + pi + '"><option value="">—</option>' + dcols.map(function (d) { return '<option value="' + d[0] + '"' + (String(cur) === String(d[0]) ? ' selected' : '') + '>' + esc(d[1]) + '</option>'; }).join('') + '</select></td></tr>';
+      }).join('') + '</tbody></table>';
+    });
+    modal(h + '<div class="nt-row end"><button class="btn" data-close>रद्द</button><button class="btn p" id="pmS">' + ic('check') + ' जतन करा</button></div>', function (ov, close) {
+      $('pmS').onclick = function () {
+        var out = {}; qa(ov, '[data-pm]').forEach(function (sl) { var k = sl.dataset.pm.split('|'); (out[k[0]] = out[k[0]] || {})[k[1]] = sl.value; });
+        close(); nfSaveSet('psmap', out, function () { toast('जुळवणी जतन झाली'); });
+      };
+    }, false, { dlg: 'wide' });
+  });
+}
+
 /* ---------- भरणा केंद्रात SDPO साठी कार्ड ---------- */
 function psfCard() {
   var p = NT.d.ptpl;
-  return '<div class="card nf-chk"><h3>' + ic('file', 's') + ' पो.स्टे. Noting फाइल्स</h3>' + (p ? '<p class="nt-mut">PS नमुना: ' + esc(p.name) + ' (' + esc(p.at) + ')</p><div class="nt-row" style="gap:8px;flex-wrap:wrap"><button class="btn s" id="pfGo">' + ic('download', 's') + ' 3 PS फाइल्स बनवा</button><label class="btn s">' + ic('file', 's') + ' नमुना बदला<input type="file" id="pfUp" accept=".xlsx" hidden></label></div>' : '<p class="nt-mut">PS Noting ची Excel (SP कार्यालयाचा नमुना) एकदा जोडा. तीनही पो.स्टे.साठी तिच बनते.</p><label class="btn p s">' + ic('file', 's') + ' PS नमुना जोडा<input type="file" id="pfUp" accept=".xlsx" hidden></label>') + '</div>';
+  return '<div class="card nf-chk"><h3>' + ic('file', 's') + ' पो.स्टे. Noting फाइल्स</h3>' + (p ? '<p class="nt-mut">PS नमुना: ' + esc(p.name) + ' (' + esc(p.at) + ')</p><div class="nt-row" style="gap:8px;flex-wrap:wrap"><button class="btn s" id="pfGo">' + ic('download', 's') + ' 3 PS फाइल्स बनवा</button><button class="btn s" id="pfMap">' + ic('gear', 's') + ' इतर पत्रकांची जुळवणी</button><label class="btn s">' + ic('file', 's') + ' नमुना बदला<input type="file" id="pfUp" accept=".xlsx" hidden></label></div>' : '<p class="nt-mut">PS Noting ची Excel (SP कार्यालयाचा नमुना) एकदा जोडा. तीनही पो.स्टे.साठी तिच बनते.</p><label class="btn p s">' + ic('file', 's') + ' PS नमुना जोडा<input type="file" id="pfUp" accept=".xlsx" hidden></label>') + '</div>';
 }
 function psfSchemaOf() { // पो.स्टे.ना तत्सम भरण्यासाठी PS रचना
   var out = { sheets: [] };
@@ -7618,7 +7678,7 @@ function psfUpload(file) {
     Promise.all([ntScript(NT_HF, 'HyperFormula')]).then(function () {
       try {
         var wb = XLSX.read(buf, { type: 'array', cellFormula: true, cellStyles: true, cellNF: true });
-        PSF.model = NE.fromWorkbook(wb, XLSX); PSF.an = NFC.analyze(PSF.model, function () { return null; }, PSF_SH.map(function (s) { return s.x; }));
+        PSF.model = NE.fromWorkbook(wb, XLSX); PSF.an = NFC.analyze(PSF.model, function () { return null; }, PSF_SH.concat(PSF_PAIRS).map(function (s) { return s.x; }));
         var miss = PSF_SH.filter(function (s) { return !PSF.an.forms[s.x]; }).map(function (s) { return s.n; });
         if (miss.length) return toast('हा PS नमुना ओळखू आला नाही. सापडले नाही: ' + miss.join(', '), true);
         var schema = psfSchemaOf();
@@ -7634,6 +7694,7 @@ function psfUpload(file) {
   nfWireRight = function (ps) {
     _w.apply(this, arguments);
     if ($('pfUp')) $('pfUp').onchange = function () { var f = this.files[0]; this.value = ''; if (f) psfUpload(f); };
+    if ($('pfMap')) $('pfMap').onclick = psfMapDlg;
     if ($('pfGo')) $('pfGo').onclick = function () { nfFlush(); if (!NT.eng) return toast('Excel इंजिन तयार नाही', true); psfAll(NT.ym, function (out) { psfDownDlg(out, false); }, false); };
   };
 })();
