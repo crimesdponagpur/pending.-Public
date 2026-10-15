@@ -7429,6 +7429,7 @@ function ntRecCalc() {
   var R = NT.rec, pl = {}, plAll = {}, mc = {}, mp = {};
   ROWS.forEach(function (o) {
     if (o.del || o.ad || !ntReg(o)) return;
+    if (String(o.date).slice(0, 7) >= NT.ym && !NT.recAll) { var kk = o.ps + '|' + o.year + '|' + (+o.crno || o.crno); plAll[kk] = o; return; } // चालू महिन्याचे नवीन गुन्हे: मंजुरी पानावर, फरक नाही
     var k = o.ps + '|' + o.year + '|' + (+o.crno || o.crno); plAll[k] = o; if (o.status !== 'CLOSED') pl[k] = o;
   });
   R.mcr.forEach(function (r) {
@@ -7481,7 +7482,7 @@ function ntRecon() {
     '<div class="kpi nt-k"><span>सुचवलेल्या जोड्या</span><b>' + nPair + '</b><em>काढा + जोडा = एकूण तसेच</em></div>' +
     '<div class="kpi nt-k"><span>अजून बाकी</span><b>' + left + '</b><em>' + (left ? 'महिनाअखेर MCR मध्ये दुरुस्ती करा' : 'सर्व ठरले') + '</em></div></div>';
   h += '<div class="card nt-tbl"><div class="tw"><table style="min-width:520px"><thead><tr><th>पो.स्टे.</th><th>PL आहे / MCR नाही</th><th>ठरले</th><th>MCR आहे / PL नाही</th><th>ठरले</th><th>बाकी</th></tr></thead><tbody>' + tbl + '</tbody></table></div></div>';
-  h += '<p class="nt-mut">येथे काहीही बदलले तरी PL, MCR किंवा Noting चा कोणताही आकडा बदलत नाही. फक्त तुम्ही काय ठरवले ते साठते. MCR मध्ये प्रत्यक्ष दुरुस्ती तुम्ही स्वतः (महिनाअखेर) करायची.</p>';
+  h += '<p class="nt-mut">' + ntMonL(NT.ym) + ' मधील नवीन गुन्हे येथे धरलेले नाहीत (ते मंजुरी पानावर येतात). येथे काहीही बदलले तरी PL, MCR किंवा Noting चा कोणताही आकडा बदलत नाही. फक्त तुम्ही काय ठरवले ते साठते. MCR मध्ये प्रत्यक्ष दुरुस्ती तुम्ही स्वतः (महिनाअखेर) करायची.</p>';
   h += '<div class="nt-bar"><div class="seg" id="ntRPs">' + [''].concat(NT_PS).map(function (p) { return '<button data-p="' + p + '" class="' + (ps === p ? 'on' : '') + '">' + (p ? esc(psName(p)) : 'सर्व') + '</button>'; }).join('') + '</div>' +
     '<div class="seg" id="ntRF">' + [['', 'सर्व'], ['open', 'बाकी']].map(function (x) { return '<button data-f="' + x[0] + '" class="' + (f === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div><span class="sp"></span><button class="btn" id="ntRXl">' + ic('download') + ' Excel</button><button class="btn" id="ntRRef">' + ic('refresh') + ' पुन्हा तुलना</button></div>';
   function rowsOf(list) { return stat(list, ps).filter(function (x) { return f !== 'open' || !ntRecDone(x); }); }
