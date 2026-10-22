@@ -1,0 +1,29 @@
+name: MCR आयकॉन (मासिक)
+on:
+  schedule:
+    - cron: '30 19 * * *'   # रोज 01:00 IST
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  icon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save sharp
+      - name: आयकॉन बनवा
+        run: |
+          M=$(TZ=Asia/Kolkata date +%-m)
+          node tools/mkicon.js "$M" . test
+      - name: बदल असल्यास commit
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add icon-*.png test/icon-*.png
+            git commit -m "MCR आयकॉन: चालू महिन्याच्या कडी"
+            git push
+          fi
