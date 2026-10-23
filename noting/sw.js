@@ -1,0 +1,4 @@
+var C='nb-1.0.0-mvl8c34q';
+self.addEventListener('install',function(e){e.waitUntil(caches.open(C).then(function(c){return c.addAll(['./','./manifest.webmanifest','./icon-192.png','../config.js'])}).then(function(){return self.skipWaiting()}))});
+self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x!==C&&x.indexOf('nb-')===0}).map(function(x){return caches.delete(x)}))}).then(function(){return self.clients.claim()}))});
+self.addEventListener('fetch',function(e){if(e.request.method!=='GET')return;var u=new URL(e.request.url);if(u.origin!==location.origin)return;e.respondWith(fetch(e.request,{cache:'no-cache'}).then(function(r){if(r.ok){var x=r.clone();caches.open(C).then(function(c){c.put(e.request,x)})}return r}).catch(function(){return caches.match(e.request,{ignoreSearch:true}).then(function(h){return h||caches.match('./')})}))});
