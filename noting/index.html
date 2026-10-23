@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="mr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Noting • Breakup</title><meta name="theme-color" content="#1f6f43"><meta name="description" content="मासिक Noting: पो.स्टे. व SDPO कार्यालय एकाच Excel मध्ये"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><style>:root { --bg: #f3f4f1; --card: #fff; --ink: #1d2320; --mut: #66706a; --ln: #d5d9d3; --gl: #e2e5e0; --acc: #1f6f43; --acc2: #e7f3ec; --bad: #b42318; --warn: #fff4d6;
+  --BELA: #2f6fdb; --BORI: #c2410c; --MIDC: #7c3aed; --hand: #0e7490; --carry: #15803d; --pl: #b45309; --my: #fffbe0; color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.4 "Noto Sans Devanagari", "Mangal", system-ui, sans-serif; -webkit-text-size-adjust: 100%; }
+#app { height: 100%; display: flex; flex-direction: column; }
+button, select, input { font: inherit; color: inherit; }
+.btn { border: 1px solid var(--ln); background: var(--card); border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+.btn.p { background: var(--acc); border-color: var(--acc); color: #fff; }
+.btn.w { width: 100%; }
+.btn.ic { padding: 5px 11px; font-size: 18px; line-height: 1; }
+.btn:disabled { opacity: .6; }
+.mut { color: var(--mut); } .sm { font-size: 12px; } .err { color: var(--bad); }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0 14px; } .row.end { justify-content: flex-end; margin-bottom: 0; }
+/* लॉगिन */
+.login { flex: 1; display: grid; place-items: center; padding: 16px; }
+.lcard { background: var(--card); border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 360px; box-shadow: 0 6px 30px rgba(0,0,0,.08); text-align: center; }
+.lcard h1 { margin: 10px 0 2px; font-size: 22px; } .lcard .logo svg { width: 56px; height: 56px; }
+.lcard form { text-align: left; margin-top: 18px; }
+.lcard label { display: block; margin-bottom: 12px; font-size: 13px; color: var(--mut); }
+.lcard label input:not([type=checkbox]) { display: block; width: 100%; margin-top: 4px; padding: 10px 12px; border: 1px solid var(--ln); border-radius: 8px; font-size: 16px; color: var(--ink); background: #fff; }
+.lcard .chk { display: flex; gap: 8px; align-items: center; }
+.busy { flex: 1; display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; padding: 16px; text-align: center; }
+.busy small { color: var(--mut); }
+.spin { width: 28px; height: 28px; border: 3px solid var(--gl); border-top-color: var(--acc); border-radius: 50%; animation: sp 0.8s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+/* वरचा पट्टा */
+.top { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--acc); color: #fff; flex-wrap: nowrap; min-height: 46px; }
+.top .brand { display: flex; align-items: center; gap: 6px; font-size: 16px; } .top .brand svg { width: 26px; height: 26px; }
+.top select { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.35); color: #fff; border-radius: 7px; padding: 4px 6px; max-width: 150px; }
+.top select option { color: #000; }
+.top .sp { flex: 1; }
+.top .btn { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.35); color: #fff; }
+.top .who { display: flex; flex-direction: column; line-height: 1.15; text-align: right; font-size: 13px; } .top .who small { opacity: .8; font-size: 11px; }
+.chip { font-size: 11px; padding: 2px 8px; border-radius: 99px; white-space: nowrap; background: rgba(255,255,255,.2); }
+.chip.cl { background: #fde2e1; color: var(--bad); } .chip.op { background: #d7f5e2; color: #116634; } .chip.ar { background: #e8e8e8; color: #444; }
+.sv { font-size: 12px; white-space: nowrap; opacity: .95; } .sv.wait { color: #ffe9a8; } .sv.bad { color: #ffd0cc; font-weight: 600; }
+/* सूत्र पट्टी */
+.fx { display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: var(--card); border-bottom: 1px solid var(--ln); }
+.fxa { font-size: 12px; color: var(--mut); white-space: nowrap; min-width: 80px; max-width: 34%; overflow: hidden; text-overflow: ellipsis; }
+#fx { flex: 1; min-width: 60px; border: 1px solid var(--ln); border-radius: 6px; padding: 6px 8px; font-size: 16px; background: #fff; }
+#fx.ro { background: #f5f6f4; color: var(--mut); }
+#fx:focus { outline: 2px solid var(--acc); border-color: var(--acc); }
+.fxi { font-size: 12px; color: var(--mut); white-space: nowrap; max-width: 34%; overflow: hidden; text-overflow: ellipsis; }
+.warn { background: var(--warn); padding: 6px 12px; font-size: 12.5px; border-bottom: 1px solid #f0d58a; }
+/* पत्रक */
+.grid { flex: 1; overflow: auto; background: #fff; outline: none; -webkit-overflow-scrolling: touch; }
+table.xl { border-collapse: separate; border-spacing: 0; table-layout: fixed; font-size: 12px; }
+table.xl td, table.xl th { border-right: 1px solid var(--gl); border-bottom: 1px solid var(--gl); padding: 1px 4px; white-space: pre-wrap; overflow: hidden; vertical-align: middle; height: 20px; word-break: break-word; }
+table.xl td { background: var(--fl, #fff); cursor: cell; }
+table.xl td.n { text-align: right; }
+table.xl td.f { color: #23302a; }
+table.xl td.dk { color: #fff; }
+table.xl td.hid, table.xl th.hid { padding: 0; border: 0; font-size: 0; }
+table.xl thead th { position: sticky; top: 0; z-index: 2; background: #eef0ec; color: var(--mut); font-weight: 500; font-size: 11px; text-align: center; }
+table.xl th.rn { position: sticky; left: 0; z-index: 1; background: #eef0ec; color: var(--mut); font-weight: 500; font-size: 11px; text-align: center; }
+table.xl thead th:first-child { left: 0; z-index: 3; }
+table.xl td.my { background: var(--my); box-shadow: inset 0 0 0 1px #e6cf6a; }
+table.xl td.s-BELA, table.xl td.s-BORI, table.xl td.s-MIDC, table.xl td.s-hand, table.xl td.s-carry { position: relative; }
+table.xl td.s-BELA { box-shadow: inset 3px 0 0 var(--BELA); } table.xl td.s-BORI { box-shadow: inset 3px 0 0 var(--BORI); } table.xl td.s-MIDC { box-shadow: inset 3px 0 0 var(--MIDC); }
+table.xl td.s-hand { box-shadow: inset 3px 0 0 var(--hand); } table.xl td.s-pl { box-shadow: inset 3px 0 0 var(--pl); } table.xl td.s-carry { box-shadow: inset 3px 0 0 var(--carry); color: #14532d; }
+table.xl td.sel { outline: 2px solid var(--acc); outline-offset: -2px; }
+table.xl td.ed { outline: 2px dashed var(--acc); background: #eaf7ef; }
+/* खालचे टॅब */
+.tabs { display: flex; overflow-x: auto; gap: 2px; padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); background: #e4e7e2; border-top: 1px solid var(--ln); scrollbar-width: thin; }
+.tabs button { flex: 0 0 auto; border: 1px solid transparent; background: transparent; padding: 5px 10px; border-radius: 0 0 7px 7px; font-size: 12.5px; white-space: nowrap; cursor: pointer; color: #3b443f; }
+.tabs button.on { background: #fff; border-color: var(--ln); border-top-color: #fff; color: var(--acc); font-weight: 600; }
+.tabs button.mine::after { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #d4a300; margin-left: 5px; vertical-align: middle; }
+.tabs .flt { font-size: 14px; color: #a07a00; } .tabs .flt.on { background: #fff6cc; }
+/* संवाद */
+.ov { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: grid; place-items: center; padding: 16px; z-index: 50; }
+.dlg { background: var(--card); border-radius: 14px; padding: 18px; width: 100%; max-width: 460px; max-height: 90vh; overflow: auto; }
+.dlg h3 { margin: 0 0 10px; }
+.mlist { display: flex; flex-direction: column; gap: 4px; }
+.mlist button { text-align: left; border: 0; background: #f2f4f1; padding: 11px 12px; border-radius: 8px; cursor: pointer; }
+.mlist button:hover { background: var(--acc2); }
+i.lg { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 3px 0 6px; vertical-align: middle; }
+i.lg.s-BELA { background: var(--BELA); } i.lg.s-BORI { background: var(--BORI); } i.lg.s-MIDC { background: var(--MIDC); } i.lg.s-hand { background: var(--hand); } i.lg.s-carry { background: var(--carry); } i.lg.s-pl { background: var(--pl); } i.lg.my { background: var(--my); border: 1px solid #e6cf6a; }
+table.st { width: 100%; border-collapse: collapse; margin: 6px 0; } table.st th, table.st td { border-bottom: 1px solid var(--gl); padding: 6px; text-align: left; }
+.setup { flex: 1; overflow: auto; padding: 16px; } .card { background: var(--card); border-radius: 12px; padding: 16px; max-width: 640px; margin: 0 auto; }
+#toast { position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%) translateY(20px); background: #222; color: #fff; padding: 9px 16px; border-radius: 8px; opacity: 0; pointer-events: none; transition: .2s; z-index: 60; max-width: calc(100% - 32px); }
+#toast.show { opacity: 1; transform: translateX(-50%); } #toast.bad { background: var(--bad); }
+@media (max-width: 640px) {
+  .top { gap: 6px; padding: 5px 8px; } .top .brand b { display: none; } .top .who small { display: none; } .top .who { max-width: 80px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .chip { display: none; } .fxi { display: none; } .fxa { max-width: 40%; }
+}
+</style><script src="../config.js"></script></head><body><div id="app"></div>
+<script>
+var APP_VER = "1.0.0";
+var LOGO = "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"#1f6f43\"/><rect x=\"13\" y=\"14\" width=\"38\" height=\"36\" rx=\"3\" fill=\"#fff\"/><path d=\"M13 24h38M13 33h38M13 42h38M26 14v36M38 14v36\" stroke=\"#1f6f43\" stroke-width=\"2\"/><rect x=\"13\" y=\"14\" width=\"38\" height=\"10\" rx=\"3\" fill=\"#c9e8d4\"/><circle cx=\"44\" cy=\"46\" r=\"9\" fill=\"#f2b705\"/><path d=\"M40 46l3 3 5-6\" stroke=\"#fff\" stroke-width=\"2.4\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>";
+var NB_RULES = {" IPC & BNS PART 1":{"DJ":["P","BH","carry"],"DK":["P","BI","carry"],"DT":["P","BR","carry"],"EG":["P","CE","carry"],"EH":["P","CF","carry"],"FE":["P","DC","prev"]},"SLL PART 1 ":{"BU":["P","AN","carry"],"BV":["P","AO","carry"],"CB":["P","AU","carry"],"CC":["P","AV","carry"],"CD":["P","AW","carry"],"CE":["P","AX","carry"],"CF":["P","AY","carry"],"CG":["P","AZ","carry"],"CH":["P","BA","carry"],"CT":["P","BM","carry"]},"BREAK UP ":{"AS":["P","X","carry"],"AT":["P","Y","carry"],"AV":["P","AA","carry"],"AZ":["P","AE","carry"]},"OTHER IPC ":{"D":["P","C","prev"],"E":["Y","C","tat"]},"ATAK AROPI":{"AN":["P","V","carry"],"AV":["P","AD","carry"]},"preventive":{"AC":["P","P","carry"],"AD":["P","Q","carry"],"AE":["P","R","carry"],"AH":["P","U","carry"]},"DACOITY":{"BC":["P","AJ","carry"]},"ROBBERY":{"AS":["P","X","carry"],"BI":["P","AN","carry"]},"HBT 1":{"AO":["P","V","carry"],"AP":["P","W","carry"],"BC":["P","AJ","carry"]},"SAND OTHER GOUN":{"AP":["P","Z","carry"]},"GAMBLING":{"AD":["P","P","carry"],"AE":["P","Q","carry"],"AF":["P","R","carry"],"AG":["P","S","carry"],"AH":["P","T","carry"],"AI":["P","U","carry"]},"DARU":{"AO":["P","W","carry"],"AP":["P","X","carry"],"AQ":["P","Y","carry"],"AR":["P","Z","carry"],"AU":["P","AC","carry"],"AV":["P","AD","carry"],"AW":["P","AE","carry"],"AX":["P","AF","carry"]},"ADR":{"AV":["P","Y","carry"],"AW":["P","Z","carry"],"AX":["P","AA","carry"],"AY":["P","AB","carry"],"AZ":["P","AC","carry"],"BA":["P","AD","carry"],"BB":["P","AE","carry"],"BD":["P","AG","carry"],"BH":["P","AK","carry"],"BJ":["P","AM","carry"],"BK":["P","AN","carry"]},"ACCIDENT":{"AA":["P","O","carry"],"AB":["P","P","carry"],"AC":["P","Q","carry"],"AD":["P","R","carry"],"AF":["P","T","carry"]},"NC HURT& HM":{"D":["Y","C","tat"],"G":["Y","F","tat"]},"HURT REASON":{"T":["P","L","carry"],"U":["P","M","carry"]},"बेला":{"G":["P","D","prev"],"J":["Y","C","tat"],"K":["Y","D","tat"],"V":["Y","V","tat"],"F":["P","C","prev"]},"बोरी":{"J":["Y","C","tat"],"K":["Y","D","tat"],"V":["Y","V","tat"],"F":["P","C","prev"],"G":["P","D","prev"]},"एमआयडीसी":{"G":["P","D","prev"],"J":["Y","C","tat"],"K":["Y","D","tat"],"V":["Y","V","tat"],"F":["P","C","prev"]},"दारुबंदी जुगार ":{"AF":["P","R","carry"],"AG":["P","S","carry"],"AH":["P","S","prev"],"AI":["P","U","carry"],"AJ":["P","V","carry"]}};
+/* Noting इंजिन: Excel फाइलची सर्व सूत्रे ब्राउझरमध्ये चालवते (HyperFormula). model = noting-model.json */
+var NE = (function () {
+  function ci(s) { var n = 0; for (var i = 0; i < s.length; i++) n = n * 26 + s.charCodeAt(i) - 64; return n; }
+  function cl(n) { var s = ''; while (n > 0) { var m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = (n - 1 - m) / 26; } return s; }
+  function split(a) { var m = /^([A-Z]+)(\d+)$/.exec(a); return [ci(m[1]), +m[2]]; }
+  function expand(t, r0, c0) {
+    return '=' + t.replace(/\{(\$?)(-?\d+),(\$?)(-?\d+)\}/g, function (_, ac, c, ar, r) {
+      return (ac ? '$' + cl(+c) : cl(c0 + +c)) + (ar ? '$' + r : (r0 + +r));
+    });
+  }
+  function build(model, HF) {
+    var sheets = {};
+    model.sheets.forEach(function (S) {
+      var data = [];
+      function put(a, v) { var p = split(a), r = p[1] - 1, c = p[0] - 1; (data[r] = data[r] || [])[c] = v; }
+      Object.keys(S.v).forEach(function (a) { put(a, S.v[a]); });
+      Object.keys(S.f).forEach(function (a) { var p = split(a); put(a, expand(model.t[S.f[a]], p[1], p[0])); });
+      for (var i = 0; i < data.length; i++) if (!data[i]) data[i] = [];
+      sheets[S.n] = data;
+    });
+    var hf = HF.buildFromSheets(sheets, { licenseKey: 'gpl-v3', useArrayArithmetic: false });
+    var ids = {}; model.sheets.forEach(function (S) { ids[S.n] = hf.getSheetId(S.n); ids[S.x] = ids[S.n]; });
+    return {
+      hf: hf, model: model,
+      get: function (sh, a) { var p = split(a), v = hf.getCellValue({ sheet: ids[sh], row: p[1] - 1, col: p[0] - 1 }); return v && typeof v === 'object' ? '#ERR' : v; },
+      set: function (list) { // [[sheet, addr, value]]
+        hf.batch(function () { list.forEach(function (x) { var p = split(x[1]); hf.setCellContents({ sheet: ids[x[0]], row: p[1] - 1, col: p[0] - 1 }, [[x[2] === '' ? null : x[2]]]); }); });
+      },
+      isInput: function (sh, a) { var S = byName[sh]; return !!S && !(a in S.f); }
+    };
+  }
+  var byName = {};
+  function load(model, HF) { model.sheets.forEach(function (S) { byName[S.n] = S; byName[S.x] = S; }); return build(model, HF); }
+  /* SheetJS workbook (cellFormula:true) वरून model: इथेच ब्राउझरमध्ये, फाइल कुठेही पाठवली जात नाही */
+  function fromWorkbook(wb, XLSX) {
+    var T = [], TI = {}, model = { t: T, sheets: [] };
+    function rel(f, r0, c0) {
+      var out = '', i = 0;
+      while (i < f.length) {
+        var ch = f[i];
+        if (ch === '"') { var j = i + 1; while (j < f.length && !(f[j] === '"' && f[j + 1] !== '"')) j += f[j] === '"' ? 2 : 1; out += f.slice(i, j + 1); i = j + 1; continue; }
+        if (ch === "'") { var k = f.indexOf("'", i + 1); while (f[k + 1] === "'") k = f.indexOf("'", k + 2); out += f.slice(i, k + 1); i = k + 1; continue; }
+        var m = /^(\$?)([A-Z]{1,3})(\$?)(\d+)(?![A-Za-z0-9_(])/.exec(f.slice(i)), prev = i ? f[i - 1] : '';
+        if (m && !/[A-Za-z0-9_.]/.test(prev)) { var c = ci(m[2]), r = +m[4]; out += '{' + (m[1] ? '$' + c : (c - c0)) + ',' + (m[3] ? '$' + r : (r - r0)) + '}'; i += m[0].length; continue; }
+        out += ch; i++;
+      }
+      return out;
+    }
+    function q(f) { return f.split("'-'!").join('DASH!').replace(/(^|[^'A-Za-z0-9_\u0900-\u097F])([\u0900-\u097F]+)!/g, function (m, p, nm) { return p + "'" + nm + "'!"; }); }
+    wb.SheetNames.forEach(function (n, si) {
+      var ws = wb.Sheets[n], S = { n: n === '-' ? 'DASH' : n, x: n, v: {}, f: {}, m: (ws['!merges'] || []).map(function (g) { return XLSX.utils.encode_range(g); }), w: {}, h: {}, st: ((wb.Workbook || {}).Sheets || [])[si] ? wb.Workbook.Sheets[si].Hidden : 0, fill: {}, z: {} };
+      (ws['!cols'] || []).forEach(function (c, i) { if (c) { if (c.hidden) S.w[i + 1] = 0; else if (c.wch) S.w[i + 1] = Math.round(c.wch); } });
+      (ws['!rows'] || []).forEach(function (r, i) { if (r) { if (r.hidden) S.h[i + 1] = 0; else if (r.hpt) S.h[i + 1] = Math.round(r.hpt); } });
+      var merged = {};
+      (ws['!merges'] || []).forEach(function (g) { for (var r = g.s.r; r <= g.e.r; r++) for (var c = g.s.c; c <= g.e.c; c++) if (r !== g.s.r || c !== g.s.c) merged[XLSX.utils.encode_cell({ r: r, c: c })] = 1; });
+      Object.keys(ws).forEach(function (a) {
+        if (a[0] === '!' || merged[a]) return;
+        var c = ws[a], p = split(a);
+        if (c.s && c.s.fgColor && c.s.fgColor.rgb && c.s.patternType === 'solid' && !/^(FF)?FFFFFF$/.test(c.s.fgColor.rgb)) S.fill[a] = c.s.fgColor.rgb.slice(-6);
+        if (c.z && c.z !== 'General' && (c.t === 'n' || c.f)) S.z[a] = c.z;
+        if (c.f) { var k = rel(q(c.f), p[1], p[0]); if (!(k in TI)) { TI[k] = T.length; T.push(k); } S.f[a] = TI[k]; return; }
+        var v = c.t === 'd' ? (c.v - new Date(Date.UTC(1899, 11, 30))) / 864e5 : c.t === 'e' ? null : c.v;
+        if (v !== null && v !== undefined && !(typeof v === 'string' && !v.trim())) S.v[a] = v;
+      });
+      model.sheets.push(S);
+    });
+    return model;
+  }
+  return { load: load, fromWorkbook: fromWorkbook, ci: ci, cl: cl, split: split, expand: expand };
+})();
+
+/* ---------- भरणा केंद्र: Noting च्या Excel मधून पो.स्टे.निहाय फॉर्म आपोआप (ब्राउझर व चाचणी दोन्हीकडे) ----------
+   analyze(model, val) → { forms: {sheet: {t, rows:{r: label}, cols:[header], cells:[[addr, ps, r, colIdx, year, carry]]}}, carry: [[sheet, to, from]] }
+   val(sheet, addr) = त्या चौकटीचा आकडा / मजकूर (सूत्र असल्यास इंजिनमधील उत्तर) */
+var NFC = (function () {
+  var PSN = { BELA: /^(बेला|BELA)$/i, BORI: /^(बोरी|बुटीबोरी|बु\.?\s*बोरी|BORI|BUTIBORI)$/i, MIDC: /^(एम\.?\s*आय\.?\s*डी\.?\s*सी?\.?|MIDC)$/i };
+  var SERIAL = /^(अ|अनु)\.?\s*-?\s*क्र|^अ\s*क\s*$|^अ-क्र/;
+  var PSHEAD = /^(पोस्टे|पो\.?\s*स्टे|पोलीस\s*स्टेशन|पोलिस\s*स्टेशन)/;
+  var PRIOR = /मागील|पावेतो|अखेरीस|पर्यंत|पर्यत/;
+  function ci(s) { var n = 0; for (var i = 0; i < s.length; i++) n = n * 26 + s.charCodeAt(i) - 64; return n; }
+  function cl(n) { var s = ''; while (n > 0) { var m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = (n - 1 - m) / 26; } return s; }
+  function sp(a) { var m = /^([A-Z]+)(\d+)$/.exec(a); return [ci(m[1]), +m[2]]; }
+  function psOf(t) { t = String(t == null ? '' : t).replace(/\s+/g, ' ').trim(); for (var k in PSN) if (PSN[k].test(t)) return k; return ''; }
+  function isDateFmt(z) { return !!z && /(^|[^"])(d|m|y)/i.test(z) && !/^[#0.,%]+$/.test(z); }
+  /* सूत्रातील संदर्भ (याच पत्रकाचे): {c,r} किंवा {c,r}:{c,r} */
+  function refs(t, c0, r0) {
+    var out = [], re = /('(?:[^']|'')+'!|[^\s'!(){}+\-*\/,:;=<>&^]+!)?\{(\$?)(-?\d+),(\$?)(-?\d+)\}(?::\{(\$?)(-?\d+),(\$?)(-?\d+)\})?/g, m;
+    while ((m = re.exec(t))) {
+      if (m[1]) continue;
+      var c1 = m[2] ? +m[3] : c0 + +m[3], r1 = m[4] ? +m[5] : r0 + +m[5];
+      if (m[6] === undefined) { out.push([c1, r1]); continue; }
+      var c2 = m[6] ? +m[7] : c0 + +m[7], r2 = m[8] ? +m[9] : r0 + +m[9];
+      if ((Math.abs(c2 - c1) + 1) * (Math.abs(r2 - r1) + 1) > 600) continue;
+      for (var c = Math.min(c1, c2); c <= Math.max(c1, c2); c++) for (var r = Math.min(r1, r2); r <= Math.max(r1, r2); r++) out.push([c, r]);
+    }
+    return out;
+  }
+  /* वर्षाची बेरीज: Y = महिना + मागील (मागील पुढच्या महिन्यात Y होतो) */
+  function pairs(S, T) {
+    var P = [], yr = {}, F = {};
+    Object.keys(S.f).forEach(function (a) { F[a] = T[S.f[a]]; });
+    function A(c0, r0, dc, dr) { return cl(c0 + +dc) + (r0 + +dr); }
+    function after(x, c0, r0) { var p = sp(x); return p[0] > c0 || (p[0] === c0 && p[1] > r0); }
+    var hdr = function (a) { return S._hdr ? S._hdr(a) : ''; };
+    Object.keys(F).forEach(function (y) {
+      var t = F[y], p = sp(y), c0 = p[0], r0 = p[1];
+      var m = /^\{(-?\d+),(-?\d+)\}\+\{(-?\d+),(-?\d+)\}$/.exec(t);
+      if (m) {
+        var a = A(c0, r0, m[1], m[2]), b = A(c0, r0, m[3], m[4]), ia = !(a in F), ib = !(b in F), fa = after(a, c0, r0), fb = after(b, c0, r0);
+        if (ia && ib && fb && !fa) { P.push([b, y]); yr[a] = [y, b]; return; }
+        if (ia && ib && fa && !fb) { P.push([a, y]); yr[b] = [y, a]; return; }
+        if (!fa && !fb && ia) {
+          var first = sp(a)[0] <= sp(b)[0] ? a : b, other = first === a ? b : a;
+          // बंद होणारी शिल्लक: Z = Y - W असल्यास सुरुवातीची शिल्लक ← Z
+          var z = null;
+          Object.keys(F).forEach(function (k) { if (z) return; var q = sp(k), mm = /^\{(-?\d+),(-?\d+)\}-\{-?\d+,-?\d+\}$/.exec(F[k]); if (mm && A(q[0], q[1], mm[1], mm[2]) === y && q[1] === r0) z = k; }); // फक्त खरी शिल्लक (Y − W); G − J − K सारखी नाही
+          if (z) { P.push([first, z]); return; }
+          if (PRIOR.test(hdr(first))) { P.push([first, y]); if (!(other in F)) yr[other] = [y, first]; }
+        }
+        return;
+      }
+      var m3 = /^\{(-?\d+),(-?\d+)\}\+\{(-?\d+),(-?\d+)\}-\{(-?\d+),(-?\d+)\}$/.exec(t);
+      if (m3) { var a3 = A(c0, r0, m3[1], m3[2]); if (!(a3 in F) && !after(a3, c0, r0) && PRIOR.test(hdr(a3))) P.push([a3, y]); }
+    });
+    return { P: P, yr: yr };
+  }
+  function analyze(model, val, only) {
+    var T = model.t, out = { forms: {}, carry: [] }, refBy = {};
+    model.sheets.forEach(function (S) {
+      refBy[S.n] = {};
+      Object.keys(S.f).forEach(function (a) { var p = sp(a); refs(T[S.f[a]], p[0], p[1]).forEach(function (x) { refBy[S.n][cl(x[0]) + x[1]] = 1; }); });
+    });
+    // इतर पत्रकांतून येणारे संदर्भ
+    model.sheets.forEach(function (S) {
+      Object.keys(S.f).forEach(function (a) {
+        var t = T[S.f[a]], re = /('((?:[^']|'')+)'|([^\s'!(){}+\-*\/,:;=<>&^]+))!\{(\$?)(-?\d+),(\$?)(-?\d+)\}/g, m, p = sp(a);
+        while ((m = re.exec(t))) {
+          var nm = (m[2] || m[3] || '').replace(/''/g, "'"); if (nm === 'DASH') nm = 'DASH';
+          var c = m[4] ? +m[5] : p[0] + +m[5], r = m[6] ? +m[7] : p[1] + +m[7];
+          if (refBy[nm]) refBy[nm][cl(c) + r] = 1;
+        }
+      });
+    });
+    model.sheets.forEach(function (S) {
+      if (only && only.indexOf(S.x) < 0) return;
+      var mg = {}, span = {};
+      (S.m || []).forEach(function (g) {
+        var q = g.split(':'), a = sp(q[0]), b = sp(q[1] || q[0]), tl = q[0];
+        span[tl] = b[0] - a[0] + 1;
+        for (var c = a[0]; c <= b[0]; c++) for (var r = a[1]; r <= b[1]; r++) mg[cl(c) + r] = tl;
+      });
+      function raw(a) { var k = mg[a] || a; if (k in S.v) return S.v[k]; if (k in S.f) { var v = val(S.n, k); return v === '#ERR' ? null : v; } return null; }
+      var TX = {};
+      function txt(a) { if (a in TX) return TX[a]; var v = raw(a); if (typeof v !== 'string') v = ''; else { v = v.replace(/\s+/g, ' ').trim(); if (/^[-–0-9.,\s]*$/.test(v)) v = ''; } return (TX[a] = v); }
+      var MON = /महिन|महीन|माहे/, YR = /वर्ष|पावेतो|पर्यंत|पर्यत|मागील/;
+      /* वरचे रुंद शीर्षक (उदा. "चालु महिना" / "चालु वर्ष") */
+      function wide(c, r) { for (var k = r - 1; k >= 1; k--) { var a = cl(c) + k, tl = mg[a]; if (tl && (span[tl] || 1) >= 5) { var t = txt(a); if (t && (MON.test(t) || YR.test(t))) return t; } } return ''; }
+      var hasMon = false;
+      var maxR = 0, maxC = 0;
+      Object.keys(S.v).concat(Object.keys(S.f)).forEach(function (a) { var p = sp(a); if (p[1] > maxR) maxR = p[1]; if (p[0] > maxC) maxC = p[0]; });
+      function hidden(c, r) { return S.w[c] === 0 || S.h[r] === 0; }
+      /* स्तंभाचे शीर्षक (वरून 2 मजकूर) व पो.स्टे. */
+      function colInfo(c, r) {
+        var hs = [], ps = '';
+        for (var k = r - 1; k >= 1 && hs.length < 2; k--) {
+          var a = cl(c) + k, t = txt(a); if (!t) continue;
+          var tl = mg[a] || a;
+          if (psOf(t)) { if (!ps) ps = psOf(t); continue; }
+          if ((span[tl] || 1) >= 5) continue;
+          if (SERIAL.test(t) || PSHEAD.test(t)) continue;
+          if (hs.indexOf(t) < 0) hs.unshift(t);
+        }
+        if (!ps) for (var k2 = r - 1; k2 >= 1; k2--) { var t2 = txt(cl(c) + k2); if (t2 && psOf(t2)) { ps = psOf(t2); break; } }
+        return { h: hs.join(' • '), ps: ps };
+      }
+      S._hdr = function (a) { var p = sp(a); return colInfo(p[0], p[1]).h; };
+      var pr = pairs(S, T); delete S._hdr;
+      var carryTo = {};
+      pr.P.forEach(function (x) { carryTo[x[0]] = x[1]; out.carry.push([S.x, x[0], x[1]]); });
+      /* ओळीचे नाव व पो.स्टे. */
+      function rowInfo(c, r) {
+        var lab = '', ps = '', pc = 0;
+        for (var k = c - 1; k >= 1; k--) {
+          var t = txt(cl(k) + r); if (!t) continue;
+          if (psOf(t)) { if (!ps) { ps = psOf(t); pc = k; } continue; }
+          if (SERIAL.test(t) || PSHEAD.test(t)) continue;
+          lab = t; break;
+        }
+        if (!lab && ps) { // पो.स्टे. ओळी: वरचे विभागाचे नाव
+          for (var u = r - 1; u >= 1 && !lab; u--) {
+            for (var k3 = Math.max(1, pc - 1); k3 <= pc; k3++) { var t3 = txt(cl(k3) + u); if (!t3 || psOf(t3) || SERIAL.test(t3) || PSHEAD.test(t3)) continue; lab = t3; break; }
+          }
+        }
+        return { l: lab, ps: ps };
+      }
+      function F_(a) { return a in S.f ? T[S.f[a]] : null; }
+      var cells = [], cols = [], colIdx = {}, rows = {}, anyColPs = false, cand = [];
+      for (var r = 1; r <= maxR; r++) for (var c = 1; c <= maxC; c++) {
+        var a = cl(c) + r;
+        if (a in S.f || mg[a] && mg[a] !== a || carryTo[a] || hidden(c, r)) continue;
+        var v = S.v[a];
+        if (typeof v === 'string') continue;
+        if (v === undefined && !refBy[S.n][a]) continue;
+        if (isDateFmt(S.z[a])) continue;
+        var ci_ = colInfo(c, r), ri = rowInfo(c, r);
+        if (!ri.l || !ci_.h) continue;
+        if (SERIAL.test(ci_.h)) continue;
+        var wt = wide(c, r); if (MON.test(wt)) hasMon = true;
+        ci_.wt = wt;
+        if (ci_.ps) anyColPs = true;
+        cand.push([a, c, r, ci_, ri]);
+      }
+      // मागील बेरजेचे स्तंभ (ज्यात 2 पेक्षा जास्त "मागील" चौकटी) पूर्ण वगळा
+      var cc = {}; Object.keys(carryTo).forEach(function (a) { if (sp(a)[1] !== sp(carryTo[a])[1]) return; var k = a.replace(/\d+$/, ''); cc[k] = (cc[k] || 0) + 1; });
+      cand = cand.filter(function (x) { return !(cc[x[0].replace(/\d+$/, '')] >= 2); });
+      var anyPs = cand.some(function (x) { return x[3].ps || x[4].ps; });
+      cand.forEach(function (x) {
+        var ps = x[3].ps || x[4].ps;
+        if (!ps && anyPs) return;
+        if (hasMon && YR.test(x[3].wt) && !MON.test(x[3].wt)) return;
+        var h = x[3].h, key = h;
+        if (!(key in colIdx)) { colIdx[key] = cols.length; cols.push(h); }
+        rows[x[2]] = x[4].l;
+        var y = pr.yr[x[0]];
+        cells.push([x[0], ps, x[2], colIdx[key], y ? y[0] : '', y ? y[1] : '']);
+      });
+      if (cells.length) {
+        // एकाच ओळीत एकाच शीर्षकाचे दोन रकाने: स्तंभ अक्षर जोडा
+        var seen = {}, dup = {};
+        cells.forEach(function (x) { var k = x[1] + '|' + x[2] + '|' + x[3]; if (seen[k]) dup[x[3]] = 1; seen[k] = 1; });
+        if (Object.keys(dup).length) cells.forEach(function (x) {
+          if (!dup[x[3]]) return; var h = cols[x[3]] + ' (' + x[0].replace(/\d+$/, '') + ')';
+          if (!(h in colIdx)) { colIdx[h] = cols.length; cols.push(h); } x[3] = colIdx[h];
+        });
+        var inCell = {}; cells.forEach(function (x) { inCell[x[0]] = x; });
+        var aux = []; // शिल्लक: सुरुवात + दाखल − निपटारा = अखेर (उदा. मुद्देमाल)
+        pr.P.forEach(function (x) {
+          var open = x[0], close = x[1], ft = F_(close), m2 = ft && /^\{(-?\d+),(-?\d+)\}-\{(-?\d+),(-?\d+)\}$/.exec(ft), cp = sp(close);
+          if (!m2) return;
+          var yA = cl(cp[0] + +m2[1]) + (cp[1] + +m2[2]), wA = cl(cp[0] + +m2[3]) + (cp[1] + +m2[4]), yt = F_(yA), my = yt && /^\{(-?\d+),(-?\d+)\}\+\{(-?\d+),(-?\d+)\}$/.exec(yt), yp = sp(yA);
+          if (!my || !inCell[wA]) return;
+          var o1 = cl(yp[0] + +my[1]) + (yp[1] + +my[2]), o2 = cl(yp[0] + +my[3]) + (yp[1] + +my[4]), plus = o1 === open ? o2 : o2 === open ? o1 : '';
+          if (!plus || !inCell[plus]) return;
+          aux.push([open, inCell[plus][1], close, [plus], [wA], inCell[plus][2]]);
+        });
+        out.forms[S.x] = { rows: rows, cols: cols, cells: cells };
+        if (aux.length) out.forms[S.x].aux = aux;
+      }
+    });
+    return out;
+  }
+  return { analyze: analyze, psOf: psOf, refs: refs, sp: sp, cl: cl, ci: ci };
+})();
+
+/* Noting Excel: मूळ फाइलमध्येच आकडे भरणे (रूप, सूत्रे, रंग तसेच). E = NE.load(...) */
+var NX = (function () {
+  function xe(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function ci(s) { var n = 0; for (var i = 0; i < s.length; i++) n = n * 26 + s.charCodeAt(i) - 64; return n; }
+  function colOf(a) { return ci(/^[A-Z]+/.exec(a)[0]); }
+  function valXml(v) { // input cell body + type
+    if (v === null || v === undefined || v === '') return null;
+    if (typeof v === 'number') return { t: '', b: '<v>' + v + '</v>' };
+    if (typeof v === 'boolean') return { t: ' t="b"', b: '<v>' + (v ? 1 : 0) + '</v>' };
+    return { t: ' t="inlineStr"', b: '<is><t xml:space="preserve">' + xe(v) + '</t></is>' };
+  }
+  function cachedXml(v) {
+    if (v === null || v === undefined || v === '') return { t: ' t="str"', v: '' };
+    if (typeof v === 'number') return { t: '', v: String(v) };
+    if (typeof v === 'boolean') return { t: ' t="b"', v: v ? '1' : '0' };
+    if (v === '#ERR') return { t: ' t="e"', v: '#VALUE!' };
+    return { t: ' t="str"', v: xe(v) };
+  }
+  /* याद्या: o = {from, cols}: त्या ओळीपासूनचे merge काढा, नवीन चौकटींना पहिल्या ओळीचे रूप */
+  function listPrep(xml, o) {
+    var sty = {}, m = new RegExp('<row r="' + o.from + '"[^>]*>([\\s\\S]*?)</row>').exec(xml);
+    if (m) m[1].replace(/<c r="([A-Z]+)\d+"[^>]*?\ss="(\d+)"/g, function (x, c, s) { sty[ci(c)] = s; });
+    xml = xml.replace(/<mergeCell ref="[A-Z]+(\d+):[A-Z]+\d+"\/>/g, function (x, r) { return +r >= o.from ? '' : x; });
+    var n = (xml.match(/<mergeCell /g) || []).length;
+    xml = n ? xml.replace(/<mergeCells count="\d+">/, '<mergeCells count="' + n + '">') : xml.replace(/<mergeCells[^>]*>\s*<\/mergeCells>/, '');
+    return { xml: xml, sty: sty };
+  }
+  function patchSheet(xml, sheetName, inputs, E, lo) {
+    var STY = {};
+    if (lo) { var lp = listPrep(xml, lo); xml = lp.xml; STY = lp.sty; }
+    function sa(a) { var c = colOf(a); return STY[c] ? ' s="' + STY[c] + '"' : ''; }
+    // 1. formula cells: refresh cached value
+    xml = xml.replace(/<c r="([A-Z]+\d+)"([^>\/]*)>(<f[^>]*\/>|<f[^>]*>[^<]*<\/f>)(?:<v[^>]*>[^<]*<\/v>|<v\/>)?<\/c>/g, function (m, a, attrs, f) {
+      var cv = cachedXml(E.get(sheetName, a)); attrs = attrs.replace(/\s+t="[^"]*"/, '');
+      return '<c r="' + a + '"' + attrs + cv.t + '>' + f + (cv.v === '' && cv.t === ' t="str"' ? '' : '<v>' + cv.v + '</v>') + '</c>';
+    });
+    // 2. input cells
+    var byRow = {};
+    Object.keys(inputs).forEach(function (a) { var r = +/\d+$/.exec(a)[0]; (byRow[r] = byRow[r] || {})[a] = inputs[a]; });
+    Object.keys(byRow).forEach(function (rs) {
+      var cells = byRow[rs], r = +rs;
+      var re = new RegExp('<row r="' + r + '"([^>]*?)(/>|>([\\s\\S]*?)</row>)');
+      var m = re.exec(xml);
+      if (!m) { // add row in order
+        var body = Object.keys(cells).sort(function (a, b) { return colOf(a) - colOf(b); }).map(function (a) { var x = valXml(cells[a]); return x ? '<c r="' + a + '"' + sa(a) + x.t + '>' + x.b + '</c>' : ''; }).join('');
+        if (!body) return;
+        var rowXml = '<row r="' + r + '">' + body + '</row>', placed = false;
+        xml = xml.replace(/<row r="(\d+)"/g, function (mm, n) { if (!placed && +n > r) { placed = true; return rowXml + mm; } return mm; });
+        if (!placed) xml = xml.replace('</sheetData>', rowXml + '</sheetData>').replace('<sheetData/>', '<sheetData>' + rowXml + '</sheetData>');
+        return;
+      }
+      var inner = m[3] || '', attrs = m[1];
+      Object.keys(cells).forEach(function (a) {
+        var x = valXml(cells[a]);
+        var cre = new RegExp('<c r="' + a + '"([^>/]*)(/>|>[\\s\\S]*?</c>)'), cm = cre.exec(inner);
+        if (cm) {
+          var at = cm[1].replace(/\s+t="[^"]*"/, '');
+          inner = inner.replace(cm[0], x ? '<c r="' + a + '"' + at + x.t + '>' + x.b + '</c>' : '<c r="' + a + '"' + at + '/>');
+        } else if (x) {
+          var nc = '<c r="' + a + '"' + sa(a) + x.t + '>' + x.b + '</c>', col = colOf(a), done = false;
+          inner = inner.replace(/<c r="([A-Z]+)\d+"/g, function (mm, cc) { if (!done && ci(cc) > col) { done = true; return nc + mm; } return mm; });
+          if (!done) inner += nc;
+        }
+      });
+      xml = xml.replace(m[0], '<row r="' + r + '"' + attrs + '>' + inner + '</row>');
+    });
+    return xml;
+  }
+  /* inputs: { sheetName: { A1: value } } */
+  function build(JSZip, template, E, inputs, lists) {
+    return JSZip.loadAsync(template).then(function (zip) {
+      return Promise.all([zip.file('xl/workbook.xml').async('string'), zip.file('xl/_rels/workbook.xml.rels').async('string')]).then(function (x) {
+        var wb = x[0], rels = x[1], map = {}, rid = {};
+        rels.replace(/<Relationship [^>]*?Id="([^"]+)"[^>]*?Target="([^"]+)"[^>]*>/g, function (m, id, t) { rid[id] = 'xl/' + t.replace(/^\/?xl\//, ''); });
+        rels.replace(/<Relationship [^>]*?Target="([^"]+)"[^>]*?Id="([^"]+)"[^>]*>/g, function (m, t, id) { rid[id] = 'xl/' + t.replace(/^\/?xl\//, ''); });
+        wb.replace(/<sheet [^>]*?name="([^"]+)"[^>]*?r:id="([^"]+)"/g, function (m, n, id) { map[n.replace(/&amp;/g, '&')] = rid[id]; });
+        wb = wb.replace(/<calcPr([^>]*?)\/>/, function (m, a) { return '<calcPr' + a.replace(/\s+fullCalcOnLoad="[^"]*"/, '') + ' fullCalcOnLoad="1"/>'; });
+        if (!/<calcPr/.test(wb)) wb = wb.replace('</workbook>', '<calcPr fullCalcOnLoad="1"/></workbook>');
+        zip.file('xl/workbook.xml', wb);
+        if (zip.file('xl/calcChain.xml')) { zip.remove('xl/calcChain.xml'); }
+        return Promise.all(Object.keys(map).map(function (n) {
+          var p = map[n]; return zip.file(p).async('string').then(function (xml) { zip.file(p, patchSheet(xml, n, inputs[n] || {}, E, (lists || {})[n])); });
+        })).then(function () {
+          // calcChain हटवल्यामुळे त्याचे संदर्भ काढणे
+          return Promise.all([zip.file('[Content_Types].xml').async('string'), zip.file('xl/_rels/workbook.xml.rels').async('string')]).then(function (y) {
+            zip.file('[Content_Types].xml', y[0].replace(/<Override[^>]*calcChain[^>]*\/>/, ''));
+            zip.file('xl/_rels/workbook.xml.rels', y[1].replace(/<Relationship[^>]*calcChain[^>]*\/>/, ''));
+            return zip;
+          });
+        });
+      });
+    });
+  }
+  /* फक्त एक पत्रक ठेवा (बाकी काढा), सूत्रे काढून फक्त आकडे: SP कार्यालयाचे रूप, रंग, रुंदी तसेच */
+  function only(zip, keep) {
+    var W = 'xl/workbook.xml', RL = 'xl/_rels/workbook.xml.rels', CT = '[Content_Types].xml';
+    return Promise.all([zip.file(W).async('string'), zip.file(RL).async('string'), zip.file(CT).async('string')]).then(function (x) {
+      var wb = x[0], rels = x[1], ct = x[2], rid = {}, idx = -1, i = 0, drop = [], keepPath = '';
+      rels.replace(/<Relationship\b[^>]*>/g, function (m) { var id = /Id="([^"]+)"/.exec(m), t = /Target="([^"]+)"/.exec(m); if (id && t) rid[id[1]] = 'xl/' + t[1].replace(/^\/?xl\//, ''); });
+      wb = wb.replace(/<sheet\b[^>]*\/>/g, function (m) {
+        var n = /name="([^"]+)"/.exec(m)[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'"), id = /r:id="([^"]+)"/.exec(m)[1], me = i++;
+        if (n === keep) { idx = me; keepPath = rid[id]; return m.replace(/\s+state="[^"]*"/, ''); }
+        drop.push({ id: id, p: rid[id] }); return '';
+      });
+      if (idx < 0) throw new Error('पत्रक सापडले नाही: ' + keep);
+      wb = wb.replace(/<definedName\b[^>]*>[^<]*<\/definedName>/g, function (m) { var l = /localSheetId="(\d+)"/.exec(m); return l && +l[1] === idx ? m.replace(/localSheetId="\d+"/, 'localSheetId="0"') : ''; })
+        .replace(/<definedNames>\s*<\/definedNames>/, '').replace(/\s(activeTab|firstSheet)="\d+"/g, '').replace(/<calcPr[^>]*\/>/, '');
+      drop.forEach(function (d) {
+        rels = rels.replace(new RegExp('<Relationship\\b[^>]*Id="' + d.id + '"[^>]*/>'), '');
+        if (d.p) { zip.remove(d.p); var rp = d.p.replace(/([^\/]+)$/, '_rels/$1.rels'); if (zip.file(rp)) zip.remove(rp); ct = ct.replace(new RegExp('<Override[^>]*PartName="/' + d.p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"[^>]*/>'), ''); }
+      });
+      zip.file(W, wb); zip.file(RL, rels); zip.file(CT, ct);
+      return zip.file(keepPath).async('string').then(function (xml) {
+        xml = xml.replace(/<f\b[^>]*\/>|<f\b[^>]*>[^<]*<\/f>/g, '').replace(/<c r="([A-Z]+\d+)"([^>]*?)\s+t="str"><\/c>/g, '<c r="$1"$2/>')
+          .replace(/<dataValidations\b[\s\S]*?<\/dataValidations>/, '').replace(/<conditionalFormatting\b[\s\S]*?<\/conditionalFormatting>/g, function (m) { return m.indexOf('!') >= 0 ? '' : m; })
+          .replace(/<sheetView\b([^>]*?)\stabSelected="\d"/, '<sheetView$1');
+        zip.file(keepPath, xml.replace(/<sheetView\b/, '<sheetView tabSelected="1"'));
+        return zip;
+      });
+    });
+  }
+  return { build: build, patchSheet: patchSheet, only: only };
+})();
+
+/* =====================================================================
+ * Noting • Breakup (वेगळे ॲप): तुमची Noting Excel जशीच्या तशी, पत्रके खाली टॅबमध्ये
+ * पो.स्टे. रायटर आपापल्या चौकटी भरतात, SDPO कार्यालय सर्व; सर्व सूत्रे ब्राउझरमध्ये (HyperFormula)
+ * नवीन महिना: मागील महिन्याची फाइल + चालू महिन्याच्या चौकटी रिकाम्या + बेरीज पुढे + मागील महिना / तत्सम (इतिहासातून)
+ * ===================================================================== */
+var NB = { tok: '', who: null, ym: '', d: null, model: null, eng: null, tpl: null, tplId: '', S: {}, sheet: '', sel: '', set: {}, src: {}, by: {}, q: {}, qT: null, busy: 0, own: {}, mine: {}, clr: {}, carry: [], warn: [], hist: {} };
+var NB_HF = 'https://cdn.jsdelivr.net/npm/hyperformula@2.7.1/dist/hyperformula.full.min.js';
+var NB_XL = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';
+var NB_ZIP = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+var NB_PS = ['BELA', 'BORI', 'MIDC'], NB_PSM = { BELA: 'बेला', BORI: 'बोरी', MIDC: 'एमआयडीसी' };
+var NB_PSSHEET = { 'बेला': 'BELA', 'बोरी': 'BORI', 'एमआयडीसी': 'MIDC' }; // पो.स्टे.चे स्वतःचे पत्रक
+var NB_KEEP = { 'assesment': 1, 'break up  (2)': 1 }; // नवीन महिन्यात रिकामे न करायची पत्रके
+var NB_MON = ['जानेवारी', 'फेब्रुवारी', 'मार्च', 'एप्रिल', 'मे', 'जून', 'जुलै', 'ऑगस्ट', 'सप्टेंबर', 'ऑक्टोबर', 'नोव्हेंबर', 'डिसेंबर'];
+var NB_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+var NB_RDP_ROW = { '15': 5, '6': 10, 'O6': 15, 'J': 20, 'D': 25, 'M': 30 }; // RDP पत्रक: गटाची पहिली ओळ (बेला, बोरी, एमआयडीसी)
+var NB_SRC_L = { pl: 'MCR ॲपमधील गुन्ह्यांवरून (RDP अहवाल)', carry: 'मागील महिन्यावरून / तत्सम (आपोआप)', title: 'शीर्षकातील महिना (आपोआप)', hand: 'SDPO कार्यालयाने भरले', ps: 'पो.स्टे.ने भरले' };
+
+/* ---------- मदत ---------- */
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function sGet(k) { try { return localStorage.getItem(k) || sessionStorage.getItem(k) || ''; } catch (e) { return ''; } }
+function sSet(k, v, persist) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); if (v) (persist ? localStorage : sessionStorage).setItem(k, v); } catch (e) {} }
+function monL(ym) { return NB_MON[+ym.slice(5, 7) - 1] + ' ' + ym.slice(0, 4); }
+function addM(ym, n) { var y = +ym.slice(0, 4), m = +ym.slice(5, 7) - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y + '-' + ('0' + (m + 1)).slice(-2); }
+function today() { var d = new Date(Date.now() + 330 * 6e4); return d.toISOString().slice(0, 10); }
+function dvFix(s) { return String(s).replace(/([ँ-ः])([ा-ौॢॣ])/g, '$2$1'); }
+function b64(buf) { var b = new Uint8Array(buf), s = ''; for (var i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+function unb64(s) { var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u.buffer; }
+function num(v) { if (v === '' || v == null) return null; var t = String(v).trim(); if (t === '') return null; var n = Number(t); return isNaN(n) ? t : n; }
+function fmt(v, z) {
+  if (v === null || v === undefined || v === '') return '';
+  if (typeof v === 'number' && z && window.XLSX && XLSX.SSF) { try { return XLSX.SSF.format(z, v); } catch (e) {} }
+  if (typeof v === 'number') return Math.abs(v - Math.round(v)) < 1e-9 ? String(Math.round(v)) : String(Math.round(v * 100) / 100);
+  if (v === true) return 'TRUE'; if (v === false) return 'FALSE'; return String(v);
+}
+function script(src, glob) {
+  return new Promise(function (res, rej) {
+    if (window[glob]) return res(window[glob]);
+    var s = document.createElement('script'); s.src = src; s.onload = function () { res(window[glob]); }; s.onerror = function () { rej(new Error('इंटरनेट तपासा: ' + glob + ' लोड झाले नाही')); };
+    document.head.appendChild(s);
+  });
+}
+function toast(m, bad) {
+  var t = $('toast'); t.textContent = m; t.className = 'show' + (bad ? ' bad' : '');
+  clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = ''; }, bad ? 6000 : 3000);
+}
+function modal(html, wire) {
+  var ov = document.createElement('div'); ov.className = 'ov'; ov.innerHTML = '<div class="dlg">' + html + '</div>';
+  document.body.appendChild(ov);
+  function close() { ov.remove(); }
+  ov.onclick = function (e) { if (e.target === ov || e.target.closest('[data-close]')) close(); };
+  if (wire) wire(ov, close);
+  return close;
+}
+function gunz(s) { return new Response(new Blob([new Uint8Array(unb64(s))]).stream().pipeThrough(new DecompressionStream('gzip'))).text().then(JSON.parse); }
+function rpc(fn, args) {
+  var tries = /^(nfGet|nfFile|brand)$/.test(fn) || (fn === 'nfAct' && args[1] === 'hget') ? 3 : 1;
+  if (window.DEMO) return window.DEMO(fn, args).catch(function (e) { if (String(e.message).indexOf('LOGIN:') >= 0) logout('लॉगिनची मुदत संपली.'); throw e; }); // स्थानिक चाचणी
+  return new Promise(function (res, rej) {
+    if (!window.PL_API) return rej(new Error('config.js मध्ये Apps Script ची लिंक नाही'));
+    (function go(n) {
+      fetch(window.PL_API, { method: 'POST', body: JSON.stringify({ fn: fn, args: args }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' })
+        .then(function (r) { return r.text().then(function (t) { try { return JSON.parse(t); } catch (x) { throw new Error('SRV:' + r.status); } }); })
+        .then(function (j) { return j && j.z ? gunz(j.d) : j; })
+        .then(function (j) { if (j.ok) return res(j.d); var e = new Error(j.e || 'अडचण'); e.srv = 1; throw e; })
+        .catch(function (e) {
+          var m = (e && e.message) || String(e);
+          if (m.indexOf('LOGIN:') >= 0 || /लॉगिन/.test(m) && e.srv) { logout('लॉगिनची मुदत संपली. पुन्हा लॉगिन करा.'); return rej(e); }
+          if (/चुकीची विनंती/.test(m)) return rej(new Error('सर्व्हरवर नवीन कोड अजून टाकलेला नाही (Code.gs → New version).'));
+          if (!e.srv && n < tries) return setTimeout(function () { go(n + 1); }, 1500 * n);
+          rej(e.srv ? e : new Error('सर्व्हरशी संपर्क झाला नाही. इंटरनेट तपासा.'));
+        });
+    })(1);
+  });
+}
+/* नमुना Excel फोनमध्येच ठेवा (प्रत्येक वेळी 1.3 MB आणू नये) */
+function idb(op, key, val) {
+  return new Promise(function (res) {
+    try {
+      var rq = indexedDB.open('noting', 1);
+      rq.onupgradeneeded = function () { rq.result.createObjectStore('f'); };
+      rq.onsuccess = function () { var tx = rq.result.transaction('f', op === 'get' ? 'readonly' : 'readwrite'), st = tx.objectStore('f'), r = op === 'get' ? st.get(key) : st.put(val, key); r.onsuccess = function () { res(r.result); }; r.onerror = function () { res(null); }; };
+      rq.onerror = function () { res(null); };
+    } catch (e) { res(null); }
+  });
+}
+
+/* ---------- लॉगिन ---------- */
+function boot() {
+  NB.tok = sGet('pl_tok');
+  if (!NB.tok) return loginView();
+  load();
+}
+function loginView(msg) {
+  $('app').innerHTML = '<div class="login"><div class="lcard"><div class="logo">' + LOGO + '</div><h1>Noting • Breakup</h1><p class="mut">उपविभागीय पोलीस अधिकारी कार्यालय • मासिक Noting</p>' +
+    (msg ? '<p class="err">' + esc(msg) + '</p>' : '') +
+    '<form id="lf"><label>यूजर आयडी<input name="u" autocomplete="username" autocapitalize="characters" value="' + esc(sGet('pl_lastid') || '') + '" required></label>' +
+    '<label>पासवर्ड<input name="pw" type="password" autocomplete="current-password" required></label>' +
+    '<label class="chk"><input type="checkbox" name="rem" checked> हा फोन / संगणक लक्षात ठेवा</label>' +
+    '<button class="btn p w" id="lb">लॉगिन</button></form><p class="mut sm">PL / MCR ॲपचाच यूजर आयडी व पासवर्ड</p></div></div>';
+  $('lf').onsubmit = function (e) {
+    e.preventDefault(); var f = this; $('lb').disabled = true; $('lb').textContent = 'तपासत आहे…';
+    rpc('login', [f.u.value, f.pw.value, f.rem.checked]).then(function (r) {
+      sSet('pl_tok', r.token, f.rem.checked); sSet('pl_uid', r.id, f.rem.checked); try { localStorage.setItem('pl_lastid', r.id); } catch (x) {}
+      NB.tok = r.token; load();
+    }, function (er) { loginView(er.message); });
+  };
+}
+function logout(msg) { sSet('pl_tok', ''); sSet('pl_uid', ''); NB.tok = ''; NB.d = null; NB.who = null; NB.ym = ''; NB.sheet = ''; NB.sel = ''; NB.q = {}; loginView(msg); }
+
+/* ---------- माहिती ---------- */
+function defYm() {
+  var cur = today().slice(0, 7), prev = addM(cur, -1), mon = (NB.d && NB.d.mon) || {}, t = NB.d && NB.d.tpl && NB.d.tpl.ym;
+  var y = (mon[prev] && mon[prev].state === 'closed') || (t && prev <= t) ? cur : prev;
+  return t && y < t ? t : y;
+}
+function busy(m) { $('app').innerHTML = '<div class="busy"><span class="spin"></span><b id="busyT">' + esc(m) + '</b><small>पहिल्यांदा थोडा वेळ लागतो</small></div>'; }
+function busyT(m) { var b = $('busyT'); if (b) b.textContent = m; }
+function load(ym) {
+  busy('माहिती आणत आहे…');
+  return rpc('nfGet', [NB.tok, ym || NB.ym || addM(today().slice(0, 7), -1)]).then(function (d) {
+    NB.d = d; NB.who = d.who;
+    if (!ym && !NB.ym) { var dy = defYm(); if (dy !== d.ym) { NB.ym = dy; return load(dy); } }
+    NB.ym = d.ym;
+    if (!d.tpl) { NB.eng = null; return shell(); }
+    return engine().then(function () { return month(); }).then(shell);
+  }).catch(function (e) { if (NB.tok) $('app').innerHTML = '<div class="busy"><b class="err">' + esc(e.message || e) + '</b><button class="btn" id="rt">पुन्हा प्रयत्न</button></div>', $('rt') && ($('rt').onclick = function () { load(NB.ym); }); });
+}
+/* नमुना Excel → इंजिन (एकदाच; नमुना बदलला तरच पुन्हा) */
+function engine() {
+  var T = NB.d.tpl;
+  if (NB.eng && NB.tplId === T.id + T.at) return Promise.resolve();
+  busyT('Noting ची Excel फाइल उघडत आहे…');
+  var key = 'tpl:' + T.id + ':' + T.at;
+  return Promise.all([idb('get', key).then(function (buf) {
+    if (buf) return buf;
+    return rpc('nfFile', [NB.tok, '']).then(function (f) { var b = unb64(f.b64); idb('put', key, b); return b; });
+  }), script(NB_HF, 'HyperFormula'), script(NB_XL, 'XLSX')]).then(function (x) {
+    busyT('सर्व सूत्रे तयार करत आहे…');
+    return new Promise(function (res) { setTimeout(res, 30); }).then(function () {
+      NB.tpl = x[0];
+      var wb = XLSX.read(NB.tpl, { type: 'array', cellFormula: true, cellStyles: true, cellNF: true });
+      var M = NE.fromWorkbook(wb, XLSX);
+      M.sheets.forEach(function (S) { Object.keys(S.v).forEach(function (a) { var v = S.v[a]; if (typeof v === 'string' && /[ँ-ः][ा-ौ]/.test(v)) S.v[a] = dvFix(v); }); NB.S[S.x] = S; });
+      NB.model = M; NB.eng = NE.load(M, HyperFormula); NB.set = {}; NB.tplId = T.id + T.at;
+      layout();
+    });
+  });
+}
+/* नमुन्यावरून: कोणत्या चौकटी कोणत्या पो.स्टे.च्या, नवीन महिन्यात रिकाम्या करायच्या चौकटी, बेरीज पुढे नेण्याच्या जोड्या */
+function layout() {
+  var A = NFC.analyze(NB.model, NB.eng.get), own = {}, ps = {}, clr = {};
+  NB_PS.forEach(function (p) { ps[p] = {}; });
+  Object.keys(A.forms).forEach(function (s) {
+    A.forms[s].cells.forEach(function (x) {
+      var p = x[1] || NB_PSSHEET[s.trim()] || '', k = s + '!' + x[0];
+      if (!NB_KEEP[s]) clr[k] = 1;
+      if (!p) return;
+      own[k] = p; (ps[p][s] = ps[p][s] || []).push(x[0]);
+    });
+  });
+  NB.own = own; NB.clr = clr; NB.ownPs = ps;
+  NB.carry = A.carry.map(function (c) { var S = NB.S[c[0]], f = S && S.f[c[2]] != null ? NB.model.t[S.f[c[2]]] : ''; return [c[0], c[1], c[2], /^\{-?\d+,-?\d+\}-\{-?\d+,-?\d+\}$/.test(f)]; }); // शेवटचे: शिल्लक (जानेवारीतही पुढे)
+  NB.mine = NB.who && !NB.who.all ? ps[NB.who.ps] || {} : {};
+}
+function tplVal(sh, a) { var S = NB.S[sh]; return S && a in S.v ? S.v[a] : null; }
+function isF(sh, a) { var S = NB.S[sh]; return !!S && a in S.f; }
+function canEdit(sh, a) {
+  var W = NB.who; if (!W || !W.w || isF(sh, a) || archive()) return false;
+  if (closed() && !W.admin) return false;
+  if (W.all) return true;
+  return NB.own[sh + '!' + a] === W.ps;
+}
+function archive() { var t = NB.d && NB.d.tpl && NB.d.tpl.ym; return !!t && NB.ym <= t; }
+function closed() { var m = NB.d && NB.d.mon[NB.ym]; return !!m && m.state === 'closed'; }
+
+/* ---------- महिना तयार करणे ---------- */
+function month() {
+  var T = NB.d.tpl.ym, ym = NB.ym, p1 = addM(ym, -1), y1 = addM(ym, -12), need = [];
+  NB.warn = [];
+  if (!archive()) { if (p1 > T) need.push(p1); need.push(y1); }
+  var have = need.filter(function (y) { return !NB.hist[y]; });
+  return (have.length ? rpc('nfAct', [NB.tok, 'hget', { yms: have }]).then(function (r) { Object.keys(r.h || {}).forEach(function (y) { NB.hist[y] = r.h[y]; }); }) : Promise.resolve()).then(function () { apply(); });
+}
+function apply() {
+  var E = NB.eng, undo = [];
+  Object.keys(NB.set).forEach(function (k) { var i = k.indexOf('!'); undo.push([k.slice(0, i), k.slice(i + 1), tplVal(k.slice(0, i), k.slice(i + 1))]); });
+  if (undo.length) E.set(undo);
+  NB.set = {}; NB.src = {}; NB.by = {};
+  var L = [], ym = NB.ym, T = NB.d.tpl.ym;
+  function put(sh, a, v, src) { if (!NB.S[sh] || isF(sh, a)) return; var k = sh + '!' + a; NB.set[k] = v; if (src) NB.src[k] = src; else delete NB.src[k]; L.push([sh, a, v]); }
+  if (!archive()) {
+    var p1 = addM(ym, -1), y1 = addM(ym, -12), HP = NB.hist[p1], HY = NB.hist[y1], fromTpl = p1 === T, jan = ym.slice(5) === '01';
+    /* मागील महिन्याचे आकडे: नमुना महिना असेल तर नमुन्यातूनच, नाहीतर बंद केलेल्या महिन्याच्या इतिहासातून */
+    function pv(sh, a) { if (fromTpl) { var v = E.get(sh, a); return typeof v === 'number' ? v : null; } var o = HP && HP.v && HP.v[sh]; return o && a in o ? o[a] : null; }
+    function yv(sh, a) { var o = HY && HY.v && HY.v[sh]; return o && a in o ? o[a] : null; }
+    var P = {};
+    NB.carry.forEach(function (c) { P[c[0] + '!' + c[2]] = pv(c[0], c[2]); });
+    Object.keys(NB_RULES).forEach(function (sh) { var S = NB.S[sh]; if (!S) return; var R = NB_RULES[sh]; Object.keys(R).forEach(function (col) { if (R[col][0] !== 'P') return; rowsOf(S, col, R[col][1]).forEach(function (r) { var a = R[col][1] + r; P[sh + '!' + a] = pv(sh, a); }); }); });
+    if (!fromTpl && !HP) NB.warn.push(monL(p1) + ' बंद केलेला नाही: मागील महिन्याचे आकडे (बेरीज पुढे) मिळाले नाहीत. आधी तो महिना बंद करा.');
+    if (!HY) NB.warn.push(monL(y1) + ' चा इतिहास नाही: तत्सम (मागील वर्षीचा हाच महिना) रकाने रिकामे.');
+    /* 1. मागील महिन्याची फाइल (बंद करताना जतन केलेले बदल) */
+    if (!fromTpl && HP && HP.d) Object.keys(HP.d).forEach(function (sh) { Object.keys(HP.d[sh]).forEach(function (a) { put(sh, a, HP.d[sh][a]); }); });
+    /* 2. चालू महिन्याच्या चौकटी रिकाम्या */
+    Object.keys(NB.clr).forEach(function (k) { var i = k.indexOf('!'); put(k.slice(0, i), k.slice(i + 1), null); });
+    /* 3. वर्षाची बेरीज पुढे (जानेवारीत फक्त शिल्लक) */
+    NB.carry.forEach(function (c) { var v = jan && !c[3] ? null : P[c[0] + '!' + c[2]]; put(c[0], c[1], v || null, 'carry'); });
+    /* 4. मागील महिना / तत्सम रकाने */
+    Object.keys(NB_RULES).forEach(function (sh) {
+      var S = NB.S[sh]; if (!S) return;
+      Object.keys(NB_RULES[sh]).forEach(function (col) {
+        var r0 = NB_RULES[sh][col], isP = r0[0] === 'P';
+        if (isP && jan && yearly(sh, col)) return; // जानेवारी: वर्षाची बेरीज शून्यापासून (खाली रिकामे)
+        if (!isP && !HY) return;
+        if (isP && !fromTpl && !HP) return;
+        rowsOf(S, col, r0[1]).forEach(function (r) { var a = r0[1] + r, v = isP ? P[sh + '!' + a] : yv(sh, a); put(sh, col + r, v || null, 'carry'); });
+      });
+    });
+    if (jan) Object.keys(NB_RULES).forEach(function (sh) { var S = NB.S[sh]; if (!S) return; Object.keys(NB_RULES[sh]).forEach(function (col) { if (NB_RULES[sh][col][0] === 'P' && yearly(sh, col)) rowsOf(S, col, NB_RULES[sh][col][1]).forEach(function (r) { put(sh, col + r, null, 'carry'); }); }); });
+    /* 4अ. RDP: MCR ॲपच्या RDP अहवालाप्रमाणे (निपटारा, कालावधी, प्रलंबित कारणे) */
+    var RD = NB.d.rdp, RS = NB.S.RDP;
+    if (RS && RD && !RD.err) Object.keys(NB_RDP_ROW).forEach(function (g) {
+      NB_PS.forEach(function (p, i) {
+        var x = (RD[g] || {})[p] || { d: 0, db: [0, 0, 0, 0], eb: [0, 0, 0, 0], r: [0, 0, 0, 0] }, r = NB_RDP_ROW[g] + i;
+        [['F', x.d], ['G', x.db[0]], ['H', x.db[1]], ['I', x.db[2]], ['J', x.db[3]], ['L', x.eb[0]], ['M', x.eb[1]], ['N', x.eb[2]], ['O', x.eb[3]], ['P', x.r[0]], ['Q', x.r[1]], ['R', x.r[2]]].forEach(function (c) { put('RDP', c[0] + r, c[1] || 0, 'pl'); });
+      });
+    });
+    else if (RS && RD && RD.err) NB.warn.push('RDP: PL मधून आकडे आले नाहीत (' + RD.err + ')');
+    /* 5. शीर्षकातील महिना */
+    titles().forEach(function (t) { put(t[0], t[1], t[2], 'title'); });
+  }
+  /* 6. पो.स्टे. / SDPO ने भरलेले */
+  var C = NB.d.cols;
+  NB.d.cells.forEach(function (r) {
+    var o = {}; C.forEach(function (c, i) { o[c] = r[i]; });
+    put(o.sheet, o.cell, num(o.v), o.src === 'ps' ? 'ps' : 'hand'); NB.by[o.sheet + '!' + o.cell] = o;
+  });
+  E.set(L);
+}
+/* वर्षाची बेरीज असलेला रकाना (किंवा त्याच स्रोतावरून येणारा): जानेवारीत शून्यापासून */
+function yearly(sh, col) { var R = NB_RULES[sh], src = R[col][1]; if (R[col][2] === 'carry') return true; return Object.keys(R).some(function (c) { return R[c][0] === 'P' && R[c][2] === 'carry' && R[c][1] === src; }); }
+/* नियमाच्या रकान्यातील ओळी: लक्ष्य चौकट सूत्र नसलेली आणि (नमुन्यात आकडा आहे किंवा स्रोतात काही आहे) */
+function rowsOf(S, col, scol) {
+  if (S._rows && S._rows[col]) return S._rows[col];
+  var out = [], max = 0; Object.keys(S.v).concat(Object.keys(S.f)).forEach(function (a) { var r = +/\d+$/.exec(a)[0]; if (r > max) max = r; });
+  for (var r = 1; r <= max; r++) {
+    var a = col + r, s = scol + r; if (a in S.f || typeof S.v[a] === 'string') continue;
+    if (typeof S.v[a] === 'number' || s in S.f || typeof S.v[s] === 'number') out.push(r);
+  }
+  (S._rows = S._rows || {})[col] = out; return out;
+}
+/* शीर्षकातील महिना (उदा. "for 09 - 2026", "माहे 09/2026", "Upto Aug 2026") नवीन महिन्याप्रमाणे */
+function titles() {
+  var T = NB.d.tpl.ym, gap = (+NB.ym.slice(0, 4) - +T.slice(0, 4)) * 12 + (+NB.ym.slice(5, 7) - +T.slice(5, 7)); if (gap <= 0) return [];
+  function shift(m, y) { var x = addM(y + '-' + ('0' + m).slice(-2), gap); return [+x.slice(5, 7), +x.slice(0, 4)]; }
+  var out = [];
+  NB.model.sheets.forEach(function (S) {
+    Object.keys(S.v).forEach(function (a) {
+      var v = S.v[a]; if (typeof v !== 'string' || NE.split(a)[1] > 6) return;
+      var nv = v.replace(/(^|[^0-9])(0?[1-9]|1[0-2])(\s*[-\/.]\s*)(20\d\d)(?![0-9])/g, function (m, p, mm, sep, yy) { var r = shift(+mm, +yy); return p + (mm.length === 2 ? ('0' + r[0]).slice(-2) : r[0]) + sep + r[1]; })
+        .replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*(\s+)(20\d\d)/g, function (m, mon, sp, yy) { var r = shift(NB_EN.indexOf(mon) + 1, +yy); return NB_EN[r[0] - 1] + sp + r[1]; })
+        .replace(/(सन|वर्ष)(\s*-?\s*)(20\d\d)/g, function (m, w, sp) { return w + sp + NB.ym.slice(0, 4); });
+      if (nv !== v) out.push([S.x, a, nv]);
+    });
+  });
+  return out;
+}
+
+/* ---------- पान ---------- */
+function visSheets() { return NB.model.sheets.filter(function (S) { return !S.st; }); }
+function shell() {
+  var W = NB.who, d = NB.d, opts = [], cur = today().slice(0, 7), T = d.tpl && d.tpl.ym;
+  for (var i = -14; i <= 0; i++) { var y = addM(cur, i); if (!T || y >= T) opts.push(y); }
+  if (opts.indexOf(NB.ym) < 0) opts.push(NB.ym);
+  var st = !d.tpl ? '' : archive() ? '<span class="chip ar">नमुना महिना</span>' : closed() ? '<span class="chip cl">महिना बंद</span>' : '<span class="chip op">महिना खुला</span>';
+  $('app').innerHTML = '<header class="top"><div class="brand">' + LOGO + '<b>Noting</b></div>' +
+    '<select id="ym">' + opts.sort().reverse().map(function (y) { return '<option value="' + y + '"' + (y === NB.ym ? ' selected' : '') + '>' + monL(y) + '</option>'; }).join('') + '</select>' + st +
+    '<span class="sp"></span><span id="sv" class="sv"></span>' +
+    '<span class="who">' + esc(W.name) + '<small>' + (W.all ? 'SDPO कार्यालय' : esc(NB_PSM[W.ps] || W.ps) + ' पो.स्टे.') + '</small></span>' +
+    '<button class="btn ic" id="mn" title="मेनू">☰</button></header>' +
+    (d.tpl ? '<div class="fx"><span id="fxA" class="fxa"></span><input id="fx" autocomplete="off" inputmode="decimal" placeholder="चौकट निवडा"><span id="fxI" class="fxi"></span></div>' +
+      (NB.warn.length ? '<div class="warn">' + NB.warn.map(esc).join('<br>') + '</div>' : '') +
+      '<main id="grid" class="grid" tabindex="0"></main><nav id="tabs" class="tabs"></nav>' : '<main class="setup">' + setupHtml() + '</main>') +
+    '<div id="toast"></div>';
+  $('ym').onchange = function () { flush(true).then(function () { NB.ym = $('ym').value; load(NB.ym); }); };
+  $('mn').onclick = menu;
+  if (!d.tpl) return wireSetup();
+  NB.mine = W.all ? {} : NB.ownPs[W.ps] || {};
+  if (!NB.sheet || !NB.S[NB.sheet] || NB.S[NB.sheet].st) NB.sheet = firstSheet();
+  tabs(); grid(); wireFx(); saved();
+  if (W.admin && d.tpl && (!d.own || d.own.tid !== d.tpl.id + '|' + d.tpl.at)) pubOwn();
+}
+function firstSheet() {
+  var mineS = Object.keys(NB.mine)[0], own = NB_PSM[NB.who.ps];
+  if (own && NB.mine[own]) return own;
+  return mineS || (visSheets().filter(function (S) { return /IPC/.test(S.x); })[0] || visSheets()[0]).x;
+}
+function tabs() {
+  var W = NB.who, h = visSheets().map(function (S) {
+    var n = (NB.mine[S.x] || []).length;
+    return '<button data-sh="' + esc(S.x) + '" class="' + (S.x === NB.sheet ? 'on' : '') + (n ? ' mine' : '') + '">' + esc(S.x.trim()) + '</button>';
+  }).join('');
+  $('tabs').innerHTML = (W.all ? '' : '<button id="onlyMine" class="flt' + (NB.onlyMine ? ' on' : '') + '" title="फक्त माझी पत्रके">★</button>') + h;
+  if ($('onlyMine')) $('onlyMine').onclick = function () { NB.onlyMine = !NB.onlyMine; tabs(); };
+  if (NB.onlyMine) Array.prototype.forEach.call($('tabs').querySelectorAll('[data-sh]'), function (b) { if (!b.classList.contains('mine')) b.hidden = true; });
+  Array.prototype.forEach.call($('tabs').querySelectorAll('[data-sh]'), function (b) { b.onclick = function () { NB.sheet = b.dataset.sh; NB.sel = ''; tabs(); grid(); }; });
+  var on = $('tabs').querySelector('.on'); if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest', inline: 'center' });
+}
+/* ---------- पत्रक (Excel सारखे) ---------- */
+function grid() {
+  var S = NB.S[NB.sheet], E = NB.eng, maxR = 0, maxC = 0, cov = {}, mg = {};
+  Object.keys(S.v).concat(Object.keys(S.f)).forEach(function (a) { var p = NE.split(a); if (p[1] > maxR) maxR = p[1]; if (p[0] > maxC) maxC = p[0]; });
+  maxR = Math.min(maxR, 1500); maxC = Math.min(maxC, 200);
+  S.m.forEach(function (rg) {
+    var p = rg.split(':'), a = NE.split(p[0]), b = NE.split(p[1] || p[0]);
+    mg[p[0]] = [b[1] - a[1] + 1, b[0] - a[0] + 1];
+    for (var r = a[1]; r <= b[1]; r++) for (var c = a[0]; c <= b[0]; c++) if (r !== a[1] || c !== a[0]) cov[NE.cl(c) + r] = p[0];
+  });
+  NB.g = { S: S, maxR: maxR, maxC: maxC, cov: cov };
+  var W = NB.who, h = ['<table class="xl" style="width:@TW@px"><colgroup><col style="width:34px">'], c, r, tw = 34;
+  for (c = 1; c <= maxC; c++) { var wd = S.w[c], px = wd === 0 ? 0 : Math.max(24, Math.min(420, Math.round((wd || 9) * 7.5))); tw += px; h.push('<col style="width:' + px + 'px">'); }
+  h[0] = h[0].replace('@TW@', tw);
+  h.push('</colgroup><thead><tr><th class="cn"></th>');
+  for (c = 1; c <= maxC; c++) h.push('<th class="cn' + (S.w[c] === 0 ? ' hid' : '') + '">' + NE.cl(c) + '</th>');
+  h.push('</tr></thead><tbody>');
+  for (r = 1; r <= maxR; r++) {
+    if (S.h[r] === 0) continue;
+    h.push('<tr' + (S.h[r] ? ' style="height:' + Math.max(18, Math.round(S.h[r] * 1.25)) + 'px"' : '') + '><th class="rn">' + r + '</th>');
+    for (c = 1; c <= maxC; c++) {
+      var a = NE.cl(c) + r; if (cov[a]) continue;
+      var span = mg[a] ? (mg[a][0] > 1 ? ' rowspan="' + mg[a][0] + '"' : '') + (mg[a][1] > 1 ? ' colspan="' + mg[a][1] + '"' : '') : '';
+      h.push('<td data-a="' + a + '"' + span + cellAttr(S, a, c) + '>' + esc(fmt(val(S, a), S.z[a])) + '</td>');
+    }
+    h.push('</tr>');
+  }
+  h.push('</tbody></table>');
+  var g = $('grid'); g.innerHTML = h.join('');
+  g.onclick = function (e) { var td = e.target.closest('td[data-a]'); if (!td) return; var again = NB.sel === td.dataset.a; select(td.dataset.a, false); if (NB.touch && again) startEdit(''); }; // मोबाईल: निवडलेल्या चौकटीला पुन्हा टॅप = भरा
+  g.ondblclick = function (e) { var td = e.target.closest('td[data-a]'); if (td) { select(td.dataset.a); startEdit(null); } };
+  g.onkeydown = gridKey;
+  g.onpointerdown = function (e) { NB.touch = e.pointerType === 'touch'; };
+  if (!NB.sel) { var m = (NB.mine[NB.sheet] || [])[0]; NB.sel = m || 'A1'; }
+  select(NB.sel, true);
+}
+function val(S, a) { var k = S.x + '!' + a; return a in S.f ? NB.eng.get(S.n, a) : (k in NB.set ? NB.set[k] : S.v[a]); }
+function cellAttr(S, a, c) {
+  var k = S.x + '!' + a, cls = [], st = '';
+  if (S.w[c] === 0) cls.push('hid');
+  if (a in S.f) cls.push('f');
+  var v = val(S, a); if (typeof v === 'number') cls.push('n');
+  var src = NB.src[k];
+  if (src === 'ps') cls.push('s-' + (NB.by[k] && NB.by[k].why || 'ps')); else if (src) cls.push('s-' + src);
+  if (canEdit(S.x, a)) cls.push('e');
+  if (!NB.who.all && NB.own[k] === NB.who.ps) cls.push('my');
+  if (S.fill[a]) { st = ' style="--fl:#' + S.fill[a] + '"'; if (dark(S.fill[a])) cls.push('dk'); }
+  return (cls.length ? ' class="' + cls.join(' ') + '"' : '') + st;
+}
+function dark(hex) { var n = parseInt(hex, 16); return (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) < 110; }
+function td(a) { return $('grid').querySelector('td[data-a="' + a + '"]'); }
+function select(a, scroll) {
+  var g = NB.g; if (g.cov[a]) a = g.cov[a];
+  var old = $('grid').querySelector('td.sel'); if (old) old.classList.remove('sel');
+  NB.sel = a; var t = td(a); if (!t) return;
+  t.classList.add('sel');
+  if (scroll !== false) t.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  var S = g.S, k = S.x + '!' + a, f = a in S.f, fx = $('fx'), ed = canEdit(S.x, a), src = NB.src[k], by = NB.by[k];
+  $('fxA').textContent = S.x.trim() + ' • ' + a;
+  fx.readOnly = !ed; fx.classList.toggle('ro', !ed);
+  if (f) { var p = NE.split(a); fx.value = NE.expand(NB.model.t[S.f[a]], p[1], p[0]); } else { var v = val(S, a); fx.value = v == null ? '' : String(v); }
+  var info = f ? 'सूत्र (आपोआप)' : src === 'ps' && by ? (NB_PSM[by.why] || by.why) + ' पो.स्टे.: ' + by.by + ', ' + String(by.at).slice(5, 16) : src === 'hand' && by ? 'SDPO: ' + by.by + ', ' + String(by.at).slice(5, 16) : NB_SRC_L[src] || '';
+  if (!ed && !f && !NB.who.all && NB.own[k] && NB.own[k] !== NB.who.ps) info = (NB_PSM[NB.own[k]] || NB.own[k]) + ' पो.स्टे.ची चौकट';
+  if (!ed && closed() && !NB.who.admin && !f) info = 'महिना बंद आहे';
+  $('fxI').textContent = info;
+}
+function move(dr, dc) {
+  var g = NB.g, p = NE.split(NB.sel), S = g.S, c = p[0], r = p[1];
+  for (var i = 0; i < 400; i++) {
+    c += dc; r += dr;
+    if (c < 1 || r < 1 || c > g.maxC || r > g.maxR) return;
+    if (S.w[c] === 0 || S.h[r] === 0) continue;
+    var a = NE.cl(c) + r; if (g.cov[a] && g.cov[a] === NB.sel) continue;
+    return select(g.cov[a] || a);
+  }
+}
+/* पुढची भरायची चौकट (Enter नंतर): खाली, त्या रकान्यात संपल्यास पुढच्या */
+function nextEditable() {
+  var g = NB.g, p = NE.split(NB.sel);
+  for (var r = p[1] + 1; r <= g.maxR; r++) { var a = NE.cl(p[0]) + r; if (g.S.h[r] !== 0 && !g.cov[a] && canEdit(g.S.x, a)) return select(a); }
+  move(1, 0);
+}
+function gridKey(e) {
+  if (e.target.tagName === 'INPUT') return;
+  var k = e.key;
+  if (k === 'ArrowDown') { move(1, 0); e.preventDefault(); } else if (k === 'ArrowUp') { move(-1, 0); e.preventDefault(); }
+  else if (k === 'ArrowLeft') { move(0, -1); e.preventDefault(); } else if (k === 'ArrowRight' || k === 'Tab') { move(0, e.shiftKey ? -1 : 1); e.preventDefault(); }
+  else if (k === 'Enter' || k === 'F2') { startEdit(null); e.preventDefault(); }
+  else if ((k === 'Delete' || k === 'Backspace') && canEdit(NB.g.S.x, NB.sel)) { commit(NB.sel, null); e.preventDefault(); }
+  else if (k.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) { if (canEdit(NB.g.S.x, NB.sel)) { startEdit(k); e.preventDefault(); } }
+}
+function startEdit(ch) {
+  var a = NB.sel, S = NB.g.S; if (!canEdit(S.x, a)) { if (NB.touch || ch !== '') { /* फक्त पाहणे */ } return; }
+  var fx = $('fx'); NB.editing = a;
+  if (ch) fx.value = ch;
+  fx.focus(); if (!ch) { try { fx.select(); } catch (e) {} }
+  var t = td(a); if (t) t.classList.add('ed');
+}
+function wireFx() {
+  var fx = $('fx');
+  fx.onfocus = function () { if (!fx.readOnly) { NB.editing = NB.sel; var t = td(NB.sel); if (t) t.classList.add('ed'); } };
+  fx.onkeydown = function (e) {
+    if (fx.readOnly) return;
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault(); var a = NB.editing || NB.sel; endEdit(); commit(a, num(fx.value));
+      if (e.key === 'Tab') move(0, e.shiftKey ? -1 : 1); else nextEditable();
+      if (NB.touch && canEdit(NB.g.S.x, NB.sel)) { NB.editing = NB.sel; var t = td(NB.sel); if (t) t.classList.add('ed'); fx.focus(); try { fx.select(); } catch (x) {} } else $('grid').focus();
+    } else if (e.key === 'Escape') { endEdit(); select(NB.sel, false); $('grid').focus(); }
+  };
+  fx.onblur = function () {
+    if (!NB.editing) return; var a = NB.editing; endEdit();
+    var S = NB.g.S, v = num(fx.value), cur = val(S, a); if (v !== (cur == null ? null : cur) && String(v) !== String(cur)) commit(a, v);
+  };
+}
+function endEdit() { var t = NB.editing && td(NB.editing); if (t) t.classList.remove('ed'); NB.editing = ''; }
+/* चौकटीत आकडा: इंजिन लगेच, सर्व्हरवर थोड्या वेळाने एकत्र */
+function commit(a, v) {
+  var S = NB.g.S, sh = S.x, k = sh + '!' + a; if (!canEdit(sh, a)) return;
+  var cur = val(S, a); if (v === cur || (v == null && (cur == null || cur === ''))) return;
+  NB.set[k] = v; NB.src[k] = NB.who.all ? 'hand' : 'ps'; NB.by[k] = { by: NB.who.name, at: '', why: NB.who.all ? '' : NB.who.ps };
+  NB.eng.set([[S.n, a, v]]);
+  NB.q[k] = { sheet: sh, cell: a, v: v == null ? '' : v };
+  refresh();
+  clearTimeout(NB.qT); NB.qT = setTimeout(function () { flush(); }, 1500); saved();
+}
+/* दिसणाऱ्या पत्रकातील आकडे पुन्हा (सूत्रांची उत्तरे बदलली असतील) */
+function refresh() {
+  var S = NB.g.S;
+  Array.prototype.forEach.call($('grid').querySelectorAll('td[data-a]'), function (t) {
+    var a = t.dataset.a, x = fmt(val(S, a), S.z[a]); if (t.textContent !== x) t.textContent = x;
+    if (!(a in S.f)) { var k = S.x + '!' + a, src = NB.src[k], want = src === 'ps' ? 's-' + (NB.by[k] && NB.by[k].why || 'ps') : src ? 's-' + src : ''; if (want && !t.classList.contains(want)) { t.className = t.className.replace(/\bs-\S+/g, ''); t.classList.add(want); } }
+  });
+  select(NB.sel, false);
+}
+function flush(wait) {
+  var keys = Object.keys(NB.q);
+  if (!keys.length) return NB.busy && wait ? new Promise(function (r) { setTimeout(r, 400); }).then(function () { return flush(true); }) : Promise.resolve();
+  if (NB.busy) return wait ? new Promise(function (r) { setTimeout(r, 400); }).then(function () { return flush(true); }) : Promise.resolve();
+  var list = keys.map(function (k) { return NB.q[k]; }), snap = {}; keys.forEach(function (k) { snap[k] = NB.q[k]; });
+  NB.busy = 1; saved();
+  return rpc('nfAct', [NB.tok, 'cell', { ym: NB.ym, list: list }]).then(function (r) {
+    keys.forEach(function (k) { if (NB.q[k] === snap[k]) delete NB.q[k]; if (NB.by[k]) { NB.by[k].at = r.at; NB.by[k].by = r.by; } });
+    NB.busy = 0; saved(); if (Object.keys(NB.q).length) return flush(wait);
+  }, function (e) { NB.busy = 0; saved(e.message); toast('जतन झाले नाही: ' + e.message, true); clearTimeout(NB.qT); NB.qT = setTimeout(function () { flush(); }, 8000); });
+}
+function saved(err) {
+  var n = Object.keys(NB.q).length, s = $('sv'); if (!s) return;
+  s.className = 'sv' + (err ? ' bad' : n || NB.busy ? ' wait' : ' ok');
+  s.textContent = err ? '⚠ जतन बाकी (' + n + ')' : n || NB.busy ? 'जतन होत आहे…' : '✓ जतन';
+}
+window.addEventListener('beforeunload', function (e) { if (Object.keys(NB.q).length) { flush(); e.preventDefault(); e.returnValue = ''; } });
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
+
+/* ---------- मेनू ---------- */
+function menu() {
+  var W = NB.who, has = !!(NB.d && NB.d.tpl), arch = has && archive();
+  var it = [];
+  if (has) it.push(['xl', '⬇ Excel डाउनलोड (' + monL(NB.ym) + ')']);
+  if (has) it.push(['brk', '▦ Breakup पत्रक']);
+  if (has && W.all) it.push(['st', '◔ पो.स्टे. भरणा स्थिती']);
+  if (has && W.admin && !arch) it.push(closed() ? ['ro', '🔓 महिना पुन्हा उघडा'] : ['cl', '🔒 ' + monL(NB.ym) + ' बंद करा']);
+  if (W.admin) it.push(['su', '⚙ सेटअप: नमुना Excel / इतिहास']);
+  it.push(['rl', '↻ माहिती पुन्हा आणा'], ['lo', '⎋ लॉगआउट']);
+  modal('<h3>' + esc(W.name) + '</h3><div class="mlist">' + it.map(function (x) { return '<button data-m="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div><p class="mut sm">रंग: <i class="lg s-BELA"></i>बेला <i class="lg s-BORI"></i>बोरी <i class="lg s-MIDC"></i>MIDC <i class="lg s-hand"></i>SDPO <i class="lg s-carry"></i>आपोआप (मागील / तत्सम) <i class="lg s-pl"></i>MCR ॲपवरून' + (W.all ? '' : ' <i class="lg my"></i>तुमच्या चौकटी') + '</p>', function (ov, close) {
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-m]'), function (b) {
+      b.onclick = function () {
+        close(); var m = b.dataset.m;
+        if (m === 'xl') exportXl(false);
+        else if (m === 'brk') { var s = visSheets().filter(function (S) { return /^BREAK UP\s*$/i.test(S.x); })[0]; if (s) { NB.sheet = s.x; NB.sel = ''; tabs(); grid(); } }
+        else if (m === 'st') status();
+        else if (m === 'cl') closeDlg();
+        else if (m === 'ro') reopen();
+        else if (m === 'su') setupDlg();
+        else if (m === 'rl') flush(true).then(function () { NB.hist = {}; load(NB.ym); });
+        else if (m === 'lo') flush(true).then(function () { logout(); });
+      };
+    });
+  });
+}
+function status() {
+  var tot = {}, done = {}, last = {};
+  NB_PS.forEach(function (p) { tot[p] = 0; done[p] = 0; last[p] = ''; Object.keys(NB.ownPs[p] || {}).forEach(function (s) { tot[p] += NB.ownPs[p][s].length; }); });
+  Object.keys(NB.by).forEach(function (k) { var o = NB.by[k], p = NB.own[k]; if (p && o.why === p) { done[p]++; if (String(o.at) > last[p]) last[p] = String(o.at); } });
+  modal('<h3>' + monL(NB.ym) + ': पो.स्टे. भरणा</h3><table class="st"><tr><th>पो.स्टे.</th><th>भरलेल्या चौकटी</th><th>शेवटची नोंद</th></tr>' +
+    NB_PS.map(function (p) { return '<tr><td><i class="lg s-' + p + '"></i>' + NB_PSM[p] + '</td><td>' + done[p] + ' / ' + tot[p] + '</td><td>' + esc(last[p].slice(5, 16) || '–') + '</td></tr>'; }).join('') +
+    '</table><p class="mut sm">शून्य असलेल्या चौकटी रिकाम्या ठेवल्या तरी चालतात; फक्त आकडा असलेल्या भराव्या.</p><div class="row end"><button class="btn" data-close>ठीक</button></div>');
+}
+
+/* ---------- Excel डाउनलोड, महिना बंद ---------- */
+function inputs() { var o = {}; Object.keys(NB.set).forEach(function (k) { var i = k.indexOf('!'), sh = k.slice(0, i); (o[sh] = o[sh] || {})[k.slice(i + 1)] = NB.set[k]; }); return o; }
+function exportXl(forClose) {
+  toast('Excel बनवत आहे…');
+  return script(NB_ZIP, 'JSZip').then(function () { return NX.build(JSZip, NB.tpl, NB.eng, inputs()); })
+    .then(function (zip) { return zip.generateAsync({ type: forClose ? 'arraybuffer' : 'blob', compression: 'DEFLATE', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }); })
+    .then(function (out) {
+      if (forClose) return out;
+      var name = 'NOTING_BREAKUP_' + NB.ym.slice(5, 7) + '-' + NB.ym.slice(2, 4) + '.xlsx', a = document.createElement('a');
+      a.href = URL.createObjectURL(out); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+      toast(name + ' डाउनलोड झाली');
+    }, function (e) { toast('Excel बनवताना अडचण: ' + (e.message || e), true); throw e; });
+}
+/* बंद करताना जतन: पुढच्या महिन्यासाठी लागणारे आकडे (v) व नमुन्यापेक्षा वेगळे हाताने भरलेले (d) */
+function snapshot() {
+  var E = NB.eng, v = {}, d = {};
+  function pv(sh, a) { var x = E.get(sh, a); if (typeof x === 'number' && x !== 0) (v[sh] = v[sh] || {})[a] = x; }
+  NB.carry.forEach(function (c) { pv(c[0], c[2]); });
+  Object.keys(NB_RULES).forEach(function (sh) { var S = NB.S[sh]; if (!S) return; var R = NB_RULES[sh], cols = {}; Object.keys(R).forEach(function (c) { cols[R[c][1]] = 1; });
+    var max = 0; Object.keys(S.v).concat(Object.keys(S.f)).forEach(function (a) { var r = +/\d+$/.exec(a)[0]; if (r > max) max = r; });
+    Object.keys(cols).forEach(function (c) { for (var r = 1; r <= max; r++) pv(sh, c + r); }); });
+  Object.keys(NB.set).forEach(function (k) { var i = k.indexOf('!'), sh = k.slice(0, i), a = k.slice(i + 1), x = NB.set[k], t = tplVal(sh, a); if (x === t || (x == null && t == null)) return; (d[sh] = d[sh] || {})[a] = x == null ? null : x; });
+  return { v: v, d: d, at: new Date().toISOString() };
+}
+function closeDlg() {
+  modal('<h3>' + monL(NB.ym) + ' बंद करायचा?</h3><p>बंद केल्यावर:</p><ul><li>या महिन्याची Excel Drive मध्ये जतन होते</li><li>पो.स्टे. बदल करू शकत नाहीत (SDPO करू शकते)</li><li>' + monL(addM(NB.ym, 1)) + ' आपोआप तयार: बेरीज पुढे, मागील महिना व तत्सम रकाने भरलेले, चालू महिन्याच्या चौकटी रिकाम्या</li></ul><p class="mut sm">गरज पडल्यास पुन्हा उघडता येतो; पुन्हा बंद केल्यावर पुढचा महिना नव्या आकड्यांवरून.</p>' +
+    '<div class="row end"><button class="btn" data-close>रद्द</button><button class="btn p" id="mc">🔒 महिना बंद करा</button></div>', function (ov, close) {
+    $('mc').onclick = function () {
+      $('mc').disabled = true; $('mc').textContent = 'जतन करत आहे…';
+      var ym = NB.ym, h = {}; h[ym] = snapshot();
+      flush(true).then(function () { return rpc('nfAct', [NB.tok, 'hput', { h: h }]); })
+        .then(function () { NB.hist[ym] = h[ym]; return exportXl(true); })
+        .then(function (buf) { return rpc('ntAct', [NB.tok, 'close', { ym: ym, b64: b64(buf) }]); })
+        .then(function () { close(); toast(monL(ym) + ' बंद केला. Excel Drive मध्ये जतन.'); load(ym); }, function (e) { close(); toast(e.message || String(e), true); });
+    };
+  });
+}
+function reopen() {
+  modal('<h3>' + monL(NB.ym) + ' पुन्हा उघडायचा?</h3><p class="mut">पो.स्टे. पुन्हा बदल करू शकतील. बदल झाल्यावर महिना पुन्हा बंद करा, म्हणजे पुढचा महिना नव्या आकड्यांवरून तयार होईल.</p><div class="row end"><button class="btn" data-close>रद्द</button><button class="btn p" id="mo">🔓 उघडा</button></div>', function (ov, close) {
+    $('mo').onclick = function () { close(); rpc('ntAct', [NB.tok, 'reopen', { ym: NB.ym }]).then(function () { toast('महिना उघडला'); load(NB.ym); }, function (e) { toast(e.message, true); }); };
+  });
+}
+
+/* ---------- सेटअप (SDPO) ---------- */
+function pubOwn() {
+  var ps = {}; NB_PS.forEach(function (p) { ps[p] = NB.ownPs[p]; });
+  rpc('nfAct', [NB.tok, 'own', { own: { tid: NB.d.tpl.id + '|' + NB.d.tpl.at, ps: ps } }]).then(function (r) { NB.d.own = { tid: NB.d.tpl.id + '|' + NB.d.tpl.at, at: r.at }; }, function (e) { toast('पो.स्टे.च्या चौकटी जतन झाल्या नाहीत: ' + e.message, true); });
+}
+function setupHtml() {
+  var d = NB.d, W = NB.who;
+  if (!W.admin) return '<div class="card"><h3>Noting ॲप अजून तयार नाही</h3><p>SDPO कार्यालयाने Noting ची Excel फाइल ॲपमध्ये एकदा जोडल्यावर इथे पत्रके दिसतील.</p></div>';
+  return '<div class="card"><h3>सुरुवात (एकदाच)</h3>' + setupBody() + '</div>';
+}
+function setupBody() {
+  var d = NB.d, hs = d.hist || [];
+  return '<p><b>1. नमुना Excel</b>: शेवटच्या पूर्ण महिन्याची Noting फाइल (उदा. NOTING_BREAKUP_ND_09-26.xlsx). पुढचे सर्व महिने हिच्यावरून.</p>' +
+    (d.tpl ? '<p class="mut sm">आत्ताची: ' + esc(d.tpl.name) + ' (' + (d.tpl.ym ? monL(d.tpl.ym) : 'महिना नाही') + ', ' + esc(d.tpl.at) + ')</p>' : '') +
+    '<div class="row"><input type="file" id="tf" accept=".xlsx"><select id="tm">' + (function () { var o = '', c = today().slice(0, 7); for (var i = -12; i <= 0; i++) { var y = addM(c, i); o += '<option value="' + y + '"' + (y === addM(c, -1) ? ' selected' : '') + '>' + monL(y) + '</option>'; } return o; })() + '</select><button class="btn p" id="tu">जोडा</button></div>' +
+    '<p><b>2. जुन्या महिन्यांचा इतिहास</b> (तत्सम व मागील महिन्यासाठी): "Noting_इतिहास_….json" फाइल.</p>' +
+    '<p class="mut sm">जतन असलेले महिने: ' + (hs.length ? hs.map(monL).join(', ') : 'एकही नाही') + '</p>' +
+    '<div class="row"><input type="file" id="hf" accept=".json"><button class="btn p" id="hu">जोडा</button></div>';
+}
+function wireSetup() {
+  if (!$('tu')) return;
+  var m = /(\d\d)[-_ .](\d\d)\.xlsx$/i;
+  $('tf').onchange = function () { var f = this.files[0], x = f && m.exec(f.name); if (x) { var y = '20' + x[2] + '-' + x[1]; if ($('tm').querySelector('option[value="' + y + '"]')) $('tm').value = y; } };
+  $('tu').onclick = function () {
+    var f = $('tf').files[0]; if (!f) return toast('Excel फाइल निवडा', true);
+    var b = this; b.disabled = true; b.textContent = 'पाठवत आहे…';
+    f.arrayBuffer().then(function (buf) { return rpc('ntAct', [NB.tok, 'tpl', { b64: b64(buf), name: f.name, ym: $('tm').value }]); })
+      .then(function () { toast('नमुना जोडला'); NB.eng = null; NB.ym = ''; NB.hist = {}; closeOv(); load(); }, function (e) { b.disabled = false; b.textContent = 'जोडा'; toast(e.message, true); });
+  };
+  $('hu').onclick = function () {
+    var f = $('hf').files[0]; if (!f) return toast('JSON फाइल निवडा', true);
+    var b = this; b.disabled = true; b.textContent = 'पाठवत आहे…';
+    f.text().then(function (t) { var j = JSON.parse(t); if (j.kind !== 'noting-history' || !j.h) throw new Error('ही इतिहासाची फाइल नाही'); return rpc('nfAct', [NB.tok, 'hput', { h: j.h }]); })
+      .then(function (r) { toast(r.n + ' महिन्यांचा इतिहास जतन'); NB.hist = {}; closeOv(); load(NB.ym); }, function (e) { b.disabled = false; b.textContent = 'जोडा'; toast(e.message, true); });
+  };
+}
+function closeOv() { var o = document.querySelector('.ov'); if (o) o.remove(); }
+function setupDlg() { modal('<h3>सेटअप</h3>' + setupBody() + '<div class="row end"><button class="btn" data-close>बंद</button></div>', function () { wireSetup(); }); }
+
+boot();
+if ("serviceWorker" in navigator) window.addEventListener("load", function () { var hc = !!navigator.serviceWorker.controller; navigator.serviceWorker.register("sw.js"); navigator.serviceWorker.addEventListener("controllerchange", function () { if (hc && !Object.keys(NB.q).length) location.reload(); }); });
+</script></body></html>
