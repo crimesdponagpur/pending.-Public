@@ -86,6 +86,31 @@ table.st { width: 100%; border-collapse: collapse; margin: 6px 0; } table.st th,
   .top { gap: 6px; padding: 5px 8px; } .top .brand b { display: none; } .top .who small { display: none; } .top .who { max-width: 80px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .chip { display: none; } .fxi { display: none; } .fxa { max-width: 40%; }
 }
+
+/* स्थिर (freeze) ओळी / रकाने */
+table.xl td.fc, table.xl td.fr { position: sticky; z-index: 1; }
+table.xl td.fc.fr { z-index: 2; }
+table.xl td.fcl { border-right: 2px solid #8a948d; }
+table.xl td.frl { border-bottom: 2px solid #8a948d; }
+table.xl th.rn.fr { z-index: 2; }
+table.xl thead th { height: 22px; }
+/* बाजूचे प्रगती पटल */
+.wrap { flex: 1; display: flex; min-height: 0; }
+.wrap .grid { flex: 1; min-width: 0; }
+.prog { width: 290px; flex: 0 0 290px; background: var(--card); border-left: 1px solid var(--ln); overflow: auto; padding: 10px 10px 16px; font-size: 13px; }
+.prog.off { display: none; }
+.prog h4 { margin: 4px 0 8px; font-size: 14px; display: flex; align-items: center; }
+.prog h4 .sp { flex: 1; } .prog h4 button { border: 0; background: none; font-size: 16px; cursor: pointer; color: var(--mut); }
+.pbars { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.pb b { display: flex; justify-content: space-between; font-weight: 600; } .pb small { color: var(--mut); font-weight: 400; }
+.pb i { display: block; height: 7px; border-radius: 4px; background: var(--gl); margin-top: 3px; overflow: hidden; } .pb i u { display: block; height: 100%; border-radius: 4px; background: var(--c, var(--acc)); }
+table.pt { width: 100%; border-collapse: collapse; }
+table.pt th { text-align: left; font-size: 11px; color: var(--mut); font-weight: 500; padding: 3px 4px; position: sticky; top: -10px; background: var(--card); }
+table.pt td { padding: 5px 4px; border-top: 1px solid var(--gl); cursor: pointer; }
+table.pt tr:hover td { background: var(--acc2); } table.pt tr.cur td { background: #fff6cc; }
+table.pt td.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+table.pt td.ok { color: #116634; font-weight: 600; } table.pt td.part { color: #8a5a00; } table.pt td.zero { color: #a3a8a4; }
+@media (max-width: 900px) { .prog { display: none; } }
 </style><script src="../config.js"></script></head><body><div id="app"></div>
 <script>
 var APP_VER = "1.0.0";
@@ -615,6 +640,26 @@ function engine() {
       M.sheets.forEach(function (S) { Object.keys(S.v).forEach(function (a) { var v = S.v[a]; if (typeof v === 'string' && /[ँ-ः][ा-ौ]/.test(v)) S.v[a] = dvFix(v); }); NB.S[S.x] = S; });
       NB.model = M; NB.eng = NE.load(M, HyperFormula); NB.set = {}; NB.tplId = T.id + T.at;
       layout();
+      return panes(NB.tpl).then(function (pn) { NB.pane = pn; }, function () { NB.pane = {}; });
+    });
+  });
+}
+/* तुमच्या Excel मधील "Freeze Panes" (xSplit / ySplit) वाचा, म्हणजे ॲपमध्येही तेच रकाने / ओळी स्थिर */
+function panes(buf) {
+  return script(NB_ZIP, 'JSZip').then(function () { return JSZip.loadAsync(buf); }).then(function (zip) {
+    return Promise.all([zip.file('xl/workbook.xml').async('string'), zip.file('xl/_rels/workbook.xml.rels').async('string')]).then(function (x) {
+      var rid = {}, jobs = [], out = {};
+      x[1].replace(/<Relationship\b[^>]*>/g, function (m) { var i = /Id="([^"]+)"/.exec(m), t = /Target="([^"]+)"/.exec(m); if (i && t) rid[i[1]] = 'xl/' + t[1].replace(/^\/?xl\//, ''); });
+      x[0].replace(/<sheet\b[^>]*>/g, function (m) {
+        var n = /name="([^"]+)"/.exec(m), r = /r:id="([^"]+)"/.exec(m); if (!n || !r || !rid[r[1]]) return;
+        var name = n[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+        jobs.push(zip.file(rid[r[1]]).async('string').then(function (xml) {
+          var pm = /<pane\b[^>]*>/.exec(xml.slice(0, 4000)); if (!pm || !/state="frozen"/.test(pm[0])) return;
+          var xs = /xSplit="(\d+)"/.exec(pm[0]), ys = /ySplit="(\d+)"/.exec(pm[0]);
+          out[name] = { x: xs ? +xs[1] : 0, y: ys ? +ys[1] : 0 };
+        }));
+      });
+      return Promise.all(jobs).then(function () { return out; });
     });
   });
 }
@@ -748,17 +793,18 @@ function shell() {
     '<select id="ym">' + opts.sort().reverse().map(function (y) { return '<option value="' + y + '"' + (y === NB.ym ? ' selected' : '') + '>' + monL(y) + '</option>'; }).join('') + '</select>' + st +
     '<span class="sp"></span><span id="sv" class="sv"></span>' +
     '<span class="who">' + esc(W.name) + '<small>' + (W.all ? 'SDPO कार्यालय' : esc(NB_PSM[W.ps] || W.ps) + ' पो.स्टे.') + '</small></span>' +
-    '<button class="btn ic" id="mn" title="मेनू">☰</button></header>' +
+    (d.tpl ? '<button class="btn ic" id="pg" title="भरणा प्रगती">▤</button>' : '') + '<button class="btn ic" id="mn" title="मेनू">☰</button></header>' +
     (d.tpl ? '<div class="fx"><span id="fxA" class="fxa"></span><input id="fx" autocomplete="off" inputmode="decimal" placeholder="चौकट निवडा"><span id="fxI" class="fxi"></span></div>' +
       (NB.warn.length ? '<div class="warn">' + NB.warn.map(esc).join('<br>') + '</div>' : '') +
-      '<main id="grid" class="grid" tabindex="0"></main><nav id="tabs" class="tabs"></nav>' : '<main class="setup">' + setupHtml() + '</main>') +
+      '<div class="wrap"><main id="grid" class="grid" tabindex="0"></main><aside id="prog" class="prog' + (NB.progOff ? ' off' : '') + '"></aside></div><nav id="tabs" class="tabs"></nav>' : '<main class="setup">' + setupHtml() + '</main>') +
     '<div id="toast"></div>';
   $('ym').onchange = function () { flush(true).then(function () { NB.ym = $('ym').value; load(NB.ym); }); };
   $('mn').onclick = menu;
   if (!d.tpl) return wireSetup();
+  $('pg').onclick = function () { if (window.innerWidth > 900) { NB.progOff = !NB.progOff; $('prog').classList.toggle('off', NB.progOff); } else progDlg(); };
   NB.mine = W.all ? {} : NB.ownPs[W.ps] || {};
   if (!NB.sheet || !NB.S[NB.sheet] || NB.S[NB.sheet].st) NB.sheet = firstSheet();
-  tabs(); grid(); wireFx(); saved();
+  tabs(); grid(); wireFx(); saved(); prog();
   if (W.admin && d.tpl && (!d.own || d.own.tid !== d.tpl.id + '|' + d.tpl.at)) pubOwn();
 }
 function firstSheet() {
@@ -787,25 +833,35 @@ function grid() {
     mg[p[0]] = [b[1] - a[1] + 1, b[0] - a[0] + 1];
     for (var r = a[1]; r <= b[1]; r++) for (var c = a[0]; c <= b[0]; c++) if (r !== a[1] || c !== a[0]) cov[NE.cl(c) + r] = p[0];
   });
-  NB.g = { S: S, maxR: maxR, maxC: maxC, cov: cov };
-  var W = NB.who, h = ['<table class="xl" style="width:@TW@px"><colgroup><col style="width:34px">'], c, r, tw = 34;
-  for (c = 1; c <= maxC; c++) { var wd = S.w[c], px = wd === 0 ? 0 : Math.max(24, Math.min(420, Math.round((wd || 9) * 7.5))); tw += px; h.push('<col style="width:' + px + 'px">'); }
+  var fz = freeze(S, maxR, maxC); NB.g = { S: S, maxR: maxR, maxC: maxC, cov: cov, fz: fz };
+  var W = NB.who, h = ['<table class="xl" style="width:@TW@px"><colgroup><col style="width:34px">'], c, r, tw = 34, left = {}, lx = 34, px;
+  for (c = 1; c <= maxC; c++) {
+    var wd = S.w[c]; px = wd === 0 ? 0 : Math.max(24, Math.min(420, Math.round((wd || 9) * 7.5)));
+    if (c <= fz.x && px > 250) px = 250; // स्थिर रकाना फार रुंद नको (मजकूर खाली दुमडतो)
+    if (c <= fz.x) { left[c] = lx; lx += px; }
+    tw += px; h.push('<col style="width:' + px + 'px">');
+  }
   h[0] = h[0].replace('@TW@', tw);
   h.push('</colgroup><thead><tr><th class="cn"></th>');
   for (c = 1; c <= maxC; c++) h.push('<th class="cn' + (S.w[c] === 0 ? ' hid' : '') + '">' + NE.cl(c) + '</th>');
   h.push('</tr></thead><tbody>');
   for (r = 1; r <= maxR; r++) {
     if (S.h[r] === 0) continue;
-    h.push('<tr' + (S.h[r] ? ' style="height:' + Math.max(18, Math.round(S.h[r] * 1.25)) + 'px"' : '') + '><th class="rn">' + r + '</th>');
+    h.push('<tr' + (S.h[r] ? ' style="height:' + Math.max(18, Math.round(S.h[r] * 1.25)) + 'px"' : '') + (r >= fz.y0 && r <= fz.y ? ' class="frz" data-r="' + r + '"' : '') + '><th class="rn' + (r >= fz.y0 && r <= fz.y ? ' fr' : '') + '">' + r + '</th>');
     for (c = 1; c <= maxC; c++) {
       var a = NE.cl(c) + r; if (cov[a]) continue;
       var span = mg[a] ? (mg[a][0] > 1 ? ' rowspan="' + mg[a][0] + '"' : '') + (mg[a][1] > 1 ? ' colspan="' + mg[a][1] + '"' : '') : '';
-      h.push('<td data-a="' + a + '"' + span + cellAttr(S, a, c) + '>' + esc(fmt(val(S, a), S.z[a])) + '</td>');
+      var cs = mg[a] ? mg[a][1] : 1, rs = mg[a] ? mg[a][0] : 1, sc = c <= fz.x && c + cs - 1 <= fz.x, sr = r >= fz.y0 && r + rs - 1 <= fz.y;
+      var ca = cellAttr(S, a, c, (sc ? ' fc' + (c + cs - 1 === fz.x ? ' fcl' : '') : '') + (sr ? ' fr' + (r + rs - 1 === fz.y ? ' frl' : '') : ''), sc ? 'left:' + left[c] + 'px' : '');
+      h.push('<td data-a="' + a + '"' + span + ca + '>' + esc(fmt(val(S, a), S.z[a])) + '</td>');
     }
     h.push('</tr>');
   }
   h.push('</tbody></table>');
   var g = $('grid'); g.innerHTML = h.join('');
+  var top = 22; Array.prototype.forEach.call(g.querySelectorAll('tr.frz'), function (tr) { // स्थिर ओळींची उंची प्रत्यक्ष मोजून
+    var t = top; Array.prototype.forEach.call(tr.children, function (e) { if (e.classList.contains('fr')) e.style.top = t + 'px'; }); top += tr.offsetHeight;
+  });
   g.onclick = function (e) { var td = e.target.closest('td[data-a]'); if (!td) return; var again = NB.sel === td.dataset.a; select(td.dataset.a, false); if (NB.touch && again) startEdit(''); }; // मोबाईल: निवडलेल्या चौकटीला पुन्हा टॅप = भरा
   g.ondblclick = function (e) { var td = e.target.closest('td[data-a]'); if (td) { select(td.dataset.a); startEdit(null); } };
   g.onkeydown = gridKey;
@@ -814,8 +870,8 @@ function grid() {
   select(NB.sel, true);
 }
 function val(S, a) { var k = S.x + '!' + a; return a in S.f ? NB.eng.get(S.n, a) : (k in NB.set ? NB.set[k] : S.v[a]); }
-function cellAttr(S, a, c) {
-  var k = S.x + '!' + a, cls = [], st = '';
+function cellAttr(S, a, c, extra, sty) {
+  var k = S.x + '!' + a, cls = (extra || '').split(' ').filter(Boolean), st = '';
   if (S.w[c] === 0) cls.push('hid');
   if (a in S.f) cls.push('f');
   var v = val(S, a); if (typeof v === 'number') cls.push('n');
@@ -823,8 +879,32 @@ function cellAttr(S, a, c) {
   if (src === 'ps') cls.push('s-' + (NB.by[k] && NB.by[k].why || 'ps')); else if (src) cls.push('s-' + src);
   if (canEdit(S.x, a)) cls.push('e');
   if (!NB.who.all && NB.own[k] === NB.who.ps) cls.push('my');
-  if (S.fill[a]) { st = ' style="--fl:#' + S.fill[a] + '"'; if (dark(S.fill[a])) cls.push('dk'); }
+  var sv = sty || ''; if (S.fill[a]) { sv += (sv ? ';' : '') + '--fl:#' + S.fill[a]; if (dark(S.fill[a])) cls.push('dk'); }
+  st = sv ? ' style="' + sv + '"' : '';
   return (cls.length ? ' class="' + cls.join(' ') + '"' : '') + st;
+}
+/* स्थिर (freeze) ओळी व रकाने: तुमच्या Excel मधील तेच, नसल्यास शीर्षकाच्या रंगावरून / मजकूराच्या रकान्यांवरून */
+function freeze(S, maxR, maxC) {
+  var pn = (NB.pane || {})[S.x], x = 0, y = 0;
+  if (pn) { x = pn.x; y = pn.y; }
+  else {
+    var hr = 0, started = 0;
+    for (var r = 1; r <= Math.min(14, maxR); r++) {
+      var n = 0; for (var c = 1; c <= Math.min(24, maxC); c++) { var f = S.fill[NE.cl(c) + r]; if (f && !dark(f)) n++; }
+      if (n >= 3) { started = 1; hr = r; } else if (started && !(S.h[r] === 0)) break;
+    }
+    y = hr;
+    var lim = Math.min(maxR, 90), cols = Math.min(maxC, 6);
+    for (var c2 = 1; c2 <= cols; c2++) {
+      var st = 0, ne = 0; for (var r2 = y + 1; r2 <= lim; r2++) { var v = S.v[NE.cl(c2) + r2]; if (v === undefined && !(NE.cl(c2) + r2 in S.f)) continue; ne++; if (typeof v === 'string') st++; }
+      if (ne && st / ne >= 0.5) x = c2; else if (c2 > 1) break;
+    }
+    x = Math.min(x, 3);
+  }
+  var y0 = 1, tot = 0; // वरच्या ओळी फार उंच असतील तर पहिल्या ओळी (शीर्षक) स्थिर नको
+  function hh(r) { return S.h[r] === 0 ? 0 : Math.max(18, Math.round((S.h[r] || 15) * 1.25)); }
+  for (var q = y; q >= 1; q--) { tot += hh(q); if (tot > 200) { y0 = q + 1; break; } }
+  return { x: Math.min(x, maxC), y: Math.min(y, maxR), y0: y0 };
 }
 function dark(hex) { var n = parseInt(hex, 16); return (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) < 110; }
 function td(a) { return $('grid').querySelector('td[data-a="' + a + '"]'); }
@@ -899,9 +979,48 @@ function commit(a, v) {
   NB.set[k] = v; NB.src[k] = NB.who.all ? 'hand' : 'ps'; NB.by[k] = { by: NB.who.name, at: '', why: NB.who.all ? '' : NB.who.ps };
   NB.eng.set([[S.n, a, v]]);
   NB.q[k] = { sheet: sh, cell: a, v: v == null ? '' : v };
-  refresh();
+  refresh(); progSoon();
   clearTimeout(NB.qT); NB.qT = setTimeout(function () { flush(); }, 1500); saved();
 }
+/* भरणा प्रगती: कोणत्या पो.स्टे.च्या किती चौकटी भरल्या (शून्य भरले तरी भरलेले) */
+function progData() {
+  var W = NB.who, cnt = {}, per = {};
+  NB_PS.forEach(function (p) { per[p] = [0, 0]; });
+  Object.keys(NB.own).forEach(function (k) {
+    var p = NB.own[k], i = k.indexOf('!'), sh = k.slice(0, i), a = k.slice(i + 1);
+    if (!W.all && p !== W.ps) return;
+    var v = k in NB.set ? NB.set[k] : tplVal(sh, a), o = (cnt[sh] = cnt[sh] || {}); o = (o[p] = o[p] || [0, 0]);
+    o[1]++; per[p][1]++; if (v !== null && v !== undefined && v !== '') { o[0]++; per[p][0]++; }
+  });
+  return { cnt: cnt, per: per };
+}
+function progHtml() {
+  var W = NB.who, D = progData(), ps = W.all ? NB_PS : [W.ps], h = '<h4>▤ भरणा प्रगती • ' + monL(NB.ym) + '<span class="sp"></span><button data-pgx title="बंद">✕</button></h4><div class="pbars">';
+  ps.forEach(function (p) {
+    var a = D.per[p], pc = a[1] ? Math.round(a[0] * 100 / a[1]) : 0;
+    h += '<div class="pb" style="--c:var(--' + p + ')"><b>' + esc(NB_PSM[p]) + '<small>' + a[0] + ' / ' + a[1] + ' • ' + pc + '%</small></b><i><u style="width:' + pc + '%"></u></i></div>';
+  });
+  h += '</div><table class="pt"><tr><th>पत्रक</th>' + ps.map(function (p) { return '<th style="text-align:right">' + esc(NB_PSM[p]) + '</th>'; }).join('') + '</tr>';
+  var sheets = Object.keys(D.cnt).sort(function (x, y) { // अपूर्ण पत्रके आधी
+    function left(s) { return ps.reduce(function (t, p) { var a = D.cnt[s][p]; return t + (a ? a[1] - a[0] : 0); }, 0); }
+    return (left(y) > 0) - (left(x) > 0) || visIdx(x) - visIdx(y);
+  });
+  sheets.forEach(function (sh) {
+    h += '<tr data-sh="' + esc(sh) + '" class="' + (sh === NB.sheet ? 'cur' : '') + '"><td>' + esc(sh.trim()) + '</td>' + ps.map(function (p) {
+      var a = D.cnt[sh][p]; if (!a) return '<td class="n zero">–</td>';
+      return '<td class="n ' + (a[0] === a[1] ? 'ok' : a[0] ? 'part' : 'zero') + '">' + (a[0] === a[1] ? '✓ ' : '') + a[0] + '/' + a[1] + '</td>';
+    }).join('') + '</tr>';
+  });
+  return h + '</table>' + (W.all ? '' : '<p class="mut sm">पत्रकावर टॅप करून तिथे जा. शून्य असलेली चौकट रिकामी ठेवू नका, 0 लिहा.</p>');
+}
+function visIdx(sh) { var i = 0; visSheets().some(function (S, k) { i = k; return S.x === sh; }); return i; }
+function wireProg(root) {
+  Array.prototype.forEach.call(root.querySelectorAll('tr[data-sh]'), function (tr) { tr.onclick = function () { NB.sheet = tr.dataset.sh; NB.sel = ''; tabs(); grid(); prog(); closeOv(); }; });
+  var x = root.querySelector('[data-pgx]'); if (x) x.onclick = function () { if (root.id === 'prog') { NB.progOff = true; root.classList.add('off'); } else closeOv(); };
+}
+function prog() { var el = $('prog'); if (!el || el.classList.contains('off')) return; el.innerHTML = progHtml(); wireProg(el); }
+function progSoon() { clearTimeout(NB.pT); NB.pT = setTimeout(prog, 400); }
+function progDlg() { modal('<div class="prog" style="display:block;width:auto;border:0;padding:0">' + progHtml() + '</div>', function (ov) { wireProg(ov); }); }
 /* दिसणाऱ्या पत्रकातील आकडे पुन्हा (सूत्रांची उत्तरे बदलली असतील) */
 function refresh() {
   var S = NB.g.S;
