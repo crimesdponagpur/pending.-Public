@@ -384,9 +384,9 @@
 
   function logoCard() {
     var s = S.settings, nm = { L: 'डावा (पोलीस लोगो)', C: 'मध्य (राजमुद्रा)', R: 'उजवा' };
-    return '<div class="card"><h2>पत्राचे लोगो</h2><p class="muted">प्रत्येक पत्राच्या शीर्षकात हे लोगो येतात. लहान PNG/JPG फाईल निवडून "जतन" दाबा.</p>' +
+    return '<div class="card"><h2>पत्राचे लोगो</h2><p class="muted">DCR FORMAT मधील तीन लोगो आधीपासून पत्रांत येतात. वेगळा लोगो हवा असेल तरच लहान PNG/JPG निवडून "जतन" दाबा.</p>' +
       ['L', 'C', 'R'].map(function (k) {
-        return '<div class="row" style="margin:6px 0"><b style="width:170px">' + nm[k] + '</b><input type="file" accept="image/*" data-logo="' + k + '"><button class="btn ghost sm" data-lsave="' + k + '">जतन</button><span class="muted">' + (s['logo' + k] ? 'जतन आहे' : 'अजून नाही') + '</span></div>';
+        return '<div class="row" style="margin:6px 0"><b style="width:170px">' + nm[k] + '</b><input type="file" accept="image/*" data-logo="' + k + '"><button class="btn ghost sm" data-lsave="' + k + '">जतन</button><span class="muted">' + (s['logo' + k] ? 'तुमचा लोगो जतन आहे' : 'तयार लोगो वापरात') + '</span></div>';
       }).join('') + '</div>';
   }
   function rulesCard() {

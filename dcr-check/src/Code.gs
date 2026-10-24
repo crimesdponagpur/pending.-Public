@@ -263,7 +263,9 @@ function jaKrText_(S, date, seq) {
 }
 function logoOf_(S, slot) {
   var id = S['logo' + slot];
-  try { return id ? DriveApp.getFileById(id).getBlob() : null; } catch (e) { return null; }
+  try { if (id) return DriveApp.getFileById(id).getBlob(); } catch (e) { /* अपलोड केलेला लोगो मिळाला नाही: तयार लोगो वापरा */ }
+  var g = LOGOS[slot];
+  return g ? Utilities.newBlob(Utilities.base64Decode(g.b64), g.mime, 'logo' + slot) : null;
 }
 /* एक पत्र (शीर्षक, जा.क्र., मजकूर, सही, प्रति) b मध्ये लिहितो. सर्व पत्रांची मांडणी एकसारखी. */
 function renderLetter_(b, L, S, kr) {
@@ -277,7 +279,7 @@ function renderLetter_(b, L, S, kr) {
   var cells = { L: row.appendTableCell(), C: row.appendTableCell(), R: row.appendTableCell() };
   ['L', 'C', 'R'].forEach(function (k) {
     var bl = logoOf_(S, k); if (!bl) return;
-    var p = cells[k].getChild(0).asParagraph(), w = k === 'C' ? 48 : 70;
+    var p = cells[k].getChild(0).asParagraph(), w = k === 'C' ? 25 : 89;
     p.setAlignment(A.CENTER);
     var im = p.appendInlineImage(bl); im.setWidth(w); im.setHeight(w * im.getHeight() / im.getWidth());
   });
@@ -287,7 +289,7 @@ function renderLetter_(b, L, S, kr) {
     p.setAlignment(A.CENTER).setSpacingAfter(0);
     rich_(p, l, { kr: kr, font: F, bold: i === 0, size: i === 0 ? sz(14, 20) : (i === off.length - 1 ? sz(9, 13) : sz(11, 16)) });
   });
-  ht.setColumnWidth(0, 90); ht.setColumnWidth(2, 90); ht.setColumnWidth(1, 612 - 115 - 90 - 60);
+  ht.setColumnWidth(0, 100); ht.setColumnWidth(2, 100); ht.setColumnWidth(1, 612 - 115 - 100 - 100);
   b.appendHorizontalRule();
   var t = b.appendTable([['', '']]); t.setBorderWidth(0);
   var jt = 'जा.क्र.: ' + L.jaKr, dt = 'दिनांक: ' + (L.dateText != null ? L.dateText : dmy_(L.date || today_()));
