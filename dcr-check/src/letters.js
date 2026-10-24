@@ -70,7 +70,7 @@ var LETTER = (function () {
     function fill(t) { return t.replace(/\{([^}]+)\}/g, function (m, k) { return k in vars ? vars[k] : m; }); }
     var keys = o.keys || suggest(c, o.shera, list);
     var dd = DCR.dmy(o.refDate || c.issueDate || c.dcrIssue || ''), rd = DCR.dmy(c.regDate || '');
-    var sum = o.summary != null ? o.summary : DCR.summary(c);
+    var sum = o.summary != null ? o.summary : DCR.summary(c, true);
     var intro = 'दिनांक ' + (dd || '__/__/____') + ' च्या दैनिक गुन्हे अहवालाचे अवलोकन केले असता दिनांक ' + (rd || '__/__/____') + ' रोजी पोलीस ठाणे ' + ps + ' ' + crTxt + kal +
       (c.kind === 'AD' ? ' अन्वये मर्ग दाखल असून' : ' अन्वये गुन्हा नोंद असून') + ' दैनिक गुन्हे अहवालात नमूद केल्याप्रमाणे ' + (sum ? sum.replace(/[.।\s]+$/, '') : '__________') +
       (c.kind === 'AD' ? ', अशा रिपोर्टवरून सदर मर्ग नोंद करण्यात आला आहे.' : ', अशा फिर्यादीच्या तक्रारीवरून सदर गुन्हा नोंद करण्यात आला आहे.');
@@ -79,14 +79,38 @@ var LETTER = (function () {
     var days = S.days || 3;
     var prati = ['ठाणेप्रभारी अधिकारी, पोलीस ठाणे ' + ps];
     if (addl) prati.unshift('अपर पोलीस अधीक्षक, नागपूर जिल्हा (ग्रामीण)');
+    var R = o.rules || [];
+    var ap = function (t) { return applyRules(t, R); };
     return {
       jaKr: o.jaKr || '', date: o.date || '',
-      ref: 'दिनांक ' + (dd || '__/__/____') + ' चा दैनिक गुन्हे अहवाल.',
-      subject: 'पोलीस ठाणे ' + ps + ' ' + crTxt + kal + (c.kind === 'AD' ? ' च्या मर्गच्या चौकशीकरिता सूचना.' : ' या गुन्ह्याच्या तपासाकरिता सूचना.'),
-      intro: intro, body: body, close: 'केलेल्या कार्यवाहीचा अहवाल ' + days + ' दिवसांत या कार्यालयात सादर करावा.',
+      ref: ap('दिनांक ' + (dd || '__/__/____') + ' चा दैनिक गुन्हे अहवाल.'),
+      subject: ap('पोलीस ठाणे ' + ps + ' ' + crTxt + kal + (c.kind === 'AD' ? ' च्या मर्गच्या चौकशीकरिता सूचना.' : ' या गुन्ह्याच्या तपासाकरिता सूचना.')),
+      intro: ap(intro), body: body.map(ap), close: ap('केलेल्या कार्यवाहीचा अहवाल ' + days + ' दिवसांत या कार्यालयात सादर करावा.'),
       prati: prati, prat: div ? ['उपविभागीय पोलीस अधिकारी, ' + div + ' विभाग'] : [], keys: keys
     };
   }
-  return { PARAS: PARAS, BY_HEAD: BY_HEAD, suggest: suggest, hints: hints, draft: draft, para: para, hasPrior: hasPrior };
+  /* शिकलेले नियम: { f: जुना मजकूर, t: नवा मजकूर }. SP/ठाणे पत्रात केलेले बदल पुढील पत्रांत आपोआप लागू होतात. */
+  function applyRules(text, rules) {
+    var t = String(text || '');
+    (rules || []).forEach(function (r) { if (r && r.f && r.f.length >= 3 && t.indexOf(r.f) >= 0) t = t.split(r.f).join(r.t || ''); });
+    return t.replace(/\s{2,}/g, ' ').replace(/\s+([,.।])/g, '$1');
+  }
+  /* मूळ व बदललेल्या मजकुरातील फरक (पहिल्या व शेवटच्या समान शब्दांनंतरचा भाग). अंक असलेले फरक (तारीख, क्रमांक) नियम होत नाहीत. */
+  function diffRule(a, b) {
+    a = String(a || '').trim(); b = String(b || '').trim();
+    if (a === b) return null;
+    var x = a.split(/\s+/), y = b.split(/\s+/), i = 0, j = 0;
+    while (i < x.length && i < y.length && x[i] === y[i]) i++;
+    while (j < x.length - i && j < y.length - i && x[x.length - 1 - j] === y[y.length - 1 - j]) j++;
+    var f = x.slice(i, x.length - j).join(' '), t = y.slice(i, y.length - j).join(' ');
+    if (!f) { /* फक्त भर पडला: आधीच्या दोन शब्दांना धरून घालतो */
+      var k = Math.max(0, i - 2), pre = x.slice(k, i).join(' ');
+      if (!pre) return null;
+      f = pre; t = pre + ' ' + t;
+    }
+    if (/\d/.test(f) || /\d/.test(t) || f.length < 3) return null;
+    return { f: f, t: t };
+  }
+  return { PARAS: PARAS, BY_HEAD: BY_HEAD, suggest: suggest, hints: hints, draft: draft, para: para, hasPrior: hasPrior, applyRules: applyRules, diffRule: diffRule };
 })();
 if (typeof module !== 'undefined') module.exports = LETTER;

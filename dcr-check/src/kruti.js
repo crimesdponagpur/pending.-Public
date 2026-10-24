@@ -50,4 +50,28 @@ function kruti2uni(s){
   t=t.replace(/Z/g,'र्');
   return t;
 }
-if(typeof module!=='undefined') module.exports={kruti2uni:kruti2uni};
+
+/* Unicode → Kruti Dev (उलट रूपांतर): पत्र Kruti Dev फॉन्टमध्ये छापण्यासाठी. kruti2uni चा उलटा; जोड्या round-trip तपासून निवडतो.
+   फक्त देवनागरी अक्षरे व दंड (।) बदलतो; इंग्रजी अक्षरे, अंक व विरामचिन्हे जशीच्या तशी राहतात. */
+var UNI2K_MAP=null, UNI2K_RE=null;
+function uni2kruti(s){
+  if(!s) return s;
+  if(!UNI2K_MAP){
+    UNI2K_MAP={};
+    for(var i=0;i<K1.length;i++){
+      var u=K2[i];
+      if(!u||UNI2K_MAP[u]||!(/[\u0900-\u097F]/.test(u)||u==='।')) continue;
+      if(kruti2uni(K1[i])===u) UNI2K_MAP[u]=K1[i];
+    }
+    UNI2K_MAP['ि']='f';
+    UNI2K_RE=new RegExp(Object.keys(UNI2K_MAP).sort(function(a,b){return b.length-a.length;}).join('|'),'g');
+  }
+  var t=String(s);
+  // reph: र् + अक्षर+मात्रा → अक्षर+मात्रा+Z
+  t=t.replace(/र्((?:[क-ह]़?्)*[क-हअ-औ]़?[ा-ौंँः]*)/g,function(m,c){return c+'Z';});
+  // ि: अक्षर+ि → f+अक्षर
+  t=t.replace(/((?:[क-ह]़?्)*[क-ह]़?)ि/g,function(m,c){return 'f'+c;});
+  // एक पास: जुळणारे सर्वात लांब तुकडे एकदाच बदलले जातात (साखळी-बदल नाही)
+  return t.replace(UNI2K_RE,function(k){return UNI2K_MAP[k];});
+}
+if(typeof module!=='undefined') module.exports={kruti2uni:kruti2uni,uni2kruti:uni2kruti};

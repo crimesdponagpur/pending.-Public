@@ -64,3 +64,5 @@ table.t th{background:#f1f5fb;font-weight:700;position:sticky;top:0}
 #print{display:none}
 @media print{body>*:not(#print){display:none!important}#print{display:block;font-size:11px}#print table{border-collapse:collapse;width:100%}#print td,#print th{border:1px solid #333;padding:3px 5px;vertical-align:top}#print h2{text-align:center;margin:0 0 6px;font-size:15px}}
 @media (max-width:640px){main{padding:10px}.card{padding:12px}.top a{margin-left:0;margin-right:10px}}
+.pickl{display:inline-flex;align-items:center;margin-right:6px;cursor:pointer}
+.pickl input{width:16px;height:16px}

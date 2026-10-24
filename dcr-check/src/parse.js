@@ -373,17 +373,27 @@ var DCR = (function () {
   }
 
   /* ---------- DCR चेक पत्र: वर्णन व सूचना ---------- */
-  function summary(c) {
+  function summary(c, full) {
     var f = clean(c.facts || '').replace(/^(थोडक्यात\s*)?(हकी[कग]त|हकिकत)\s*(अशा|अश्या)\s*(प्रकारे|प्रकारची)\s*आहे\s*की[,\s]*/, '').replace(/^यातील\s*/, 'यातील ');
     f = f.split(' / ')[0];
     f = f.replace(/[,.\s]*(अशा|अश्या)?\s*(फिर्यादी|फि\.|फिर्यादिच्या|फिर्यादीच्या|फिर्यादीचे)[^.]{0,60}(रिपोर्ट|तक्रार)[^.]*(नोंद|दाखल)[^.]*\.?\s*$/, '');
     f = f.replace(/[,.\s]*सदर(चा)?\s*गुन्हा\s*(नोंद|दाखल)[^.]*\.?\s*$/, '');
-    if (f.length > 500) { var cut = f.slice(0, 500), i = cut.lastIndexOf('.'); if (i < 250) i = cut.lastIndexOf(' '); f = cut.slice(0, i > 250 ? i : 500); }
-    return f.replace(/[.\s]+$/, '');
+    if (!full && f.length > 500) { var cut = f.slice(0, 500), i = cut.lastIndexOf('.'); if (i < 250) i = cut.lastIndexOf(' '); f = cut.slice(0, i > 250 ? i : 500); }
+    return scrubNames(f, c).replace(/\s+/g, ' ').replace(/[.\s]+$/, '');
+  }
+  /* पत्रात फिर्यादी / आरोपी / इतरांची नावे जाऊ नयेत: "नामे <नाव>" व DCR मधील नावे काढतो (वय, पत्ता, गाव तसेच राहतात) */
+  function scrubNames(t, c) {
+    t = String(t || '').replace(/मो\.?\s*(नं\.?|क्र\.?)?\s*[\d ]{10,}/g, '').replace(/नामे\s+(?:फिर्यादी\s+|आरोपी\s+)?(?:श्री\.?\s*|श्रीमती\s*|कु\.?\s*)?[^\d,.()]+?(?=\s+(?:वय|रा\.?\s|राहणार|मो\.?\s|मो\b|ता\.?\s|जि\.?\s|यांची|यांचा|यांचे|हा\s|ही\s|दि\.?\s|\d))/g, '');
+    t = t.replace(/\d{10,}/g, '').replace(/(मुलगी|मुलगा|मुलीचे|मुलाचे|मुलीची|मुलाची|मुलीला|मुलाला|पत्नी|पती|भाऊ|बहीण|आई|वडील|मुलीच्या|मुलाच्या)\s+(?:कु\.?\s*|श्री\.?\s*|श्रीमती\s*)?[\u0900-\u097F]+(?:\s+[\u0900-\u097F]+){0,3}?(?=\s+(?:हिचे|हिचा|हिची|हिला|हिने|वय|रा\b|नामे|यांची|यांचा|यांचे|याचा|याचे|चे|च्या|हा|ही))/g, '$1');
+    [c.comp, c.acc, c.victim, c.deceased].forEach(function (x) {
+      var n = String(x || '').split(/\s+वय|\s+रा[.\s]|\s+मो|\s+ता[.\s]|\s+जि[.\s]|\d|,|\(/)[0].replace(/^(श्री|श्रीमती|कु)\.?\s*/, '').trim();
+      if (n.length >= 4 && !/अज्ञात|अनोळखी|^-$/.test(n)) t = t.split(n).join('');
+    });
+    return t.replace(/\s{2,}/g, ' ').replace(/\s+([,.])/g, '$1');
   }
   return {
     readDocx: readDocx, blocksFromXml: blocksFromXml, extract: extract, classify: classify, parsePsCr: parsePsCr,
-    HEADS: HEADS, HEAD_MR: HEAD_MR, SEC_MR: SEC_MR, dateOf: dateOf, dmy: dmy, asc: asc, summary: summary, normDiv: normDiv
+    HEADS: HEADS, HEAD_MR: HEAD_MR, SEC_MR: SEC_MR, dateOf: dateOf, dmy: dmy, asc: asc, summary: summary, scrubNames: scrubNames, normDiv: normDiv
   };
 })();
 if (typeof module !== 'undefined') module.exports = DCR;

@@ -1,6 +1,6 @@
 /* DCR चेक ॲप: स्क्रीन */
 (function () {
-  var S = { settings: {}, dcrs: [], ps: [], today: '', cases: [], tab: 'dcr' };
+  var S = { settings: {}, dcrs: [], ps: [], today: '', cases: [], tab: 'dcr', picked: {} };
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var dmy = DCR.dmy;
@@ -118,7 +118,7 @@
       '<select id="qd"><option value="">सर्व तारखा</option>' + dates.map(function (d) { return '<option value="' + d + '"' + (d === d0 ? ' selected' : '') + '>DCR ' + dmy(d) + '</option>'; }).join('') + '</select>' +
       '<input type="text" id="qt" class="grow" placeholder="शोधा: पो.स्टे., अप.क्र. (1048/26), नाव, कलम...">' +
       '<select id="qh"><option value="">सर्व शीर्षके</option>' + DCR.HEADS.map(function (h) { return '<option value="' + h[0] + '">' + esc(h[1]) + '</option>'; }).join('') + '</select>' +
-      '<label class="muted"><input type="checkbox" id="qs"> फक्त शेरा असलेले</label><button class="btn" id="qb">शोधा</button><button class="btn ghost" id="qp" title="SP साहेबांसमोर ठेवण्यासाठी">शेरा पत्रक छापा</button></div></div><div id="cl"></div>';
+      '<label class="muted"><input type="checkbox" id="qs"> फक्त शेरा असलेले</label><button class="btn" id="qb">शोधा</button><button class="btn ghost" id="qp" title="SP साहेबांसमोर ठेवण्यासाठी">शेरा पत्रक छापा</button></div></div><div id="bulk"></div><div id="cl"></div>';
     $('#qb').onclick = find; $('#qt').onkeydown = function (e) { if (e.key === 'Enter') find(); };
     $('#qd').onchange = find; $('#qh').onchange = find; $('#qs').onchange = find;
     $('#qp').onclick = printSheet;
@@ -134,14 +134,14 @@
       var list = r.cases.slice();
       if (q.date && !q.text) list.sort(function (a, b) { return SEC_ORDER.indexOf(a.sec) - SEC_ORDER.indexOf(b.sec) || divs().indexOf(a.div) - divs().indexOf(b.div); });
       $('#cl').innerHTML = '<p class="muted">' + r.total + ' गुन्हे' + (r.more ? ' (पहिले 400 दाखवले)' : '') + '</p>' + list.map(caseHtml).join('');
-      list.forEach(bindCase);
+      list.forEach(bindCase); updateBulk();
     }).catch(function (e) { $('#cl').innerHTML = '<div class="card"><ul class="iss"><li class="bad">' + esc(e.message) + '</li></ul></div>'; });
   }
   function quickChips() { return String(S.settings.quick || '').split('\n').filter(String).map(function (q) { return '<span class="chip q">' + esc(q) + '</span>'; }).join(''); }
   function caseHtml(c) {
     var id = 'c' + btoa(unescape(encodeURIComponent(c.key))).replace(/[^a-z0-9]/gi, '');
     c._id = id;
-    return '<div class="case' + (c.shera ? ' has' : '') + '" id="' + id + '"><div class="row"><span class="t grow">' + esc(c.ps) + ' ' + crTxt(c) + (c.kalam ? ' • ' + esc(c.kalam) : '') + '</span>' +
+    return '<div class="case' + (c.shera ? ' has' : '') + '" id="' + id + '"><div class="row"><label class="pickl" title="एकत्र पत्रांसाठी निवडा"><input type="checkbox" class="pk1"' + (S.picked[c.key] ? ' checked' : '') + '></label><span class="t grow">' + esc(c.ps) + ' ' + crTxt(c) + (c.kalam ? ' • ' + esc(c.kalam) : '') + '</span>' +
       '<span class="chip">' + esc(DCR.HEAD_MR[c.head] || DCR.SEC_MR[c.sec] || '') + '</span>' + (+c.letters ? '<span class="chip ok">पत्र ' + c.letters + '</span>' : '') + '</div>' +
       '<div class="muted">' + (c.div ? esc(c.div) + ' विभाग • ' : '') + 'दाखल ' + dmy(c.regDate) + (c.label ? ' • ' + esc(c.label) : '') + (c.io ? ' • तपास: ' + esc(c.io.slice(0, 60)) : '') + '</div>' +
       '<div class="facts">' + esc(c.facts || ('फिर्यादी: ' + c.comp + ' • आरोपी: ' + c.acc)) + '</div>' +
@@ -153,6 +153,7 @@
     var el = document.getElementById(c._id); if (!el) return;
     var ta = $('textarea', el);
     $('.facts', el).onclick = function () { this.classList.toggle('open'); };
+    $('.pk1', el).onchange = function () { if (this.checked) S.picked[c.key] = c; else delete S.picked[c.key]; updateBulk(); };
     ta.onfocus = function () { el.classList.add('qo'); };
     el.querySelectorAll('.chip.q').forEach(function (q) { q.onclick = function () { ta.value = (ta.value.trim() ? ta.value.trim().replace(/[.।]?$/, '. ') : '') + q.textContent; }; });
     $('[data-a=save]', el).onclick = function () {
@@ -176,7 +177,7 @@
 
   /* ---------- पत्र संपादक ---------- */
   function letterEditor(c, el) {
-    var P = paras(), opt = { shera: c.shera, paras: P, settings: { days: S.settings.days }, relation: RELS[0], place: 'गावात', refDate: c.dcrIssue || '' };
+    var P = paras(), opt = { shera: c.shera, paras: P, settings: { days: S.settings.days }, relation: RELS[0], place: 'गावात', refDate: c.dcrIssue || '', rules: rules() };
     var D = LETTER.draft(c, opt), on = {};
     D.keys.forEach(function (k) { on[k] = 1; });
     var texts = {};
@@ -195,7 +196,7 @@
       order.map(function (k) { var p = LETTER.para(k, P); return '<div class="pk' + (on[k] ? ' on' : '') + '" data-k="' + k + '"><label><input type="checkbox"' + (on[k] ? ' checked' : '') + '> ' + esc(p.t) + (H.indexOf(k) >= 0 ? ' <span class="chip info">शेऱ्यानुसार सुचवलेले</span>' : '') + '</label>' + (on[k] ? '<textarea>' + esc(texts[k]) + '</textarea>' : '') + '</div>'; }).join('') + '</div>' +
       '<label>शेवटचे वाक्य</label><input type="text" id="lc" value="' + esc(D.close) + '">' +
       '<div class="row"><div class="grow"><label>प्रति (एका ओळीत एक)</label><textarea id="lpr">' + esc(D.prati.join('\n')) + '</textarea></div><div class="grow"><label>प्रत माहितीस</label><textarea id="lpt">' + esc(D.prat.join('\n')) + '</textarea></div></div>' +
-      '<div class="row" style="margin-top:12px"><button class="btn gold" id="lgo">Word + PDF बनवा व Drive मध्ये जतन करा</button><span id="lout" class="links"></span></div></div>';
+      '<div class="row" style="margin-top:12px"><button class="btn gold" id="lgo">पत्र बनवा (Word: Unicode व कृतिदेव, PDF) व Drive मध्ये जतन</button><span id="lout" class="links"></span></div></div>';
     document.body.appendChild(m);
     $('[data-x]', m).onclick = function () { m.remove(); };
     function regen(k) { var box = $('[data-k="' + k + '"]', m); if (box && box.classList.contains('on')) $('textarea', box).value = texts[k] = fillOne(k); }
@@ -219,11 +220,61 @@
         body: body, close: $('#lc', m).value.trim(), prati: $('#lpr', m).value.split('\n').map(function (x) { return x.trim(); }).filter(String),
         prat: $('#lpt', m).value.split('\n').map(function (x) { return x.trim(); }).filter(String), keys: keys, shera: $('#lsh', m).value.trim() };
       busy(b, true, 'पत्र बनत आहे...');
-      call('makeLetter', c.key, L).then(function (r) {
-        $('#lout', m).innerHTML = '<span class="chip ok">जा.क्र. ' + esc(r.jaKr) + '</span><a target="_blank" href="' + esc(r.docxUrl) + '">Word</a><a target="_blank" href="' + esc(r.pdfUrl) + '">PDF</a>';
+      call('makeLetters', [{ key: c.key, L: L, orig: D }]).then(function (r) {
+        $('#lout', m).innerHTML = '<span class="chip ok">जा.क्र. ' + esc(r.jaKrs[0]) + '</span>' + links(r);
         c.letters = (+c.letters || 0) + 1; c.shera = L.shera;
         if (el) { var t = $('textarea', el); if (t) t.value = L.shera; el.classList.toggle('has', !!L.shera); }
         toast('पत्र Drive मध्ये जतन झाले');
+      }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
+    };
+  }
+  function links(r) {
+    return '<a target="_blank" href="' + esc(r.docxUrl) + '">Word (Unicode)</a><a target="_blank" href="' + esc(r.krutiUrl) + '">Word (कृतिदेव)</a><a target="_blank" href="' + esc(r.pdfUrl) + '">PDF</a>';
+  }
+  function rules() { try { return JSON.parse(S.settings.rules || '[]') || []; } catch (e) { return []; } }
+  /* निवडलेल्या गुन्ह्यांसाठी एकच शेरा व एकत्र सूचना; सर्व पत्रे एका Word फाईलमध्ये */
+  function updateBulk() {
+    var n = Object.keys(S.picked).length, el = $('#bulk');
+    if (!el) return;
+    el.innerHTML = n ? '<div class="card row"><b>' + n + ' गुन्हे निवडले</b><span class="grow"></span><button class="btn gold sm" id="bgo">एकत्र पत्रे बनवा</button><button class="btn ghost sm" id="bcl">निवड रद्द</button></div>' : '';
+    if (!n) return;
+    $('#bgo').onclick = function () { bulkEditor(Object.keys(S.picked).map(function (k) { return S.picked[k]; })); };
+    $('#bcl').onclick = function () { S.picked = {}; document.querySelectorAll('.pk1').forEach(function (x) { x.checked = false; }); updateBulk(); };
+  }
+  function bulkEditor(list) {
+    var P = paras(), shera = '', rel = RELS[0], place = 'गावात';
+    var on = {}, sugg = {};
+    list.forEach(function (c) { LETTER.suggest(c, '', P).forEach(function (k) { sugg[k] = 1; }); });
+    Object.keys(sugg).forEach(function (k) { on[k] = 1; });
+    var m = document.createElement('div'); m.className = 'modal';
+    m.innerHTML = '<div class="sheet"><div class="row"><h2 class="grow" style="margin:0">एकत्र पत्रे: ' + list.length + ' गुन्हे</h2><button class="btn ghost sm" data-x>बंद</button></div>' +
+      '<p class="muted">' + list.map(function (c) { return esc(c.ps) + ' ' + crTxt(c); }).join(' • ') + '</p>' +
+      '<label>SP शेरा (सर्व पत्रांत एकच)</label><textarea id="bsh" style="min-height:60px"></textarea>' +
+      '<div class="row"><span class="muted">नाते:</span><select id="brel">' + RELS.map(function (r) { return '<option>' + r + '</option>'; }).join('') + '</select><select id="bpl"><option>गावात</option><option>घरात</option><option>परिसरात</option></select></div>' +
+      '<label>सूचना (सर्व पत्रांत जातील)</label><div id="bp">' + P.map(function (p) {
+        return '<div class="pk' + (on[p.k] ? ' on' : '') + '" data-k="' + p.k + '"><label><input type="checkbox"' + (on[p.k] ? ' checked' : '') + '> ' + esc(p.t) + '</label></div>';
+      }).join('') + '</div>' +
+      '<div class="row" style="margin-top:12px"><button class="btn gold" id="bmk">सर्व पत्रे बनवा (एका Word फाईलमध्ये)</button><span id="bout" class="links"></span></div></div>';
+    document.body.appendChild(m);
+    $('[data-x]', m).onclick = function () { m.remove(); };
+    $('#brel', m).onchange = function () { rel = this.value; };
+    $('#bpl', m).onchange = function () { place = this.value; };
+    m.querySelectorAll('.pk input').forEach(function (cb) { cb.onchange = function () { cb.parentNode.parentNode.classList.toggle('on', cb.checked); }; });
+    $('#bmk', m).onclick = function () {
+      var b = this, keys = [];
+      m.querySelectorAll('.pk.on').forEach(function (x) { keys.push(x.dataset.k); });
+      shera = $('#bsh', m).value.trim();
+      var items = list.map(function (c) {
+        var o = { shera: shera, paras: P, settings: { days: S.settings.days }, relation: rel, place: place, refDate: c.dcrIssue || '', keys: keys, rules: rules() };
+        var D = LETTER.draft(c, o);
+        return { key: c.key, orig: D, L: { jaKr: '', date: S.today, dateText: dmy(S.today), ref: D.ref, subject: D.subject, intro: D.intro, body: D.body, close: D.close,
+          prati: D.prati, prat: D.prat, keys: keys, shera: shera } };
+      });
+      busy(b, true, 'पत्रे बनत आहेत...');
+      call('makeLetters', items).then(function (r) {
+        $('#bout', m).innerHTML = '<span class="chip ok">' + r.count + ' पत्रे</span>' + links(r);
+        list.forEach(function (c) { c.shera = shera; c.letters = (+c.letters || 0) + 1; });
+        toast(r.count + ' पत्रे Drive मध्ये जतन झाली');
       }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };
   }
@@ -291,8 +342,8 @@
     var s = S.settings, f = function (k, l, ta) { return '<label>' + l + '</label>' + (ta ? '<textarea data-s="' + k + '">' + esc(s[k]) + '</textarea>' : '<input type="text" data-s="' + k + '" value="' + esc(s[k]) + '">'); };
     $('#main').innerHTML = '<div class="card sheet" style="max-width:none;box-shadow:none"><h2>पत्राचे तपशील</h2>' +
       f('spName', 'पोलीस अधीक्षकांचे नाव (सही खाली)') + f('spDesig', 'पदनाम (ओळीनुसार)', 1) + f('office', 'कार्यालयाचे शीर्ष (ओळीनुसार)', 1) +
-      f('jaKrPrefix', 'जा.क्र. सुरुवात') + '<div class="row"><div><label>जा.क्र. आपोआप क्रमांक</label><select data-s="autoNo"><option' + (s.autoNo === 'होय' ? ' selected' : '') + '>होय</option><option' + (s.autoNo !== 'होय' ? ' selected' : '') + '>नाही</option></select></div>' +
-      '<div><label>शेवटचा क्रमांक</label><input type="text" data-s="letterSeq" value="' + esc(s.letterSeq) + '" style="width:90px"></div><div><label>अहवालाची मुदत (दिवस)</label><input type="text" data-s="days" value="' + esc(s.days) + '" style="width:70px"></div>' +
+      f('jaKrPrefix', 'जा.क्र. सुरुवात') + f('jaKrFile', 'जा.क्र. फाईल क्रमांक (उदा. 26-1962)') + '<div class="row"><div><label>जा.क्र. आपोआप क्रमांक</label><select data-s="autoNo"><option' + (s.autoNo === 'होय' ? ' selected' : '') + '>होय</option><option' + (s.autoNo !== 'होय' ? ' selected' : '') + '>नाही</option></select></div>' +
+      '<div><label>शेवटचा जा.क्र. क्रमांक (पुढचा आपोआप +1)</label><input type="text" data-s="letterSeq" value="' + esc(s.letterSeq) + '" style="width:90px"></div><div><label>अहवालाची मुदत (दिवस)</label><input type="text" data-s="days" value="' + esc(s.days) + '" style="width:70px"></div>' +
       '<div><label>फॉन्ट (Word/PDF)</label><input type="text" data-s="font" value="' + esc(s.font) + '" style="width:160px"></div></div>' +
       f('quick', 'नेहमीचे शेरे (एका ओळीत एक)', 1) + f('distName', 'B भागावरील घटकाचे नाव') + f('divOrder', 'उपविभागांचा क्रम (स्वल्पविरामाने)') +
       '<div class="row" style="margin-top:12px"><button class="btn" id="ss">जतन करा</button></div></div>' +
@@ -301,6 +352,26 @@
       var o = {}, b = this; document.querySelectorAll('[data-s]').forEach(function (e) { o[e.dataset.s] = e.value; });
       busy(b, true); call('saveSettings', o).then(function (d) { S.settings = d; toast('सेटिंग्ज जतन'); }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };
+    $('#main').insertAdjacentHTML('beforeend', logoCard() + rulesCard());
+    $('#main').querySelectorAll('[data-lsave]').forEach(function (bt) {
+      bt.onclick = function () {
+        var k = bt.dataset.lsave, fi = $('[data-logo="' + k + '"]'), f = fi.files && fi.files[0];
+        if (!f) return toast('आधी चित्र निवडा', 1);
+        var rd = new FileReader();
+        rd.onload = function () {
+          busy(bt, true);
+          call('saveLogo', k, String(rd.result).split(',')[1], f.type).then(function () { toast('लोगो जतन झाला'); vSet(); })
+            .catch(function (e) { toast(e.message, 1); }).then(function () { busy(bt, false); });
+        };
+        rd.readAsDataURL(f);
+      };
+    });
+    $('#main').querySelectorAll('[data-rdel]').forEach(function (bt) {
+      bt.onclick = function () {
+        var rs = rules(); rs.splice(+bt.dataset.rdel, 1);
+        call('saveSettings', { rules: JSON.stringify(rs) }).then(function (d) { S.settings = d; toast('नियम काढला'); vSet(); }).catch(function (e) { toast(e.message, 1); });
+      };
+    });
     var dv = divs();
     $('#pst').innerHTML = '<div class="scroll"><table class="t"><tr><th>पो.स्टे.</th><th>उपविभाग</th></tr>' + S.ps.map(function (p) {
       return '<tr><td><input type="text" class="pn" value="' + esc(p.ps) + '"></td><td><select class="pd">' + dv.concat(dv.indexOf(p.div) < 0 && p.div ? [p.div] : []).map(function (d) { return '<option' + (d === p.div ? ' selected' : '') + '>' + esc(d) + '</option>'; }).join('') + '</select></td></tr>';
@@ -309,6 +380,21 @@
       var list = []; document.querySelectorAll('#pst tr').forEach(function (tr) { var n = $('.pn', tr); if (n && n.value.trim()) list.push({ ps: n.value.trim(), div: $('.pd', tr).value }); });
       call('savePs', list).then(function (d) { S.ps = d; toast('यादी जतन'); }).catch(function (e) { toast(e.message, 1); });
     };
+  }
+
+  function logoCard() {
+    var s = S.settings, nm = { L: 'डावा (पोलीस लोगो)', C: 'मध्य (राजमुद्रा)', R: 'उजवा' };
+    return '<div class="card"><h2>पत्राचे लोगो</h2><p class="muted">प्रत्येक पत्राच्या शीर्षकात हे लोगो येतात. लहान PNG/JPG फाईल निवडून "जतन" दाबा.</p>' +
+      ['L', 'C', 'R'].map(function (k) {
+        return '<div class="row" style="margin:6px 0"><b style="width:170px">' + nm[k] + '</b><input type="file" accept="image/*" data-logo="' + k + '"><button class="btn ghost sm" data-lsave="' + k + '">जतन</button><span class="muted">' + (s['logo' + k] ? 'जतन आहे' : 'अजून नाही') + '</span></div>';
+      }).join('') + '</div>';
+  }
+  function rulesCard() {
+    var rs = rules();
+    return '<div class="card"><h2>शिकलेले बदल (नियम)</h2><p class="muted">पत्र संपादित करून जतन केलेले बदल पुढील सर्व पत्रांत आपोआप लागू होतात. चुकीचा नियम असल्यास इथे काढा.</p>' +
+      (rs.length ? '<div class="scroll"><table class="t"><tr><th>आधीचा मजकूर</th><th>नंतरचा मजकूर</th><th></th></tr>' + rs.map(function (r, i) {
+        return '<tr><td>' + esc(r.f) + '</td><td>' + esc(r.t) + '</td><td><button class="btn ghost sm" data-rdel="' + i + '">काढा</button></td></tr>';
+      }).join('') + '</table></div>' : '<p class="muted">अजून नियम नाहीत.</p>') + '</div>';
   }
 
   window.addEventListener('load', boot);
