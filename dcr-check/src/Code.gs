@@ -20,7 +20,7 @@ var SHEETS = {
   SETTINGS: ['key', 'value']
 };
 var DEF = {
-  spName: '', spDesig: 'पोलीस अधीक्षक,\nनागपूर जिल्हा (ग्रामीण), नागपूर.',
+  spName: '', spDesig: 'भा.पो.से. पोलीस अधीक्षक,\nनागपूर जिल्हा (ग्रामीण), नागपूर.',
   office: 'कार्यालय पोलीस अधीक्षक, नागपूर जिल्हा (ग्रामीण)\nसिव्हील लाईन, नागपूर - 440001\nई-मेल: spreader-ngp.r@mahapolice.gov.in • दूरध्वनी क्र. 0712-2566650 • फॅक्स क्र. 0712-2560779',
   jaKrPrefix: 'नाजिग्रा/डी-32/वाशा/दैगुअ तपास सूचना', jaKrFile: '26-1962', autoNo: 'होय', letterSeq: '0', rules: '[]', logoL: '', logoC: '', logoR: '', days: '3', font: 'Mukta',
   divOrder: 'काटोल,सावनेर,नागपूर,उमरेड,रामटेक,कन्हान', distName: 'नागपूर ग्रामीण जिल्हा',
@@ -261,64 +261,15 @@ function rich_(p, text, o) {
 function jaKrText_(S, date, seq) {
   return S.jaKrPrefix + '/' + S.jaKrFile + '/ ' + (seq || '______') + ' /' + date.slice(0, 4);
 }
-function logoOf_(S, slot) {
-  var id = S['logo' + slot];
-  try { if (id) return DriveApp.getFileById(id).getBlob(); } catch (e) { /* अपलोड केलेला लोगो मिळाला नाही: तयार लोगो वापरा */ }
-  var g = LOGOS[slot];
-  return g ? Utilities.newBlob(Utilities.base64Decode(g.b64), g.mime, 'logo' + slot) : null;
-}
-/* एक पत्र (शीर्षक, जा.क्र., मजकूर, सही, प्रति) b मध्ये लिहितो. सर्व पत्रांची मांडणी एकसारखी. */
-function renderLetter_(b, L, S, kr) {
-  var A = DocumentApp.HorizontalAlignment, F = kr ? 'Kruti Dev 010' : (S.font || 'Mukta');
-  var sz = function (u, k) { return kr ? k : u; };
-  var o = { kr: kr, font: F };
-  var off = String(S.office || '').split('\n').filter(String);
-  /* शीर्षक: डावा लोगो | मध्यभागी कार्यालय (वर मध्यभागी चिन्ह) | उजवा लोगो */
-  var ht = b.appendTable(); ht.setBorderWidth(0);
-  var row = ht.appendTableRow();
-  var cells = { L: row.appendTableCell(), C: row.appendTableCell(), R: row.appendTableCell() };
+/* तीन लोगो {mime,b64}: सेटिंग्जमध्ये अपलोड केलेला असल्यास तो, नाहीतर DCR FORMAT मधील तयार लोगो */
+function logos_(S) {
+  var o = {};
   ['L', 'C', 'R'].forEach(function (k) {
-    var bl = logoOf_(S, k); if (!bl) return;
-    var p = cells[k].getChild(0).asParagraph(), w = k === 'C' ? 25 : 89;
-    p.setAlignment(A.CENTER);
-    var im = p.appendInlineImage(bl); im.setWidth(w); im.setHeight(w * im.getHeight() / im.getWidth());
+    var id = S['logo' + k];
+    try { if (id) { var bl = DriveApp.getFileById(id).getBlob(); o[k] = { mime: bl.getContentType(), b64: Utilities.base64Encode(bl.getBytes()) }; return; } } catch (e) { /* तयार लोगो वापरा */ }
+    o[k] = LOGOS[k];
   });
-  var hasC = !!logoOf_(S, 'C');
-  off.forEach(function (l, i) {
-    var p = (i === 0 && !hasC) ? cells.C.getChild(0).asParagraph() : cells.C.appendParagraph('');
-    p.setAlignment(A.CENTER).setSpacingAfter(0);
-    rich_(p, l, { kr: kr, font: F, bold: i === 0, size: i === 0 ? sz(14, 20) : (i === off.length - 1 ? sz(9, 13) : sz(11, 16)) });
-  });
-  ht.setColumnWidth(0, 100); ht.setColumnWidth(2, 100); ht.setColumnWidth(1, 612 - 115 - 100 - 100);
-  b.appendHorizontalRule();
-  var t = b.appendTable([['', '']]); t.setBorderWidth(0);
-  var jt = 'जा.क्र.: ' + L.jaKr, dt = 'दिनांक: ' + (L.dateText != null ? L.dateText : dmy_(L.date || today_()));
-  var c0 = t.getCell(0, 0), c1 = t.getCell(0, 1);
-  rich_(c0.getChild(0).asParagraph(), jt, { kr: kr, font: F, size: sz(11, 17), bold: true });
-  rich_(c1.getChild(0).asParagraph(), dt, { kr: kr, font: F, size: sz(11, 17), bold: true });
-  c1.getChild(0).asParagraph().setAlignment(A.RIGHT);
-  para_(b, 'संदर्भ: ' + (L.ref || ''), Object.assign({ start: 0, after: 4, align: A.LEFT, size: sz(11, 17), boldPre: 'संदर्भ:' }, o));
-  para_(b, 'विषय: ' + (L.subject || ''), Object.assign({ bold: true, after: 6, align: A.LEFT, size: sz(11, 17) }, o));
-  para_(b, L.intro || '', Object.assign({ indent: 36, size: sz(11, 17) }, o));
-  (L.body || []).forEach(function (x) { if (x && x.trim()) para_(b, x.trim(), Object.assign({ indent: 36, size: sz(11, 17) }, o)); });
-  if (L.close) para_(b, L.close, Object.assign({ indent: 36, size: sz(11, 17) }, o));
-  para_(b, '', { after: 14 });
-  var sig = ['(' + (S.spName || '                    ') + ')'].concat(String(S.spDesig || '').split('\n'));
-  sig.forEach(function (l, i) { para_(b, l, Object.assign({ align: A.LEFT, start: 300, after: 0, bold: i === 0, size: sz(11, 17) }, o)); });
-  para_(b, '', { after: 6 });
-  var pr = (L.prati || []).filter(String), pt = (L.prat || []).filter(String);
-  if (pr.length) {
-    para_(b, 'प्रति,', Object.assign({ align: A.LEFT, after: 0, size: sz(11, 17) }, o));
-    pr.forEach(function (x, i) { para_(b, (pr.length > 1 ? (i + 1) + ') ' : '') + x, Object.assign({ align: A.LEFT, start: 18, after: 0, size: sz(11, 17) }, o)); });
-  }
-  if (pt.length) {
-    para_(b, 'प्रत: माहिती व पुढील कार्यवाहीस,', Object.assign({ align: A.LEFT, after: 0, size: sz(11, 17) }, o));
-    pt.forEach(function (x, i) { para_(b, (pt.length > 1 ? (i + 1) + ') ' : '') + x, Object.assign({ align: A.LEFT, start: 18, after: 0, size: sz(11, 17) }, o)); });
-  }
-}
-function pageSetup_(b) {
-  b.setMarginTop(57.6).setMarginBottom(43.2).setMarginLeft(57.6).setMarginRight(57.6);
-  try { b.setPageWidth(612); b.setPageHeight(792); } catch (e) { Logger.log('पेज आकार: ' + e); }
+  return o;
 }
 /* जा.क्र. क्रमांक: सेटिंग्जच्या आधारे; autoNo बंद असल्यास रिकामी जागा */
 function nextJaKr_(S, date) {
@@ -359,15 +310,24 @@ function makeLetters_(items) {
   built.forEach(function (x) { learn_(S, x.orig, x.L); });
   var one = built.length === 1, c0 = built[0].c;
   var base = one ? c0.ps + '_' + (c0.kind === 'AD' ? 'मर्ग_' : '') + c0.no + '-' + String(c0.yr).slice(2) + '_तपास_सूचना' : 'DCR_चेक_पत्रे_' + built.length + '_' + date;
-  var docU = newDoc_(base, folder), bu = docU.getBody(); pageSetup_(bu);
-  built.forEach(function (x, i) { if (i) bu.appendPageBreak(); renderLetter_(bu, x.L, S, false); });
-  bu.editAsText().setFontFamily(S.font || 'Mukta');
-  docU.saveAndClose();
-  var outU = exportDoc_(docU.getId(), folder, base);
-  var docK = newDoc_(base + '_कृतिदेव', folder), bk = docK.getBody(); pageSetup_(bk);
-  built.forEach(function (x, i) { if (i) bk.appendPageBreak(); renderLetter_(bk, x.L, S, true); });
-  docK.saveAndClose();
-  var outK = exportDocx_(docK.getId(), folder, base + '_कृतिदेव');
+  var logos = logos_(S), letters = built.map(function (x) { return x.L; });
+  var ctype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  var mk = function (font, kr) {
+    var blobs = DOCXB.build(letters, S, { kr: kr, font: font, logos: logos }).map(function (f) {
+      return f.text != null ? Utilities.newBlob(f.text, 'text/xml', f.name) : Utilities.newBlob(Utilities.base64Decode(f.b64), 'image/png', f.name);
+    });
+    return Utilities.zip(blobs).setContentType(ctype);
+  };
+  var fU = saveBlob_(folder, mk('Mangal', false).setName(base + '.docx'));
+  var fK = saveBlob_(folder, mk('Kruti Dev 010', true).setName(base + '_कृतिदेव.docx'));
+  var pdfUrl = '', pdfNote = '';
+  try { /* PDF: Word → Google Doc (Drive सेवा) → PDF; PDF साठी Google मध्ये असलेला Mukta फॉन्ट */
+    var tmp = Drive.Files.create({ name: base + '_tmp', mimeType: 'application/vnd.google-apps.document', parents: [folder.getId()] }, mk('Mukta', false).setName(base + '_tmp.docx'));
+    var pf = saveBlob_(folder, DriveApp.getFileById(tmp.id).getAs('application/pdf').setName(base + '.pdf'));
+    DriveApp.getFileById(tmp.id).setTrashed(true);
+    pdfUrl = pf.getUrl();
+  } catch (e) { pdfNote = 'PDF बनली नाही: appsscript.json मध्ये Drive सेवा (dependencies) जोडा. ' + e; }
+  var outU = { docxUrl: fU.getUrl(), pdfUrl: pdfUrl }, outK = { docxUrl: fK.getUrl() };
   var sL = sh_('LETTERS'), sC = sh_('CASES'), now = now_(), ids = [];
   built.forEach(function (x) {
     var id = Utilities.getUuid().slice(0, 8), r = findCase_(x.key);
@@ -377,7 +337,7 @@ function makeLetters_(items) {
     sC.getRange(r._row, CASE_COLS.indexOf('shera') + 1, 1, 2).setValues([[x.L.shera || r.shera || '', now]]);
     sC.getRange(r._row, CASE_COLS.indexOf('letters') + 1).setValue((+r.letters || 0) + 1);
   });
-  return { docxUrl: outU.docxUrl, krutiUrl: outK.docxUrl, pdfUrl: outU.pdfUrl, count: built.length, jaKrs: built.map(function (x) { return x.L.jaKr; }), ids: ids };
+  return { docxUrl: outU.docxUrl, krutiUrl: outK.docxUrl, pdfUrl: outU.pdfUrl, pdfNote: pdfNote, count: built.length, jaKrs: built.map(function (x) { return x.L.jaKr; }), ids: ids };
 }
 /* जुनी एक-पत्र क्रिया: makeLetters_ चा एकच पत्र */
 function makeLetter_(key, L) {

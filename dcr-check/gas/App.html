@@ -907,7 +907,7 @@ var LETTER = (function () {
     };
   }
   function links(r) {
-    return '<a target="_blank" href="' + esc(r.docxUrl) + '">Word (Unicode)</a><a target="_blank" href="' + esc(r.krutiUrl) + '">Word (कृतिदेव)</a><a target="_blank" href="' + esc(r.pdfUrl) + '">PDF</a>';
+    return '<a target="_blank" href="' + esc(r.docxUrl) + '">Word (Unicode)</a><a target="_blank" href="' + esc(r.krutiUrl) + '">Word (कृतिदेव)</a>' + (r.pdfUrl ? '<a target="_blank" href="' + esc(r.pdfUrl) + '">PDF</a>' : '<span class="chip bad" title="' + esc(r.pdfNote || '') + '">PDF बनली नाही (appsscript.json तपासा)</span>');
   }
   function rules() { try { return JSON.parse(S.settings.rules || '[]') || []; } catch (e) { return []; } }
   /* निवडलेल्या गुन्ह्यांसाठी एकच शेरा व एकत्र सूचना; सर्व पत्रे एका Word फाईलमध्ये */
@@ -990,7 +990,7 @@ var LETTER = (function () {
     $('#bb').onclick = function () {
       var b = this; busy(b, true, 'B भाग बनत आहे (1-2 मिनिटे)...');
       call('buildBPart', $('#bm').value, $('#bs').value).then(function (r) {
-        $('#bo').innerHTML = '<span class="chip ok">' + r.cases + ' गुन्हे</span><a target="_blank" href="' + esc(r.docxUrl) + '">Word</a><a target="_blank" href="' + esc(r.pdfUrl) + '">PDF</a>';
+        $('#bo').innerHTML = '<span class="chip ok">' + r.cases + ' गुन्हे</span><a target="_blank" href="' + esc(r.docxUrl) + '">Word</a>' + (r.pdfUrl ? '<a target="_blank" href="' + esc(r.pdfUrl) + '">PDF</a>' : '<span class="chip bad" title="' + esc(r.pdfNote || '') + '">PDF बनली नाही (appsscript.json तपासा)</span>');
         toast('B भाग Drive मध्ये जतन झाला');
       }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };
@@ -1019,7 +1019,7 @@ var LETTER = (function () {
   function vSet() {
     var s = S.settings, f = function (k, l, ta) { return '<label>' + l + '</label>' + (ta ? '<textarea data-s="' + k + '">' + esc(s[k]) + '</textarea>' : '<input type="text" data-s="' + k + '" value="' + esc(s[k]) + '">'); };
     $('#main').innerHTML = '<div class="card sheet" style="max-width:none;box-shadow:none"><h2>पत्राचे तपशील</h2>' +
-      f('spName', 'पोलीस अधीक्षकांचे नाव (सही खाली)') + f('spDesig', 'पदनाम (ओळीनुसार)', 1) + f('office', 'कार्यालयाचे शीर्ष (ओळीनुसार)', 1) +
+      f('spName', 'पोलीस अधीक्षकांचे नाव (सही खाली)') + f('spDesig', 'पदनाम (ओळीनुसार)', 1) +
       f('jaKrPrefix', 'जा.क्र. सुरुवात') + f('jaKrFile', 'जा.क्र. फाईल क्रमांक (उदा. 26-1962)') + '<div class="row"><div><label>जा.क्र. आपोआप क्रमांक</label><select data-s="autoNo"><option' + (s.autoNo === 'होय' ? ' selected' : '') + '>होय</option><option' + (s.autoNo !== 'होय' ? ' selected' : '') + '>नाही</option></select></div>' +
       '<div><label>शेवटचा जा.क्र. क्रमांक (पुढचा आपोआप +1)</label><input type="text" data-s="letterSeq" value="' + esc(s.letterSeq) + '" style="width:90px"></div><div><label>अहवालाची मुदत (दिवस)</label><input type="text" data-s="days" value="' + esc(s.days) + '" style="width:70px"></div>' +
       '<div><label>फॉन्ट (Word/PDF)</label><input type="text" data-s="font" value="' + esc(s.font) + '" style="width:160px"></div></div>' +
