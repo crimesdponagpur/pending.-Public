@@ -514,12 +514,28 @@
         rd.readAsDataURL(f);
       };
     });
-    $('#main').querySelectorAll('[data-rdel]').forEach(function (bt) {
-      bt.onclick = function () {
-        var rs = rules(); rs.splice(+bt.dataset.rdel, 1);
-        call('saveSettings', { rules: JSON.stringify(rs) }).then(function (d) { S.settings = d; toast('नियम काढला'); vSet(); }).catch(function (e) { toast(e.message, 1); });
-      };
-    });
+    var rbox = $('#rul');
+    function rRow(r) {
+      return '<tr><td><input type="checkbox" class="ron"' + (r.off ? '' : ' checked') + ' title="चालू / बंद"></td><td><textarea class="rf" rows="2">' + esc(r.f) + '</textarea></td><td><textarea class="rt" rows="2">' + esc(r.t) + '</textarea></td><td><button class="btn ghost sm" data-rdel>काढा</button></td></tr>';
+    }
+    function rBind() { rbox.querySelectorAll('[data-rdel]').forEach(function (bt) { bt.onclick = function () { bt.closest('tr').remove(); }; }); }
+    rbox.innerHTML = '<div class="scroll"><table class="t"><tr><th>चालू</th><th>पत्रात हा मजकूर असल्यास</th><th>त्याऐवजी हा मजकूर लिहा</th><th></th></tr>' + rules().map(rRow).join('') + '</table></div>';
+    rBind();
+    $('#radd').onclick = function () { $('table', rbox).insertAdjacentHTML('beforeend', rRow({ f: '', t: '' })); rBind(); var t = rbox.querySelectorAll('.rf'); t[t.length - 1].focus(); };
+    $('#rsv').onclick = function () {
+      var b = this, rs = [], short = 0;
+      rbox.querySelectorAll('tr').forEach(function (tr) {
+        var f = $('.rf', tr); if (!f) return;
+        var x = { f: f.value.trim(), t: $('.rt', tr).value.trim() };
+        if (!x.f) return;
+        if (x.f.length < 2) { short++; return; }
+        if (!$('.ron', tr).checked) x.off = 1;
+        rs.push(x);
+      });
+      busy(b, true);
+      call('saveSettings', { rules: JSON.stringify(rs) }).then(function (d) { S.settings = d; toast(rs.length + ' नियम जतन झाले' + (short ? ' (' + short + ' खूप लहान म्हणून सोडले)' : '') + '. पुढची पत्रे यानुसार बनतील.'); })
+        .catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
+    };
     var dv = divs();
     $('#pst').innerHTML = '<div class="scroll"><table class="t"><tr><th>पो.स्टे.</th><th>उपविभाग</th></tr>' + S.ps.map(function (p) {
       return '<tr><td><input type="text" class="pn" value="' + esc(p.ps) + '"></td><td><select class="pd">' + dv.concat(dv.indexOf(p.div) < 0 && p.div ? [p.div] : []).map(function (d) { return '<option' + (d === p.div ? ' selected' : '') + '>' + esc(d) + '</option>'; }).join('') + '</select></td></tr>';
@@ -544,11 +560,8 @@
       }).join('') + '</div>';
   }
   function rulesCard() {
-    var rs = rules();
-    return '<div class="card"><h2>शिकलेले बदल (नियम)</h2><p class="muted">पत्र संपादित करून जतन केलेले बदल पुढील सर्व पत्रांत आपोआप लागू होतात. चुकीचा नियम असल्यास इथे काढा.</p>' +
-      (rs.length ? '<div class="scroll"><table class="t"><tr><th>आधीचा मजकूर</th><th>नंतरचा मजकूर</th><th></th></tr>' + rs.map(function (r, i) {
-        return '<tr><td>' + esc(r.f) + '</td><td>' + esc(r.t) + '</td><td><button class="btn ghost sm" data-rdel="' + i + '">काढा</button></td></tr>';
-      }).join('') + '</table></div>' : '<p class="muted">अजून नियम नाहीत.</p>') + '</div>';
+    return '<div class="card"><h2>पत्रांचे नियम (शिकलेले व तुमचे)</h2><p class="muted">पत्र संपादित करून जतन केलेले बदल इथे नियम म्हणून येतात. कोणताही नियम बदला, बंद करा, काढा किंवा "+ नवीन नियम" ने स्वतः लिहा. पत्रातील (संदर्भ, विषय, मजकूर, सूचना, शेवटचे वाक्य) डाव्या रकान्यातील मजकूर आपोआप उजव्या रकान्यातील मजकुराने बदलतो. उजवा रकाना रिकामा ठेवल्यास तो मजकूर काढला जातो.</p>' +
+      '<div id="rul"></div><div class="row" style="margin-top:10px"><button class="btn ghost" id="radd">+ नवीन नियम</button><button class="btn" id="rsv">नियम जतन करा</button></div></div>';
   }
 
   /* ---------- टायपिंग: युनिकोड / कृतिदेव / रोमन (ॲपमधील सर्व मजकूर चौकटींत) ---------- */

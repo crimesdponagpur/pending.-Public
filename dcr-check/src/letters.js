@@ -96,7 +96,7 @@ var LETTER = (function () {
   /* शिकलेले नियम: { f: जुना मजकूर, t: नवा मजकूर }. SP/ठाणे पत्रात केलेले बदल पुढील पत्रांत आपोआप लागू होतात. */
   function applyRules(text, rules) {
     var t = String(text || '');
-    (rules || []).forEach(function (r) { if (r && r.f && r.f.length >= 3 && t.indexOf(r.f) >= 0) t = t.split(r.f).join(r.t || ''); });
+    (rules || []).forEach(function (r) { if (r && !r.off && r.f && r.f.length >= 2 && t.indexOf(r.f) >= 0) t = t.split(r.f).join(r.t || ''); });
     return t.replace(/\s{2,}/g, ' ').replace(/\s+([,.।])/g, '$1');
   }
   /* मूळ व बदललेल्या मजकुरातील फरक (पहिल्या व शेवटच्या समान शब्दांनंतरचा भाग). अंक असलेले फरक (तारीख, क्रमांक) नियम होत नाहीत. */

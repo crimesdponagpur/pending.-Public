@@ -271,7 +271,7 @@ function learn_(S, orig, L) {
   pairs.forEach(function (p) {
     var r = LETTER.diffRule(p[1], p[2]);
     if (!r) return;
-    rules = rules.filter(function (x) { return x.f !== r.f; });
+    if (rules.some(function (x) { return x.f === r.f; })) return; // सेटिंग्जमध्ये तुम्ही बदललेला / बंद केलेला नियम तसाच राहतो
     rules.push(r);
   });
   setSetting_('rules', JSON.stringify(rules.slice(-300)));

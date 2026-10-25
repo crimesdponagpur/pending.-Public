@@ -271,7 +271,7 @@ function learn_(S, orig, L) {
   pairs.forEach(function (p) {
     var r = LETTER.diffRule(p[1], p[2]);
     if (!r) return;
-    rules = rules.filter(function (x) { return x.f !== r.f; });
+    if (rules.some(function (x) { return x.f === r.f; })) return; // सेटिंग्जमध्ये तुम्ही बदललेला / बंद केलेला नियम तसाच राहतो
     rules.push(r);
   });
   setSetting_('rules', JSON.stringify(rules.slice(-300)));
@@ -1274,7 +1274,7 @@ var LETTER = (function () {
   /* शिकलेले नियम: { f: जुना मजकूर, t: नवा मजकूर }. SP/ठाणे पत्रात केलेले बदल पुढील पत्रांत आपोआप लागू होतात. */
   function applyRules(text, rules) {
     var t = String(text || '');
-    (rules || []).forEach(function (r) { if (r && r.f && r.f.length >= 3 && t.indexOf(r.f) >= 0) t = t.split(r.f).join(r.t || ''); });
+    (rules || []).forEach(function (r) { if (r && !r.off && r.f && r.f.length >= 2 && t.indexOf(r.f) >= 0) t = t.split(r.f).join(r.t || ''); });
     return t.replace(/\s{2,}/g, ' ').replace(/\s+([,.।])/g, '$1');
   }
   /* मूळ व बदललेल्या मजकुरातील फरक (पहिल्या व शेवटच्या समान शब्दांनंतरचा भाग). अंक असलेले फरक (तारीख, क्रमांक) नियम होत नाहीत. */
