@@ -77,4 +77,36 @@ function uni2kruti(s){
   // एक पास: जुळणारे सर्वात लांब तुकडे एकदाच बदलले जातात (साखळी-बदल नाही)
   return t.replace(UNI2K_RE,function(k){return UNI2K_MAP[k];});
 }
-if(typeof module!=='undefined') module.exports={kruti2uni:kruti2uni,uni2kruti:uni2kruti};
+/* रोमन (इंग्रजी अक्षरे) → देवनागरी, ॲपमधील रोमन टायपिंगसाठी. उदा. pratyek → प्रत्येक, gunha → गुन्हा, polis → पोलिस, aaropi → आरोपी.
+   aa/A=ा ii/I/ee=ी uu/U/oo=ू T=ट Th=ठ D=ड Dh=ढ N=ण L=ळ sh=श Sh=ष dny/gy=ज्ञ ksh/x=क्ष M=ं H=ः ~=ँ */
+var ROM_C={kSh:'क्ष',ksh:'क्ष',dny:'ज्ञ',chh:'छ',kh:'ख',gh:'घ',ch:'च',Ch:'छ',jh:'झ',Th:'ठ',Dh:'ढ',th:'थ',dh:'ध',ph:'फ',bh:'भ',sh:'श',Sh:'ष',gy:'ज्ञ',
+  k:'क',g:'ग',c:'च',j:'ज',z:'झ',T:'ट',D:'ड',N:'ण',t:'त',d:'द',n:'न',p:'प',f:'फ',b:'ब',m:'म',y:'य',r:'र',l:'ल',L:'ळ',v:'व',w:'व',s:'स',h:'ह',x:'क्ष',q:'क'};
+var ROM_V={aa:['आ','ा'],A:['आ','ा'],ai:['ऐ','ै'],au:['औ','ौ'],ii:['ई','ी'],ee:['ई','ी'],I:['ई','ी'],uu:['ऊ','ू'],oo:['ऊ','ू'],U:['ऊ','ू'],
+  Ru:['ऋ','ृ'],O:['ऑ','ॉ'],E:['ॲ','ॅ'],a:['अ',''],i:['इ','ि'],u:['उ','ु'],e:['ए','े'],o:['ओ','ो']};
+var ROM_X={M:'ं',H:'ः','~':'ँ'};
+function roman2uni(w){
+  if(/^[A-Z]{2,}$/.test(w)) return w; // DCR, FIR इ. तसेच
+  var o='',pend=false,i=0;
+  function take(map){
+    for(var L=3;L>0;L--){ var k=w.substr(i,L); if(k.length<L) continue;
+      if(map[k]) return k;
+      var lk=k.toLowerCase(); if(k!==lk&&map[lk]&&!map[k]&&!/[TDNLSAIUMHOE]/.test(k)) return lk;
+      if(k.charAt(0)!==k.charAt(0).toLowerCase()&&map[k.charAt(0).toLowerCase()+k.slice(1)]&&L>1) return k.charAt(0).toLowerCase()+k.slice(1);
+    }
+    return '';
+  }
+  while(i<w.length){
+    var ch=w.charAt(i), k;
+    if(ROM_X[ch]){ o+=ROM_X[ch]; pend=false; i++; continue; }
+    if((k=take(ROM_C))){ if(pend) o+='्'; o+=ROM_C[k]; pend=true; i+=k.length; continue; }
+    if((k=take(ROM_V))){
+      var fin=pend&&i+k.length===w.length&&i>1&&{a:'ा',i:'ी',u:'ू'}[k]; // शेवटचा a/i/u: gunha → गुन्हा, aaropi → आरोपी
+      o+=fin||(pend?ROM_V[k][1]:ROM_V[k][0]); pend=false; i+=k.length; continue; }
+    var lc=ch.toLowerCase();
+    if(ROM_C[lc]){ if(pend) o+='्'; o+=ROM_C[lc]; pend=true; i++; continue; }
+    if(ROM_V[lc]){ o+=pend?ROM_V[lc][1]:ROM_V[lc][0]; pend=false; i++; continue; }
+    o+=ch; pend=false; i++;
+  }
+  return o;
+}
+if(typeof module!=='undefined') module.exports={kruti2uni:kruti2uni,uni2kruti:uni2kruti,roman2uni:roman2uni};

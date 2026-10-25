@@ -6,82 +6,145 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DCR चेक • B भाग</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<style>:root{--navy:#0a1a3f;--navy2:#123170;--navy3:#1b4aa8;--gold:#f2b01e;--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--ink2:#334155;--muted:#64748b;--line:#e3e9f2;
---ok:#047857;--ok-bg:#e3f6ec;--warn:#b45309;--warn-bg:#fff3df;--bad:#b91c1c;--bad-bg:#fde8e8;--info:#1d4ed8;--info-bg:#e6eeff}
+<style>:root{--navy:#0b1f4b;--navy2:#13306e;--pri:#1d4ed8;--pri-d:#1e40af;--pri-l:#eef3ff;--gold:#c8961a;--gold-l:#fdf6e3;--bg:#f5f7fb;--card:#fff;--ink:#0f172a;--ink2:#334155;--muted:#64748b;--line:#e5e9f0;--line2:#d5dce7;
+--ok:#047857;--ok-bg:#e7f6ef;--warn:#a45a05;--warn-bg:#fff4e0;--bad:#b91c1c;--bad-bg:#fdecec;--info:#1d4ed8;--info-bg:#eaf0ff;--r:12px;--sh:0 1px 2px rgba(15,23,42,.05),0 1px 3px rgba(15,23,42,.06);--sh2:0 10px 30px rgba(15,23,42,.12)}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Mukta","Noto Sans Devanagari","Mangal",system-ui,sans-serif}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Mukta","Inter","Noto Sans Devanagari","Mangal",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
-a{color:var(--navy3)}
-header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:12px 16px 0;position:sticky;top:0;z-index:5}
-.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.top h1{font-size:19px;margin:0;font-weight:700}
-.top small{opacity:.8;display:block;font-size:13px}
-.top .sp{flex:1}
-.top a{color:#ffd77a;font-size:13px;text-decoration:none;margin-left:10px}
-nav{display:flex;gap:4px;overflow-x:auto;margin-top:10px;scrollbar-width:none}
-nav button{background:none;border:0;color:#cfd8ee;padding:8px 12px;border-radius:10px 10px 0 0;cursor:pointer;white-space:nowrap;font-weight:600}
-nav button.on{background:var(--bg);color:var(--navy)}
-main{max-width:1100px;margin:0 auto;padding:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
-.card h2{font-size:17px;margin:0 0 8px}
-.card h3{font-size:15px;margin:10px 0 6px}
-.muted{color:var(--muted);font-size:13px}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+a{color:var(--pri);text-decoration:none}a:hover{text-decoration:underline}
+.app{display:flex;min-height:100vh}
+.side{width:236px;flex:none;background:var(--navy);color:#c9d3ea;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand{display:flex;gap:10px;align-items:center;padding:18px 16px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand img{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:10px;padding:3px}
+.brand img:not([src]){visibility:hidden}
+.brand b{display:block;color:#fff;font-size:16.5px;letter-spacing:.2px}
+.brand small{font-size:12px;opacity:.75}
+.side nav{display:flex;flex-direction:column;gap:2px;padding:12px 10px;flex:1}
+.side nav button{display:flex;align-items:center;gap:11px;background:none;border:0;color:inherit;padding:9px 12px;border-radius:9px;cursor:pointer;font-weight:600;font-size:14.5px;text-align:left}
+.side nav button svg,.side-foot svg{width:19px;height:19px;flex:none;opacity:.85}
+.side nav button:hover{background:rgba(255,255,255,.06);color:#fff}
+.side nav button.on{background:#fff;color:var(--navy);box-shadow:var(--sh)}
+.side nav button.on svg{color:var(--pri);opacity:1}
+.side-foot{padding:12px 10px 16px;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:2px}
+.side-foot a{display:flex;align-items:center;gap:10px;color:#c9d3ea;font-size:13.5px;padding:6px 12px;border-radius:8px}
+.side-foot a:hover{background:rgba(255,255,255,.06);text-decoration:none;color:#fff}
+.side-foot small{padding:6px 12px 0;font-size:11.5px;opacity:.55}
+.body{flex:1;min-width:0;display:flex;flex-direction:column}
+.bar{position:sticky;top:0;z-index:25;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar h1{font-size:20px;margin:0;font-weight:700;color:var(--navy);letter-spacing:.1px}
+.bar small{display:block;color:var(--muted);font-size:13px}
+.bar .sp{flex:1}
+main{width:100%;max-width:1180px;margin:0 auto;padding:22px 28px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:16px;box-shadow:var(--sh)}
+.card h2{font-size:17px;margin:0 0 10px;color:var(--navy);font-weight:700}
+.card h3{font-size:15px;margin:14px 0 8px;color:var(--ink);font-weight:700}
+.card>h2:first-child,.card>h3:first-child{margin-top:0}
+.muted{color:var(--muted);font-size:13.5px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .row>*{min-width:0}
 .grow{flex:1}
-input[type=text],input[type=date],input[type=month],input[type=number],select,textarea{border:1px solid #cbd5e1;border-radius:10px;padding:7px 10px;background:#fff;max-width:100%}
-textarea{width:100%;min-height:70px;resize:vertical;line-height:1.5}
-.btn{border:0;background:var(--navy3);color:#fff;border-radius:10px;padding:8px 14px;font-weight:600;cursor:pointer}
-.btn:disabled{opacity:.5;cursor:wait}
-.btn.gold{background:var(--gold);color:#1f2937}
-.btn.ghost{background:#eef2fa;color:var(--navy2)}
-.btn.sm{padding:4px 10px;font-size:13px}
-.drop{border:2px dashed #9fb2d8;border-radius:14px;padding:26px;text-align:center;background:#f8fafd;cursor:pointer}
-.drop.over{background:#e6eeff;border-color:var(--navy3)}
-.chip{display:inline-block;border-radius:999px;padding:1px 10px;font-size:12.5px;background:#eef2fa;color:var(--navy2);margin:2px 4px 2px 0;font-weight:600}
+label{color:var(--ink2)}
+input[type=text],input[type=search],input[type=date],input[type=month],input[type=number],select,textarea{border:1px solid var(--line2);border-radius:9px;padding:8px 11px;background:#fff;max-width:100%;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--pri);box-shadow:0 0 0 3px rgba(29,78,216,.15)}
+textarea{width:100%;min-height:70px;resize:vertical;line-height:1.55}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;background:var(--pri);color:#fff;border-radius:9px;padding:8px 15px;font-weight:600;cursor:pointer;transition:background .15s,box-shadow .15s;white-space:nowrap}
+.btn:hover{background:var(--pri-d)}
+.btn:disabled{opacity:.55;cursor:wait}
+.btn.gold{background:var(--navy);color:#fff}.btn.gold:hover{background:var(--navy2)}
+.btn.ghost{background:#fff;color:var(--ink2);border-color:var(--line2)}.btn.ghost:hover{background:#f6f8fc;border-color:#c3cddc}
+.btn.sm{padding:4px 11px;font-size:13px;border-radius:8px}
+.drop{display:block;margin:4px 0 8px;border:1.5px dashed #a9b8d4;border-radius:var(--r);padding:34px 20px;text-align:center;background:linear-gradient(180deg,#fbfcfe,#f4f7fc);cursor:pointer;transition:all .15s}
+.drop:hover,.drop.over{background:var(--pri-l);border-color:var(--pri)}
+.chip{display:inline-flex;align-items:center;border-radius:999px;padding:1px 10px;font-size:12.5px;background:#eef2f8;color:var(--navy2);margin:2px 4px 2px 0;font-weight:600;line-height:1.7}
 .chip.bad{background:var(--bad-bg);color:var(--bad)}.chip.warn{background:var(--warn-bg);color:var(--warn)}.chip.ok{background:var(--ok-bg);color:var(--ok)}.chip.info{background:var(--info-bg);color:var(--info)}
-.chip.q{cursor:pointer;font-weight:500;background:#fff;border:1px solid #cbd5e1;color:var(--ink2)}
-.iss{list-style:none;padding:0;margin:6px 0}
-.iss li{padding:5px 10px;border-radius:8px;margin:3px 0;font-size:14px}
-.iss .bad{background:var(--bad-bg);color:#7f1d1d}.iss .warn{background:var(--warn-bg);color:#78350f}.iss .info{background:var(--info-bg);color:#1e3a8a}
-details summary{cursor:pointer;color:var(--navy2);font-weight:600;font-size:14px}
-.case{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;background:#fff}
+.chip.q{cursor:pointer;font-weight:500;background:#fff;border:1px solid var(--line2);color:var(--ink2)}.chip.q:hover{border-color:var(--pri);color:var(--pri)}
+.iss{list-style:none;padding:0;margin:8px 0}
+.iss li{padding:7px 12px;border-radius:8px;margin:4px 0;font-size:14px;border-left:3px solid transparent}
+.iss .bad{background:var(--bad-bg);color:#7f1d1d;border-color:var(--bad)}.iss .warn{background:var(--warn-bg);color:#78350f;border-color:#e59a2c}.iss .info{background:var(--info-bg);color:#1e3a8a;border-color:#7da0f0}
+details summary{cursor:pointer;color:var(--pri);font-weight:600;font-size:14px}
+.case{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin:10px 0;background:#fff;box-shadow:var(--sh);transition:border-color .15s}
+.case:hover{border-color:var(--line2)}
 .case.has{border-left:4px solid var(--gold)}
-.case .t{font-weight:700}
+.case .t{font-weight:700;color:var(--navy)}
 .case .facts{font-size:14px;color:var(--ink2);margin:6px 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
 .case .facts.open{display:block}
 .case textarea{min-height:52px}
-.case .qk{display:none}.case.qo .qk{display:block}
-table.t{border-collapse:collapse;width:100%;font-size:14px}
-table.t th,table.t td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
-table.t th{background:#f1f5fb;font-weight:700;position:sticky;top:0}
-.scroll{overflow-x:auto}
-.late td{background:#fff7f0}
-.modal{position:fixed;inset:0;background:rgba(10,26,63,.45);z-index:20;display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:20px 10px}
-.sheet{background:#fff;border-radius:16px;max-width:860px;width:100%;padding:16px 18px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
-.sheet label{display:block;font-weight:600;font-size:13.5px;margin:10px 0 3px;color:var(--ink2)}
+.case .qk{display:none;margin-top:4px}.case.qo .qk{display:block}
+table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:14px}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.t th{background:#f7f9fc;font-weight:700;color:var(--ink2);font-size:13px;position:sticky;top:0;border-bottom-color:var(--line2)}
+table.t tr:hover td{background:#fafbfe}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.scroll table.t tr:last-child td{border-bottom:0}
+.late td{background:#fff8f1}
+.modal{position:fixed;inset:0;background:rgba(11,31,75,.45);backdrop-filter:blur(2px);z-index:20;display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:88px 12px 28px}
+.sheet{background:#fff;border-radius:16px;max-width:880px;width:100%;padding:20px 22px;box-shadow:var(--sh2)}
+.sheet label{display:block;font-weight:600;font-size:13.5px;margin:12px 0 4px;color:var(--ink2)}
 .sheet input[type=text]{width:100%}
-.pk{border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin:6px 0}
-.pk.on{border-color:#9fb2d8;background:#f8fafd}
+.pk{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0}
+.pk.on{border-color:#b8c7e6;background:#f8faff}
 .pk>label{margin:0;display:flex;gap:8px;align-items:center;cursor:pointer}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:9px 16px;border-radius:10px;z-index:30;max-width:92vw}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;z-index:30;max-width:92vw;box-shadow:var(--sh2);font-weight:500}
 .toast.bad{background:var(--bad)}
 .links a{margin-right:12px;font-weight:600}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid #cbd5e1;border-top-color:var(--navy3);border-radius:50%;animation:s 1s linear infinite;vertical-align:-2px}
+.links a[href]{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line2);border-radius:8px;padding:2px 10px;margin:2px 6px 2px 0;font-size:13.5px;background:#fff}
+.links a[href]:hover{border-color:var(--pri);text-decoration:none}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #cbd5e1;border-top-color:var(--pri);border-radius:50%;animation:s 1s linear infinite;vertical-align:-2px}
 @keyframes s{to{transform:rotate(360deg)}}
 #print{display:none}
 @media print{body>*:not(#print){display:none!important}#print{display:block;font-size:11px}#print table{border-collapse:collapse;width:100%}#print td,#print th{border:1px solid #333;padding:3px 5px;vertical-align:top}#print h2{text-align:center;margin:0 0 6px;font-size:15px}}
-@media (max-width:640px){main{padding:10px}.card{padding:12px}.top a{margin-left:0;margin-right:10px}}
+@media (max-width:860px){
+.app{flex-direction:column}
+.side{width:auto;height:auto;position:fixed;bottom:0;left:0;right:0;top:auto;z-index:15;flex-direction:row;box-shadow:0 -2px 12px rgba(0,0,0,.15)}
+.brand,.side-foot{display:none}
+.side nav{flex-direction:row;padding:6px;gap:2px;justify-content:space-around}
+.side nav button{flex-direction:column;gap:2px;font-size:11px;padding:6px 4px;flex:1;text-align:center}
+.side nav button.on{background:rgba(255,255,255,.12);color:#fff;box-shadow:none}.side nav button.on svg{color:#ffd77a}
+.bar{padding:10px 16px}.bar h1{font-size:17px}
+main{padding:14px 16px 90px}.card{padding:14px}
+.toast{bottom:84px}
+}
 .pickl{display:inline-flex;align-items:center;margin-right:6px;cursor:pointer}
 .pickl input{width:16px;height:16px}
+.ime{display:inline-flex;align-items:center;gap:2px;font-size:12.5px;color:var(--muted);background:#f1f4f9;border:1px solid var(--line);border-radius:999px;padding:2px 3px 2px 12px}
+.ime button{background:none;border:0;color:var(--ink2);border-radius:999px;padding:3px 11px;cursor:pointer;font:inherit;font-weight:600}
+.ime button.on{background:#fff;color:var(--pri);box-shadow:var(--sh)}
+.chip.q.hq{background:#fff3d6;color:#7a5200}
+.chip.qadd{background:none;border:1px dashed #b9c4dc;color:#5a6a8c;cursor:pointer}
+.bed table.bt td{font-size:12.5px;vertical-align:top;min-width:60px}
+.bed table.bt td:nth-child(11){min-width:280px}
+.bed td.act{min-width:76px;text-decoration:none!important;opacity:1!important}
+.bed tr.skip td{opacity:.45;text-decoration:line-through}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.kpi:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--pri)}
+.kpi.ok:before{background:var(--ok)}.kpi.warn:before{background:#e59a2c}.kpi.bad:before{background:var(--bad)}
+.kpi span{display:block;color:var(--muted);font-size:13px;font-weight:600}
+.kpi b{display:block;font-size:26px;line-height:1.2;color:var(--navy);font-family:"Inter","Mukta",sans-serif;margin:2px 0}
+.kpi small{color:var(--muted);font-size:12.5px}
+@media (max-width:860px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.kpi b{font-size:22px}}
 </style>
 </head>
 <body>
-<header><div class="top"><div><h1>DCR चेक • हेडवाइज B भाग</h1><small>नागपूर ग्रामीण जिल्हा • CRO शाखा <span id="ver"></span></small></div><span class="sp"></span><a id="lnkRoot" target="_blank" href="#">Drive फोल्डर</a><a id="lnkSs" target="_blank" href="#">नोंदवही (Sheet)</a></div>
-<nav><button data-t="dcr" class="on">DCR अपलोड</button><button data-t="cases">गुन्हे व शेरा</button><button data-t="letters">DCR चेक नोंदवही</button><button data-t="bpart">B भाग</button><button data-t="set">सेटिंग्ज</button></nav></header>
+<div class="app">
+<aside class="side">
+<div class="brand"><img id="brand" alt=""><div><b>DCR चेक</b><small>नागपूर ग्रामीण • CRO</small></div></div>
+<nav>
+<button data-t="dcr" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><span>DCR अपलोड</span></button>
+<button data-t="cases"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg><span>गुन्हे व शेरा</span></button>
+<button data-t="letters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 14l2 2 4-4"/></svg><span>पत्र नोंदवही</span></button>
+<button data-t="bpart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></svg><span>B भाग</span></button>
+<button data-t="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>सेटिंग्ज</span></button>
+</nav>
+<div class="side-foot"><a id="lnkRoot" target="_blank" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Drive फोल्डर</span></a><a id="lnkSs" target="_blank" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 3v18"/></svg><span>नोंदवही (Sheet)</span></a><small id="ver"></small></div>
+</aside>
+<div class="body">
+<header class="bar"><div><h1 id="ptitle">DCR अपलोड</h1><small id="psub">पोलीस अधीक्षक कार्यालय, नागपूर जिल्हा (ग्रामीण)</small></div><span class="sp"></span></header>
 <main id="main"><div class="card muted">ॲप सुरू होत आहे...</div></main>
+</div>
+</div>
 <div id="print"></div>
 <script>// Kruti Dev (010/016/050/055 — एकच मांडणी) → Unicode
 var K1=["ñ","Q+Z","sas","aa",")Z","ZZ","å","ƒ","„","…","†","‡","ˆ","‰","Š","‹",
@@ -162,7 +225,39 @@ function uni2kruti(s){
   // एक पास: जुळणारे सर्वात लांब तुकडे एकदाच बदलले जातात (साखळी-बदल नाही)
   return t.replace(UNI2K_RE,function(k){return UNI2K_MAP[k];});
 }
-if(typeof module!=='undefined') module.exports={kruti2uni:kruti2uni,uni2kruti:uni2kruti};
+/* रोमन (इंग्रजी अक्षरे) → देवनागरी, ॲपमधील रोमन टायपिंगसाठी. उदा. pratyek → प्रत्येक, gunha → गुन्हा, polis → पोलिस, aaropi → आरोपी.
+   aa/A=ा ii/I/ee=ी uu/U/oo=ू T=ट Th=ठ D=ड Dh=ढ N=ण L=ळ sh=श Sh=ष dny/gy=ज्ञ ksh/x=क्ष M=ं H=ः ~=ँ */
+var ROM_C={kSh:'क्ष',ksh:'क्ष',dny:'ज्ञ',chh:'छ',kh:'ख',gh:'घ',ch:'च',Ch:'छ',jh:'झ',Th:'ठ',Dh:'ढ',th:'थ',dh:'ध',ph:'फ',bh:'भ',sh:'श',Sh:'ष',gy:'ज्ञ',
+  k:'क',g:'ग',c:'च',j:'ज',z:'झ',T:'ट',D:'ड',N:'ण',t:'त',d:'द',n:'न',p:'प',f:'फ',b:'ब',m:'म',y:'य',r:'र',l:'ल',L:'ळ',v:'व',w:'व',s:'स',h:'ह',x:'क्ष',q:'क'};
+var ROM_V={aa:['आ','ा'],A:['आ','ा'],ai:['ऐ','ै'],au:['औ','ौ'],ii:['ई','ी'],ee:['ई','ी'],I:['ई','ी'],uu:['ऊ','ू'],oo:['ऊ','ू'],U:['ऊ','ू'],
+  Ru:['ऋ','ृ'],O:['ऑ','ॉ'],E:['ॲ','ॅ'],a:['अ',''],i:['इ','ि'],u:['उ','ु'],e:['ए','े'],o:['ओ','ो']};
+var ROM_X={M:'ं',H:'ः','~':'ँ'};
+function roman2uni(w){
+  if(/^[A-Z]{2,}$/.test(w)) return w; // DCR, FIR इ. तसेच
+  var o='',pend=false,i=0;
+  function take(map){
+    for(var L=3;L>0;L--){ var k=w.substr(i,L); if(k.length<L) continue;
+      if(map[k]) return k;
+      var lk=k.toLowerCase(); if(k!==lk&&map[lk]&&!map[k]&&!/[TDNLSAIUMHOE]/.test(k)) return lk;
+      if(k.charAt(0)!==k.charAt(0).toLowerCase()&&map[k.charAt(0).toLowerCase()+k.slice(1)]&&L>1) return k.charAt(0).toLowerCase()+k.slice(1);
+    }
+    return '';
+  }
+  while(i<w.length){
+    var ch=w.charAt(i), k;
+    if(ROM_X[ch]){ o+=ROM_X[ch]; pend=false; i++; continue; }
+    if((k=take(ROM_C))){ if(pend) o+='्'; o+=ROM_C[k]; pend=true; i+=k.length; continue; }
+    if((k=take(ROM_V))){
+      var fin=pend&&i+k.length===w.length&&i>1&&{a:'ा',i:'ी',u:'ू'}[k]; // शेवटचा a/i/u: gunha → गुन्हा, aaropi → आरोपी
+      o+=fin||(pend?ROM_V[k][1]:ROM_V[k][0]); pend=false; i+=k.length; continue; }
+    var lc=ch.toLowerCase();
+    if(ROM_C[lc]){ if(pend) o+='्'; o+=ROM_C[lc]; pend=true; i++; continue; }
+    if(ROM_V[lc]){ o+=pend?ROM_V[lc][1]:ROM_V[lc][0]; pend=false; i++; continue; }
+    o+=ch; pend=false; i++;
+  }
+  return o;
+}
+if(typeof module!=='undefined') module.exports={kruti2uni:kruti2uni,uni2kruti:uni2kruti,roman2uni:roman2uni};
 
 /* DCR (Word) वाचन: Kruti Dev → Unicode, गुन्ह्यांच्या ओळी, B भाग शीर्षक, त्रुटी तपासणी.
  * ब्राउझरमध्ये (JSZip + DOMParser) व node चाचणीत (jszip + @xmldom) दोन्हीकडे चालते. */
@@ -701,6 +796,7 @@ var LETTER = (function () {
     });
   }
   function toast(m, bad) {
+    document.querySelectorAll('.toast').forEach(function (x) { x.remove(); });
     var t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = m; document.body.appendChild(t);
     setTimeout(function () { t.remove(); }, bad ? 6000 : 3000);
   }
@@ -717,19 +813,31 @@ var LETTER = (function () {
     document.querySelectorAll('nav button').forEach(function (b) { b.onclick = function () { show(b.dataset.t); }; });
     call('init').then(function (d) {
       S.settings = d.settings; S.dcrs = d.dcrs; S.ps = d.ps; S.today = d.today;
-      $('#lnkRoot').href = d.rootUrl; $('#lnkSs').href = d.ssUrl; $('#ver').textContent = 'v' + d.version;
-      show('dcr');
+      $('#lnkRoot').href = d.rootUrl; $('#lnkSs').href = d.ssUrl; $('#ver').textContent = 'आवृत्ती ' + d.version; if (d.brand) $('#brand').src = d.brand;
+      imeBar(); show('dcr');
     }).catch(function (e) { $('#main').innerHTML = '<div class="card"><h2>ॲप सुरू झाले नाही</h2><p>' + esc(e.message) + '</p></div>'; });
   }
   function show(t) {
     S.tab = t;
     document.querySelectorAll('nav button').forEach(function (b) { b.classList.toggle('on', b.dataset.t === t); });
+    var P = { dcr: ['DCR अपलोड', 'रोजचा DCR (Word) तपासा व नोंदवहीत जतन करा'], cases: ['गुन्हे व शेरा', 'SP शेरा, DCR चेक पत्रे व एकत्र पत्रे'], letters: ['DCR चेक नोंदवही', 'दिलेली पत्रे, अनुपालन अहवाल व मुदत'],
+      bpart: ['हेडवाइज B भाग', 'दैनिक तपासणी, संपादन व मासिक B भाग'], set: ['सेटिंग्ज', 'पत्राचे तपशील, शेरे, लोगो व पो.स्टे. यादी'] }[t];
+    $('#ptitle').textContent = P[0]; $('#psub').textContent = P[1]; window.scrollTo(0, 0);
     ({ dcr: vDcr, cases: vCases, letters: vLetters, bpart: vBpart, set: vSet })[t]();
   }
 
   /* ---------- 1. DCR अपलोड ---------- */
+  /* महिन्याचा आढावा: वरच्या चार चौकटी */
+  function stats() {
+    var m = curMonth(), ds = S.dcrs.filter(function (r) { return String(r.reportDate).slice(0, 7) === m && +r.cases > 0; });
+    var n = 0, bad = 0, add = 0; ds.forEach(function (r) { n += +r.cases || 0; if (+r.bad) bad++; if (r.bAdded) add++; });
+    var last = ds.map(function (r) { return r.reportDate; }).sort().pop();
+    var T = [['या महिन्याचे DCR', ds.length, last ? 'शेवटचा: ' + dmy(last) : 'अजून नाही'], ['गुन्हे (महिना)', n, 'NC सोडून सर्व नोंदी'],
+      ['त्रुटी असलेले DCR', bad, bad ? 'तपासून PS ला कळवा' : 'सर्व ठीक', bad ? 'bad' : 'ok'], ['मासिक B भागात', add + '/' + ds.length, 'दिवस जोडले', add < ds.length ? 'warn' : 'ok']];
+    return '<div class="kpis">' + T.map(function (t) { return '<div class="kpi ' + (t[3] || '') + '"><span>' + t[0] + '</span><b>' + t[1] + '</b><small>' + esc(t[2]) + '</small></div>'; }).join('') + '</div>';
+  }
   function vDcr() {
-    $('#main').innerHTML =
+    $('#main').innerHTML = stats() +
       '<div class="card"><h2>रोजचा DCR टाका</h2><p class="muted">Word (.docx) फाइल द्या: ॲप Kruti Dev मजकूर Unicode मध्ये बदलून गुन्हे नोंदवहीत घेईल, त्रुटी सांगेल आणि मूळ फाइल Drive मध्ये ठेवेल. PDF फक्त Drive मध्ये जपली जाते (वाचली जात नाही). एकाच वेळी अनेक तारखांच्या फाइल्स देता येतात.</p>' +
       '<label class="drop" id="drop">येथे फाइल्स ओढा किंवा <b>निवडण्यासाठी दाबा</b><input type="file" id="fi" accept=".docx,.pdf" multiple hidden></label><div id="res"></div></div>' +
       '<div class="card"><h2>आलेले DCR</h2><div id="dl"></div></div>';
@@ -794,7 +902,7 @@ var LETTER = (function () {
       '<button class="btn sm ghost" data-bp="' + R.reportDate + '">दैनिक B भाग तपासा →</button></div></div>';
   }
   function bindCard(d) { var bp = document.querySelector('[data-bp="' + d + '"]'); if (bp) bp.onclick = function () { S.pickDay = d; show('bpart'); }; var b = document.querySelector('[data-go="' + d + '"]'); if (b) b.onclick = function () { S.pickDate = d; show('cases'); }; }
-  function refreshDcrs() { call('init').then(function (d) { S.dcrs = d.dcrs; S.ps = d.ps; dcrList(); }); }
+  function refreshDcrs() { call('init').then(function (d) { S.dcrs = d.dcrs; S.ps = d.ps; dcrList(); var k = $('.kpis'); if (k) k.outerHTML = stats(); }); }
 
   /* ---------- 2. गुन्हे व शेरा ---------- */
   function vCases() {
@@ -823,7 +931,17 @@ var LETTER = (function () {
       list.forEach(bindCase); updateBulk();
     }).catch(function (e) { $('#cl').innerHTML = '<div class="card"><ul class="iss"><li class="bad">' + esc(e.message) + '</li></ul></div>'; });
   }
-  function quickChips() { return String(S.settings.quick || '').split('\n').filter(String).map(function (q) { return '<span class="chip q">' + esc(q) + '</span>'; }).join(''); }
+  function qHead() { try { return JSON.parse(S.settings.quickHead || '{}') || {}; } catch (e) { return {}; } }
+  /* शेऱ्याचे पर्याय: आधी गुन्ह्याच्या शीर्षकाचे (सेटिंग्जमधील), मग सर्वसाधारण */
+  function quickList(head) {
+    var a = String(qHead()[head] || '').split('\n').concat(String(S.settings.quick || '').split('\n')).map(function (x) { return x.trim(); }).filter(String);
+    return a.filter(function (x, i) { return a.indexOf(x) === i; });
+  }
+  function quickChips(head) {
+    var own = String(qHead()[head] || '').split('\n').map(function (x) { return x.trim(); });
+    return quickList(head).map(function (q) { return '<span class="chip q' + (own.indexOf(q) >= 0 ? ' hq' : '') + '">' + esc(q) + '</span>'; }).join('') +
+      '<span class="chip qadd" title="लिहिलेला शेरा या शीर्षकाच्या पर्यायांत जोडा">+ हा शेरा "' + esc(DCR.HEAD_MR[head] || 'इतर') + '" साठी जतन</span>';
+  }
   function caseHtml(c) {
     var id = 'c' + btoa(unescape(encodeURIComponent(c.key))).replace(/[^a-z0-9]/gi, '');
     c._id = id;
@@ -831,7 +949,7 @@ var LETTER = (function () {
       '<span class="chip">' + esc(DCR.HEAD_MR[c.head] || DCR.SEC_MR[c.sec] || '') + '</span>' + (+c.letters ? '<span class="chip ok">पत्र ' + c.letters + '</span>' : '') + '</div>' +
       '<div class="muted">' + (c.div ? esc(c.div) + ' विभाग • ' : '') + 'दाखल ' + dmy(c.regDate) + (c.label ? ' • ' + esc(c.label) : '') + (c.io ? ' • तपास: ' + esc(c.io.slice(0, 60)) : '') + '</div>' +
       '<div class="facts">' + esc(c.facts || ('फिर्यादी: ' + c.comp + ' • आरोपी: ' + c.acc)) + '</div>' +
-      '<textarea placeholder="SP साहेबांचा शेरा येथे लिहा...">' + esc(c.shera) + '</textarea><div class="qk">' + quickChips() + '</div>' +
+      '<textarea placeholder="SP साहेबांचा शेरा येथे लिहा...">' + esc(c.shera) + '</textarea><div class="qk">' + quickChips(c.head) + '</div>' +
       '<div class="row" style="margin-top:6px"><button class="btn sm ghost" data-a="save">शेरा जतन</button><button class="btn sm gold" data-a="letter">DCR चेक पत्र बनवा</button>' +
       '<span class="grow"></span><span class="muted">शीर्षक:</span>' + headSel(c.head, 'hs') + '</div></div>';
   }
@@ -841,7 +959,16 @@ var LETTER = (function () {
     $('.facts', el).onclick = function () { this.classList.toggle('open'); };
     $('.pk1', el).onchange = function () { if (this.checked) S.picked[c.key] = c; else delete S.picked[c.key]; updateBulk(); };
     ta.onfocus = function () { el.classList.add('qo'); };
-    el.querySelectorAll('.chip.q').forEach(function (q) { q.onclick = function () { ta.value = (ta.value.trim() ? ta.value.trim().replace(/[.।]?$/, '. ') : '') + q.textContent; }; });
+    function bindQ() {
+      el.querySelectorAll('.chip.q').forEach(function (q) { q.onclick = function () { ta.value = (ta.value.trim() ? ta.value.trim().replace(/[.।]?$/, '. ') : '') + q.textContent; }; });
+      $('.chip.qadd', el).onclick = function () {
+        var t = ta.value.trim().replace(/[.।]$/, ''); if (!t) return toast('आधी शेरा लिहा', 1);
+        var o = qHead(), l = String(o[c.head] || '').split('\n').filter(String);
+        if (l.indexOf(t) < 0) l.push(t); o[c.head] = l.join('\n');
+        call('saveSettings', { quickHead: JSON.stringify(o) }).then(function (d) { S.settings = d; $('.qk', el).innerHTML = quickChips(c.head); bindQ(); toast('या शीर्षकाच्या पर्यायांत जोडला'); }).catch(function (e) { toast(e.message, 1); });
+      };
+    }
+    bindQ();
     $('[data-a=save]', el).onclick = function () {
       var b = this; busy(b, true);
       call('saveShera', c.key, ta.value.trim()).then(function () { c.shera = ta.value.trim(); el.classList.toggle('has', !!c.shera); toast('शेरा जतन झाला'); })
@@ -849,7 +976,7 @@ var LETTER = (function () {
     };
     $('[data-a=letter]', el).onclick = function () { c.shera = ta.value.trim(); letterEditor(c, el); };
     $('.hs', el).onchange = function () {
-      var v = this.value; call('setHead', c.key, v).then(function () { c.head = v; toast('शीर्षक बदलले'); }).catch(function (e) { toast(e.message, 1); });
+      var v = this.value; call('setHead', c.key, v).then(function () { c.head = v; $('.qk', el).innerHTML = quickChips(v); bindQ(); toast('शीर्षक बदलले'); }).catch(function (e) { toast(e.message, 1); });
     };
   }
   function printSheet() {
@@ -1005,7 +1132,8 @@ var LETTER = (function () {
     var mo = $('#bm').value;
     $('#bdl').innerHTML = '<p class="muted"><span class="spin"></span> दिवस शोधत आहे...</p>';
     call('bDays', mo).then(function (r) {
-      $('#bmo').innerHTML = r.monthly ? '<span class="chip ok">मासिक B भाग: ' + r.monthly.cases + ' गुन्हे</span>' + bLinks(r.monthly) + '<span class="muted">अद्ययावत ' + esc(r.monthly.created) + '</span>' : '<span class="muted">या महिन्याचा मासिक B भाग अजून बनलेला नाही.</span>';
+      $('#bmo').innerHTML = r.monthly ? '<span class="chip ok">मासिक B भाग: ' + r.monthly.cases + ' गुन्हे</span>' + bLinks(r.monthly) + '<span class="muted">अद्ययावत ' + esc(r.monthly.created) + '</span> <button class="btn sm gold" id="bme">मासिक B भाग ॲपमध्ये तपासा / संपादन</button>' : '<span class="muted">या महिन्याचा मासिक B भाग अजून बनलेला नाही.</span>';
+      if (r.monthly) $('#bme').onclick = function () { bEditor({ month: mo }); };
       if (!r.days.length) { $('#bdl').innerHTML = '<div class="card muted">या महिन्याचे DCR अपलोड झालेले नाहीत.</div>'; return; }
       var added = r.days.filter(function (x) { return x.bAdded; }).length;
       $('#bdl').innerHTML = '<div class="card"><h3>' + mo.slice(5) + '/' + mo.slice(0, 4) + ' चे DCR दिवस (' + added + '/' + r.days.length + ' मासिक B भागात)</h3><div class="scroll"><table class="t"><tr><th>DCR दि.</th><th>गुन्हे</th><th>त्रुटी</th><th>स्थिती</th><th></th></tr>' +
@@ -1028,6 +1156,7 @@ var LETTER = (function () {
     busy(b, true, on ? 'जोडत आहे...' : 'काढत आहे...');
     call('addDay', d, on).then(function (r) {
       toast(on ? dmy(d) + ' मासिक B भागात जोडला (' + r.cases + ' गुन्हे)' : dmy(d) + ' मासिक B भागातून काढला');
+      S.dcrs.forEach(function (x) { if (x.reportDate === d) x.bAdded = on ? 'होय' : ''; });
       days(); if ($('#bdv [data-day]') && $('#bdv [data-day]').dataset.day === d) dayView(d);
     }).catch(function (e) { toast(e.message, 1); busy(b, false); });
   }
@@ -1035,7 +1164,7 @@ var LETTER = (function () {
     $('#bdv').innerHTML = '<div class="card"><p class="muted"><span class="spin"></span> ' + dmy(d) + ' चा दैनिक B भाग बनत आहे...</p></div>';
     call('dayBPart', d).then(function (r) {
       var li = r.issues.map(function (i) { return '<li class="' + i.level + '">' + esc(i.msg) + '</li>'; }).join('');
-      $('#bdv').innerHTML = '<div class="card" data-day="' + d + '"><div class="row"><h3 class="grow" style="margin:0">दैनिक B भाग: DCR दि. ' + dmy(d) + ' (' + r.cases + ' गुन्हे)</h3><span class="links">' + bLinks(r) + '</span></div>' +
+      $('#bdv').innerHTML = '<div class="card" data-day="' + d + '"><div class="row"><h3 class="grow" style="margin:0">दैनिक B भाग: DCR दि. ' + dmy(d) + ' (' + r.cases + ' गुन्हे)</h3><span class="links">' + bLinks(r) + '</span><button class="btn sm gold" id="bde">ॲपमध्ये तपासा / संपादन</button></div>' +
         '<div class="scroll"><table class="t" style="margin-top:8px"><tr><th>शीर्षक</th><th>गुन्हे</th></tr>' + r.counts.map(function (c) { return '<tr><td>' + esc(c[1]) + '</td><td>' + c[2] + '</td></tr>'; }).join('') + '</table></div>' +
         (li ? '<h3>DCR मधील त्रुटी (जोडण्यापूर्वी तपासा)</h3><ul class="iss">' + li + '</ul>' : '<p class="muted">मोठ्या त्रुटी नाहीत.</p>') +
         (r.others.length ? '<h3>"इतर" मधील गुन्हे: योग्य शीर्षक निवडा</h3>' + r.others.map(function (o) { return '<div class="case row" data-k="' + esc(o.key) + '"><span class="grow"><b>' + esc(o.ps) + ' ' + o.no + '/' + String(o.yr).slice(2) + '</b> ' + esc(o.kalam) + ' (' + esc(o.label) + ')</span>' + headSel(o.head, 'hs') + '</div>'; }).join('') : '') +
@@ -1043,10 +1172,71 @@ var LETTER = (function () {
       $('#bdv').querySelectorAll('[data-k]').forEach(function (row) {
         $('.hs', row).onchange = function () { var v = this.value; call('setHead', row.dataset.k, v).then(function () { toast('शीर्षक बदलले. दैनिक B भाग पुन्हा पाहा.'); }).catch(function (e) { toast(e.message, 1); }); };
       });
+      $('#bde').onclick = function () { bEditor({ date: d }); };
       var a = $('#bda'), rr = $('#bdr');
       if (a) a.onclick = function () { addDay(d, true, a); };
       if (rr) rr.onclick = function () { addDay(d, false, rr); };
     }).catch(function (e) { $('#bdv').innerHTML = '<div class="card"><ul class="iss"><li class="bad">' + esc(e.message) + '</li></ul></div>'; });
+  }
+  /* B भाग ॲपमध्येच तपासणे व संपादन (दैनिक: {date}, मासिक: {month}). बदल गुन्ह्यावर जतन होतात, त्यामुळे दैनिक व मासिक दोन्हीत येतात. */
+  var BCOLS = ['अ.क्र.', 'पोस्टे', 'अप.क्र. व कलम', 'घटनास्थळ', 'घ. ता. वेळ', 'दा. ता. वेळ', 'फिर्यादी व आरोपीचे नाव व पत्ता', 'अटक / प्रतिबंधक', 'तपास अधिकारी', 'घटनेचे थोडक्यात विवरण'];
+  var BADC = ['अ.क्र.', 'पोस्टे', 'मर्ग क्र. व कलम', 'घटनास्थळ', 'घ. ता. वेळ', 'दा. ता. वेळ', 'फिर्यादीचे नाव', 'मृतकाचे नाव', 'दाखल / तपास', 'मरणाचे कारण'];
+  function bEditor(q) {
+    var name = q.date ? 'दैनिक B भाग: DCR दि. ' + dmy(q.date) : 'मासिक B भाग: ' + q.month.slice(5) + '/' + q.month.slice(0, 4);
+    $('#bdv').innerHTML = '<div class="card"><p class="muted"><span class="spin"></span> ' + name + ' उघडत आहे...</p></div>';
+    $('#bdv').scrollIntoView({ behavior: 'smooth' });
+    call('bView', q).then(function (r) {
+      S.bv = r;
+      $('#bdv').innerHTML = '<div class="card bed"><div class="row"><h3 class="grow" style="margin:0">' + name + ' (' + r.total + ' गुन्हे) • तपासणी व संपादन</h3>' +
+        '<input type="search" id="bef" placeholder="पो.स्टे. / अप.क्र. / शब्द शोधा" style="width:220px"><button class="btn gold" id="bgo">Word / PDF पुन्हा बनवा</button></div>' +
+        '<p class="muted">ओळीवर "बदला" दाबून मजकूर, शीर्षक दुरुस्त करा किंवा गुन्हा B भागातून वगळा. बदल त्या गुन्ह्यावर जतन होतात; दैनिक व मासिक दोन्ही B भागात येतात. शेवटी "Word / PDF पुन्हा बनवा" दाबा.</p><div id="bgl" class="links"></div>' +
+        r.secs.map(function (sc, si) {
+          var cols = sc.head === 'AD' ? BADC : BCOLS;
+          return '<h3>' + (si + 1) + ') ' + esc(sc.title) + ' - ' + sc.rows.filter(function (x) { return !x.skip; }).length + '</h3><div class="scroll"><table class="t bt"><tr><th></th>' + cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr>' +
+            sc.rows.map(function (x, ri) {
+              return '<tr data-s="' + si + '" data-r="' + ri + '" class="' + (x.skip ? 'skip' : '') + '"><td class="act"><button class="btn sm ghost" data-a="ed">बदला</button>' + (x.edited ? '<span class="chip warn">बदललेले</span>' : '') + (x.skip ? '<span class="chip bad">वगळले</span>' : '') + '</td>' +
+                x.cells.map(function (c) { return '<td>' + esc(c).replace(/\n/g, '<br>') + '</td>'; }).join('') + '</tr>';
+            }).join('') + '</table></div>';
+        }).join('') + '</div>';
+      $('#bef').oninput = function () {
+        var t = this.value.trim();
+        $('#bdv').querySelectorAll('tr[data-r]').forEach(function (tr) { tr.style.display = !t || tr.textContent.indexOf(t) >= 0 ? '' : 'none'; });
+      };
+      $('#bdv').querySelectorAll('tr[data-r]').forEach(function (tr) {
+        var sc = r.secs[+tr.dataset.s], x = sc.rows[+tr.dataset.r];
+        $('[data-a=ed]', tr).onclick = function () { bRowEditor(q, sc, x); };
+      });
+      $('#bgo').onclick = function () {
+        var b = this; busy(b, true, 'बनत आहे...');
+        (q.date ? call('dayBPart', q.date) : call('buildBPart', q.month, 'ALL')).then(function (o) {
+          $('#bgl').innerHTML = '<span class="chip ok">नवीन फाईल तयार: ' + o.cases + ' गुन्हे</span>' + bLinks(o); toast('Word / PDF अद्ययावत झाले');
+          if (q.month) days();
+        }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
+      };
+    }).catch(function (e) { $('#bdv').innerHTML = '<div class="card"><ul class="iss"><li class="bad">' + esc(e.message) + '</li></ul></div>'; });
+  }
+  function bRowEditor(q, sc, x) {
+    var cols = sc.head === 'AD' ? BADC : BCOLS, m = document.createElement('div');
+    m.className = 'modal';
+    m.innerHTML = '<div class="sheet"><div class="row"><h2 class="grow" style="margin:0">B भाग ओळ: ' + esc(x.cells[1]) + ' ' + esc(String(x.cells[2]).split('\n')[0]) + '</h2><button class="btn ghost sm" data-x>बंद</button></div>' +
+      '<div class="row"><span class="muted">शीर्षक:</span>' + headSel(sc.head, 'bh') + '<label class="row" style="margin:0"><input type="checkbox" id="bsk"' + (x.skip ? ' checked' : '') + '> हा गुन्हा B भागातून वगळा</label></div>' +
+      cols.slice(1).map(function (c, i) { return '<label>' + esc(c) + '</label><textarea data-c="' + (i + 1) + '" style="min-height:' + (i === 8 ? 150 : 44) + 'px">' + esc(x.cells[i + 1]) + '</textarea>'; }).join('') +
+      '<div class="row" style="margin-top:12px"><button class="btn gold" id="bsv">जतन करा</button>' + (x.edited ? '<button class="btn ghost" id="brs">DCR मधील मूळ मजकूर परत आणा</button>' : '') + '</div></div>';
+    document.body.appendChild(m);
+    $('[data-x]', m).onclick = function () { m.remove(); };
+    function send(o, b) {
+      busy(b, true);
+      call('saveBRow', x.key, o).then(function () { m.remove(); toast('जतन झाले. शेवटी "Word / PDF पुन्हा बनवा" दाबा.'); bEditor(q); }).catch(function (e) { toast(e.message, 1); busy(b, false); });
+    }
+    $('#bsv', m).onclick = function () {
+      var cells = [x.cells[0]], ch = false;
+      m.querySelectorAll('textarea[data-c]').forEach(function (t) { cells[+t.dataset.c] = t.value.trim(); });
+      for (var i = 1; i < cells.length; i++) if (cells[i] !== String(x.auto[i]).trim()) ch = true;
+      var o = { skip: $('#bsk', m).checked, head: $('.bh', m).value };
+      o.cells = ch ? cells : null;
+      send(o, this);
+    };
+    var rs = $('#brs', m); if (rs) rs.onclick = function () { send({ cells: null }, this); };
   }
   function check() {
     $('#br').innerHTML = '<div class="card muted"><span class="spin"></span> तपासत आहे...</div>';
@@ -1075,14 +1265,22 @@ var LETTER = (function () {
       f('jaKrPrefix', 'जा.क्र. सुरुवात') + f('jaKrFile', 'जा.क्र. फाईल क्रमांक (उदा. 26-1962)') + '<div class="row"><div><label>जा.क्र. आपोआप क्रमांक</label><select data-s="autoNo"><option' + (s.autoNo === 'होय' ? ' selected' : '') + '>होय</option><option' + (s.autoNo !== 'होय' ? ' selected' : '') + '>नाही</option></select></div>' +
       '<div><label>शेवटचा जा.क्र. क्रमांक (पुढचा आपोआप +1)</label><input type="text" data-s="letterSeq" value="' + esc(s.letterSeq) + '" style="width:90px"></div><div><label>अहवालाची मुदत (दिवस)</label><input type="text" data-s="days" value="' + esc(s.days) + '" style="width:70px"></div>' +
       '<div><label>फॉन्ट (Word/PDF)</label><input type="text" data-s="font" value="' + esc(s.font) + '" style="width:160px"></div></div>' +
-      f('quick', 'नेहमीचे शेरे (एका ओळीत एक)', 1) + f('distName', 'B भागावरील घटकाचे नाव') + f('divOrder', 'उपविभागांचा क्रम (स्वल्पविरामाने)') +
+      f('quick', 'नेहमीचे शेरे, सर्व गुन्ह्यांसाठी (एका ओळीत एक)', 1) + f('distName', 'B भागावरील घटकाचे नाव') + f('divOrder', 'उपविभागांचा क्रम (स्वल्पविरामाने)') +
       '<div class="row" style="margin-top:12px"><button class="btn" id="ss">जतन करा</button></div></div>' +
       '<div class="card"><h2>पो.स्टे. → उपविभाग</h2><p class="muted">DCR मधील "... विभाग" ओळींवरून ॲप हे आपोआप शिकते. इथे दुरुस्ती करता येते.</p><div id="pst"></div><button class="btn ghost" id="psv">पो.स्टे. यादी जतन</button></div>';
     $('#ss').onclick = function () {
       var o = {}, b = this; document.querySelectorAll('[data-s]').forEach(function (e) { o[e.dataset.s] = e.value; });
       busy(b, true); call('saveSettings', o).then(function (d) { S.settings = d; toast('सेटिंग्ज जतन'); }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };
-    $('#main').insertAdjacentHTML('beforeend', logoCard() + rulesCard());
+    $('#main').insertAdjacentHTML('beforeend', quickCard() + logoCard() + rulesCard());
+    var qh = qHead(), qs = $('#qhs'), qt = $('#qht');
+    function qShow() { qt.value = qh[qs.value] || ''; }
+    qs.onchange = qShow; qShow();
+    qt.oninput = function () { qh[qs.value] = qt.value; };
+    $('#qhv').onclick = function () {
+      var b = this, o = {}; Object.keys(qh).forEach(function (k) { var v = String(qh[k] || '').trim(); if (v) o[k] = v; });
+      busy(b, true); call('saveSettings', { quickHead: JSON.stringify(o) }).then(function (d) { S.settings = d; toast('शीर्षकनिहाय शेरे जतन'); }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
+    };
     $('#main').querySelectorAll('[data-lsave]').forEach(function (bt) {
       bt.onclick = function () {
         var k = bt.dataset.lsave, fi = $('[data-logo="' + k + '"]'), f = fi.files && fi.files[0];
@@ -1112,6 +1310,12 @@ var LETTER = (function () {
     };
   }
 
+  function quickCard() {
+    var qh = qHead();
+    return '<div class="card"><h2>शीर्षकनिहाय शेरे</h2><p class="muted">गुन्ह्याच्या शीर्षकानुसार (खुन, चोरी, अपघात इ.) शेरा लिहिताना हे पर्याय आधी दिसतात, त्यानंतर सर्वसाधारण शेरे. शीर्षक निवडा, एका ओळीत एक शेरा लिहा, "जतन" दाबा.</p>' +
+      '<div class="row"><select id="qhs">' + DCR.HEADS.map(function (h) { return '<option value="' + h[0] + '">' + esc(h[1]) + (qh[h[0]] ? ' ✓' : '') + '</option>'; }).join('') + '</select><button class="btn ghost" id="qhv">शीर्षकनिहाय शेरे जतन</button></div>' +
+      '<textarea id="qht" style="min-height:130px;margin-top:8px"></textarea></div>';
+  }
   function logoCard() {
     var s = S.settings, nm = { L: 'डावा (पोलीस लोगो)', C: 'मध्य (राजमुद्रा)', R: 'उजवा' };
     return '<div class="card"><h2>पत्राचे लोगो</h2><p class="muted">DCR FORMAT मधील तीन लोगो आधीपासून पत्रांत येतात. वेगळा लोगो हवा असेल तरच लहान PNG/JPG निवडून "जतन" दाबा.</p>' +
@@ -1126,6 +1330,52 @@ var LETTER = (function () {
         return '<tr><td>' + esc(r.f) + '</td><td>' + esc(r.t) + '</td><td><button class="btn ghost sm" data-rdel="' + i + '">काढा</button></td></tr>';
       }).join('') + '</table></div>' : '<p class="muted">अजून नियम नाहीत.</p>') + '</div>';
   }
+
+  /* ---------- टायपिंग: युनिकोड / कृतिदेव / रोमन (ॲपमधील सर्व मजकूर चौकटींत) ---------- */
+  var IME = { mode: 'uni', st: null };
+  try { IME.mode = localStorage.getItem('dcrIme') || 'uni'; } catch (e) {}
+  var IME_T = { uni: 'युनिकोड (मराठी कीबोर्ड)', kruti: 'कृतिदेव कीबोर्डप्रमाणे टाइप करा, युनिकोडमध्ये दिसेल', roman: 'Roman: gunha → गुन्हा, aaropi → आरोपी, ThaaNe → ठाणे. aa=ा ii=ी uu=ू T=ट D=ड N=ण L=ळ sh=श Sh=ष dny=ज्ञ M=ं | = ।' };
+  function imeBar() {
+    var top = $('.bar .sp'); if (!top || $('#ime')) return;
+    top.insertAdjacentHTML('afterend', '<span id="ime" class="ime" title="' + esc(IME_T[IME.mode]) + '">टायपिंग: ' +
+      [['uni', 'युनिकोड'], ['kruti', 'कृतिदेव'], ['roman', 'Roman']].map(function (x) { return '<button data-ime="' + x[0] + '"' + (IME.mode === x[0] ? ' class="on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</span>');
+    $('#ime').querySelectorAll('button').forEach(function (b) {
+      b.onclick = function () {
+        IME.mode = b.dataset.ime; IME.st = null;
+        try { localStorage.setItem('dcrIme', IME.mode); } catch (e) {}
+        $('#ime').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
+        $('#ime').title = IME_T[IME.mode]; toast(IME_T[IME.mode]);
+      };
+    });
+  }
+  function imeOk(el) { return el && !el.hasAttribute('data-noime') && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && /^(text|search)$/.test(el.type))); }
+  function imeConv(buf) { return IME.mode === 'kruti' ? kruti2uni(buf) : roman2uni(buf); }
+  function imeBuf(ch) { return IME.mode === 'kruti' ? !/\s/.test(ch) : /[A-Za-z~]/.test(ch); }
+  /* चालू शब्दाची मूळ अक्षरे (buf) लक्षात ठेवून तो शब्द प्रत्येक अक्षराला पुन्हा रूपांतरित होतो; जागा/Enter/कर्सर हलवल्यास शब्द पूर्ण */
+  document.addEventListener('beforeinput', function (e) {
+    var el = e.target;
+    if (IME.mode === 'uni' || !imeOk(el)) return;
+    var st = IME.st, a = el.selectionStart, z = el.selectionEnd;
+    var live = st && st.el === el && a === z && a === st.at + st.out.length && el.value.substr(st.at, st.out.length) === st.out;
+    function put(out) { el.setRangeText(out, st.at, st.at + st.out.length, 'end'); st.out = out; }
+    if (e.inputType === 'insertText' && e.data) {
+      e.preventDefault();
+      if (a !== z) { el.setRangeText('', a, z, 'end'); live = false; }
+      if (!live) st = IME.st = { el: el, at: el.selectionStart, buf: '', out: '' };
+      e.data.split('').forEach(function (ch) {
+        if (imeBuf(ch)) { st.buf += ch; put(imeConv(st.buf)); }
+        else {
+          el.setRangeText(IME.mode === 'roman' && ch === '|' ? '।' : ch, el.selectionStart, el.selectionEnd, 'end');
+          st = IME.st = { el: el, at: el.selectionStart, buf: '', out: '' };
+        }
+      });
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (e.inputType === 'deleteContentBackward' && live && st.buf) {
+      e.preventDefault(); st.buf = st.buf.slice(0, -1); put(st.buf ? imeConv(st.buf) : '');
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    } else IME.st = null;
+  }, true);
+  document.addEventListener('mousedown', function () { IME.st = null; }, true);
 
   window.addEventListener('load', boot);
 })();

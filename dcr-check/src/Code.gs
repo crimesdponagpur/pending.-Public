@@ -4,12 +4,12 @@
  * महिन्याचे सर्व DCR → हेडवाइज B भाग Word + PDF. सर्व फाइल्स "DCR_चेक_ॲप" या Drive फोल्डरमध्ये आपोआप जतन.
  * MCR / प्रलंबित ॲपशी याचा काही संबंध नाही: स्वतःचा फोल्डर, स्वतःची Sheet.
  */
-var VERSION = '1.0.0';
+var VERSION = '2.0.0';
 var ROOT_NAME = 'DCR_चेक_ॲप';
 var SS_NAME = 'DCR_नोंदवही';
 var CASE_COLS = ['key', 'kind', 'sec', 'ps', 'div', 'no', 'yr', 'kalam', 'label', 'sid', 'head', 'headSet', 'comp', 'acc', 'victim', 'deceased', 'place',
   'occ', 'reg', 'regDate', 'occDate', 'prop', 'io', 'incharge', 'regOff', 'visit', 'facts', 'prior', 'priorAction', 'arrest', 'arrestReason', 'cause',
-  'nCases', 'nAcc', 'psCr', 'dcrDate', 'dcrIssue', 'dcrList', 'shera', 'sheraAt', 'letters', 'updated'];
+  'nCases', 'nAcc', 'psCr', 'dcrDate', 'dcrIssue', 'dcrList', 'shera', 'sheraAt', 'letters', 'updated', 'bRow'];
 var SHEETS = {
   CASES: CASE_COLS,
   DCRS: ['reportDate', 'issueDate', 'jaKr', 'fileName', 'fileUrl', 'pdfUrl', 'cases', 'bad', 'warn', 'info', 'uploaded', 'bAdded'],
@@ -25,8 +25,27 @@ var DEF = {
   jaKrPrefix: 'नाजिग्रा/डी-32/वाशा/दैगुअ तपास सूचना', jaKrFile: '26-1962', autoNo: 'होय', letterSeq: '0', rules: '[]', logoL: '', logoC: '', logoR: '', days: '3', font: 'Mukta',
   divOrder: 'काटोल,सावनेर,नागपूर,उमरेड,रामटेक,कन्हान', distName: 'नागपूर ग्रामीण जिल्हा',
   quick: 'आरोपीस तात्काळ अटक करावी\nउपविभागीय पोलीस अधिकारी यांनी घटनास्थळी भेट द्यावी\nआरोपीविरुद्ध प्रतिबंधक कार्यवाही करावी\nसीसीटीव्ही फुटेज तपासावे\nमुद्देमाल हस्तगत करावा\nगुन्हा लवकर उघडकीस आणावा\nपीडितेचा तात्काळ शोध घ्यावा\nतपास दुसऱ्या अधिकाऱ्याकडे वर्ग करावा',
-  paras: ''
+  paras: '', quickHead: ''
 };
+/* शीर्षकनिहाय नेहमीचे शेरे (सेटिंग्जमध्ये बदलता येतात) */
+DEF.quickHead = (function () {
+  var G = [
+    ['MUR,CH,ATM', 'आरोपीस तात्काळ अटक करावी\nउपविभागीय पोलीस अधिकारी यांनी घटनास्थळी भेट द्यावी\nशवविच्छेदन / वैद्यकीय अहवाल तात्काळ प्राप्त करावा\nगुन्ह्यात वापरलेले हत्यार जप्त करावे\nप्रत्यक्षदर्शी साक्षीदारांचे जबाब नोंदवावे\nदोषारोपपत्र मुदतीत पाठवावे'],
+    ['RAPE,MOL', 'पीडितेची वैद्यकीय तपासणी तात्काळ करावी\nपीडितेचा जबाब मा. न्यायदंडाधिकारी यांचेसमोर नोंदवावा\nआरोपीस तात्काळ अटक करावी\nपोक्सो कलमे लागू होत असल्यास वाढवावी\nदोषारोपपत्र 60 दिवसांत पाठवावे'],
+    ['KID', 'पीडितेचा तात्काळ शोध घ्यावा\nमोबाईल CDR / लोकेशन तपासावे\nनातेवाईक व मित्रांकडे चौकशी करावी\nबाल कल्याण समितीस कळवावे'],
+    ['ROB,THEFT,HBTN,HBTD', 'सीसीटीव्ही फुटेज तपासावे\nमुद्देमाल हस्तगत करावा\nअभिलेखावरील आरोपींची तपासणी करावी\nश्वान पथक / ठसे तज्ञांची मदत घ्यावी\nगुन्हा लवकर उघडकीस आणावा'],
+    ['MVT', 'वाहनाचा क्रमांक सर्व पोलीस ठाण्यांना कळवावा\nसीसीटीव्ही फुटेज तपासावे\nवाहन हस्तगत करावे\nअभिलेखावरील वाहनचोरांची तपासणी करावी'],
+    ['CHEAT,CBT,IT', 'संबंधित बँक खाते तात्काळ गोठवावे\nसायबर सेलची मदत घ्यावी\nआरोपीचे मोबाईल व बँक तपशील मिळवावे\nफसवणुकीची रक्कम परत मिळवावी'],
+    ['ACC,ACC1,ACC2,NEG,DO', 'वाहन जप्त करावे\nचालकाचा वाहन परवाना तपासावा\nRTO तपासणी अहवाल मिळवावा\nघटनास्थळ पंचनामा व नकाशा तयार करावा'],
+    ['SUI', 'आत्महत्येस प्रवृत्त करणाऱ्यांचा शोध घ्यावा\nचिठ्ठी / मोबाईल तपासावा\nनातेवाईकांचे जबाब नोंदवावे'],
+    ['AD', 'शवविच्छेदन अहवाल प्राप्त करावा\nमृत्यूचे कारण स्पष्ट करावे\nनातेवाईकांचे जबाब नोंदवावे\nघातपात नसल्याची खात्री करावी'],
+    ['HURT,OBS', 'वैद्यकीय अहवाल प्राप्त करावा\nआरोपीविरुद्ध प्रतिबंधक कार्यवाही करावी'],
+    ['NDPS,ARMS', 'मूळ स्रोताचा शोध घ्यावा\nमुद्देमाल रासायनिक विश्लेषणास पाठवावा\nआरोपीचा पूर्वइतिहास तपासावा'],
+    ['PROH,GAMB', 'आरोपीविरुद्ध प्रतिबंधक कार्यवाही करावी\nसराईत आरोपीविरुद्ध हद्दपारी / MPDA प्रस्ताव पाठवावा\nमूळ स्रोताचा शोध घ्यावा']
+  ], o = {};
+  G.forEach(function (g) { g[0].split(',').forEach(function (h) { o[h] = g[1]; }); });
+  return JSON.stringify(o);
+})();
 
 /* ---------- Web app ---------- */
 function doGet() {
@@ -36,7 +55,7 @@ function doGet() {
 }
 /** ॲपमधील सर्व विनंत्या इथून जातात: उत्तर नेहमी { ok, d } किंवा { ok:false, e } */
 function api(fn, args) {
-  var F = { init: init_, saveDcr: saveDcr_, savePdf: savePdf_, search: search_, saveShera: saveShera_, setHead: setHead_, makeLetter: makeLetter_, makeLetters: makeLetters_, saveLogo: saveLogo_, dayBPart: dayBPart_, addDay: addDay_, bDays: bDays_,
+  var F = { init: init_, saveDcr: saveDcr_, savePdf: savePdf_, search: search_, saveShera: saveShera_, setHead: setHead_, makeLetter: makeLetter_, makeLetters: makeLetters_, saveLogo: saveLogo_, dayBPart: dayBPart_, addDay: addDay_, bDays: bDays_, bView: bView_, saveBRow: saveBRow_,
     letters: letters_, setLetter: setLetter_, monthCheck: monthCheck_, buildBPart: buildBPart_, saveSettings: saveSettings_, savePs: savePs_ };
   try {
     if (!F[fn]) throw new Error('अज्ञात क्रिया: ' + fn);
@@ -74,13 +93,24 @@ function sh_(name) {
   var ss = ss_(), s = ss.getSheetByName(name);
   if (!s) {
     s = ss.insertSheet(name);
+    if (s.getMaxColumns() < SHEETS[name].length) s.insertColumnsAfter(s.getMaxColumns(), SHEETS[name].length - s.getMaxColumns());
     s.getRange(1, 1, 1, SHEETS[name].length).setValues([SHEETS[name]]).setFontWeight('bold');
     s.setFrozenRows(1);
     if (name === 'SETTINGS') s.getRange(2, 1, Object.keys(DEF).length, 2).setValues(Object.keys(DEF).map(function (k) { return [k, DEF[k]]; }));
     var d = ss.getSheetByName('Sheet1') || ss.getSheetByName('पत्रक1');
     if (d && ss.getSheets().length > 1 && d.getLastRow() === 0) ss.deleteSheet(d);
   }
+  migrate_(s, SHEETS[name]);
   return s;
+}
+/* जुन्या Sheet मध्ये नवीन स्तंभ नसल्यास शेवटी आपोआप जोडतो */
+function migrate_(s, cols) {
+  if (s.getMaxColumns() < cols.length) s.insertColumnsAfter(s.getMaxColumns(), cols.length - s.getMaxColumns());
+  var n = s.getLastColumn();
+  if (n >= cols.length) return;
+  var h = n ? s.getRange(1, 1, 1, n).getDisplayValues()[0] : [];
+  for (var i = 0; i < h.length; i++) if (h[i] !== cols[i]) return;
+  s.getRange(1, h.length + 1, 1, cols.length - h.length).setValues([cols.slice(h.length)]).setFontWeight('bold');
 }
 function rows_(name) {
   var s = sh_(name), n = s.getLastRow();
@@ -113,7 +143,8 @@ function caseObj_(r) { var o = {}; CASE_COLS.forEach(function (c) { o[c] = r[c];
 function init_() {
   var S = settings_();
   var dcrs = rows_('DCRS').sort(function (a, b) { return a.reportDate < b.reportDate ? 1 : -1; }).slice(0, 62);
-  return { version: VERSION, settings: S, dcrs: dcrs, ps: rows_('PS'), rootUrl: root_().getUrl(), ssUrl: ss_().getUrl(), today: today_() };
+  var L = logos_(S).L;
+  return { version: VERSION, settings: S, dcrs: dcrs, ps: rows_('PS'), rootUrl: root_().getUrl(), ssUrl: ss_().getUrl(), today: today_(), brand: L ? 'data:' + L.mime + ';base64,' + L.b64 : '' };
 }
 
 /* ---------- DCR जतन ---------- */
@@ -136,7 +167,7 @@ function saveDcr_(p) {
         if (list.indexOf(p.reportDate) < 0) list.push(p.reportDate);
         c.dcrList = list.sort().join(',');
         c.dcrDate = list[0]; c.dcrIssue = old.dcrDate && old.dcrDate < p.reportDate ? old.dcrIssue : c.dcrIssue;
-        ['shera', 'sheraAt', 'letters'].forEach(function (k) { c[k] = old[k]; });
+        ['shera', 'sheraAt', 'letters', 'bRow'].forEach(function (k) { c[k] = old[k]; });
         if (old.headSet) { c.head = old.head; c.headSet = old.headSet; }
         sh.getRange(old._row, 1, 1, CASE_COLS.length).setValues([toRow_('CASES', c)]);
         upd++;
@@ -337,7 +368,13 @@ function monthCheck_(month, scope) {
 }
 
 /* ---------- हेडवाइज B भाग ---------- */
+function bOv_(c) { try { return JSON.parse(c.bRow || '{}') || {}; } catch (e) { return {}; } }
 function bRow_(c, n) {
+  var ov = bOv_(c);
+  if (ov.cells) return [String(n)].concat(ov.cells.slice(1));
+  return bRowAuto_(c, n);
+}
+function bRowAuto_(c, n) {
   var cr = c.no + '/' + String(c.yr).slice(2) + (c.kalam ? ' कलम ' + c.kalam : '') + (c.label ? '\n(' + c.label + ')' : '');
   var arrest = [c.arrest, c.arrestReason].filter(String).join('\n');
   if (!arrest) {
@@ -370,6 +407,7 @@ function pdfFromDocx_(blob, folder, base) {
 /* हेडवाइज तक्ते (विभागाचे नाव नाही, थेट पो.स्टे.; DCR दिनांकानुसार क्रम) → Word + PDF */
 function bpartFile_(cs, titles, folder, base) {
   var HD = DCR.HEADS, groups = {};
+  cs = cs.filter(function (c) { return !bOv_(c).skip; });
   cs.forEach(function (c) { var h = c.head || 'OTH5'; (groups[h] = groups[h] || []).push(c); });
   var sum = [['अ.क्र.', 'शीर्षक', 'गुन्हे']], k = 0, counts = [];
   HD.forEach(function (h) { var g = groups[h[0]]; if (g) { sum.push([String(++k), h[1], String(g.length)]); counts.push([h[0], h[1], g.length]); } });
@@ -431,9 +469,40 @@ function buildBPart_(month, scope) {
   var out = bpartFile_(cs, [all ? S.distName : scope + ' विभाग', 'बी पार्ट (हेडवाइज)', 'माहे ' + mm + ' (' + span + ')'], folder_(['B_भाग', month]), base);
   out.days = dates.length;
   var bs = sh_('BPART'), old = rows_('BPART').filter(function (r) { return r.month === month && r.scope === (scope || 'ALL'); })[0];
-  var row = toRow_('BPART', { month: month, scope: scope || 'ALL', cases: cs.length, docxUrl: out.docxUrl, pdfUrl: out.pdfUrl, created: now_() });
+  var row = toRow_('BPART', { month: month, scope: scope || 'ALL', cases: out.cases, docxUrl: out.docxUrl, pdfUrl: out.pdfUrl, created: now_() });
   if (old) bs.getRange(old._row, 1, 1, row.length).setValues([row]); else bs.appendRow(row);
   return out;
+}
+
+/* B भाग ॲपमध्ये तपासणे/संपादन: q = {date} (दैनिक) किंवा {month} (मासिक: जोडलेले दिवस) */
+function bView_(q) {
+  var cs;
+  if (q.date) cs = rows_('CASES').filter(function (r) { return r.kind !== 'NC' && r.dcrDate === q.date; }).map(caseObj_);
+  else {
+    var added = {}; rows_('DCRS').forEach(function (r) { if (String(r.reportDate).slice(0, 7) === q.month && r.bAdded) added[r.reportDate] = 1; });
+    cs = monthCases_(q.month, 'ALL').filter(function (c) { return added[c.dcrDate]; });
+  }
+  var HD = DCR.HEADS, groups = {};
+  cs.forEach(function (c) { var h = c.head || 'OTH5'; (groups[h] = groups[h] || []).push(c); });
+  var secs = [];
+  HD.forEach(function (h) {
+    var g = groups[h[0]]; if (!g) return;
+    g.sort(function (a, z) { var x = String(a.dcrDate || '').localeCompare(String(z.dcrDate || '')); return x || (a.ps < z.ps ? -1 : a.ps > z.ps ? 1 : 0) || (+a.no - +z.no); });
+    secs.push({ head: h[0], title: h[1], rows: g.map(function (c, i) {
+      var ov = bOv_(c);
+      return { key: c.key, dcrDate: c.dcrDate, cells: bRow_(c, i + 1), auto: bRowAuto_(c, i + 1), edited: !!ov.cells, skip: !!ov.skip };
+    }) });
+  });
+  return { secs: secs, total: cs.length };
+}
+/* एका गुन्ह्याची B भाग ओळ जतन: o = {cells, skip, head}; cells:null → मूळ (DCR मधील) मजकूर */
+function saveBRow_(key, o) {
+  var r = findCase_(key), s = sh_('CASES'), ov = bOv_(r);
+  if ('cells' in o) { if (o.cells) ov.cells = o.cells; else delete ov.cells; }
+  if ('skip' in o) { if (o.skip) ov.skip = 1; else delete ov.skip; }
+  s.getRange(r._row, CASE_COLS.indexOf('bRow') + 1).setValue(Object.keys(ov).length ? JSON.stringify(ov) : '');
+  if (o.head && o.head !== r.head) setHead_(key, o.head);
+  return { ok: 1 };
 }
 
 /* ---------- सेटिंग्ज ---------- */

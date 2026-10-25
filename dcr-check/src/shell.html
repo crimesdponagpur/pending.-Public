@@ -6,14 +6,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DCR चेक • B भाग</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>/*CSS*/</style>
 </head>
 <body>
-<header><div class="top"><div><h1>DCR चेक • हेडवाइज B भाग</h1><small>नागपूर ग्रामीण जिल्हा • CRO शाखा <span id="ver"></span></small></div><span class="sp"></span><a id="lnkRoot" target="_blank" href="#">Drive फोल्डर</a><a id="lnkSs" target="_blank" href="#">नोंदवही (Sheet)</a></div>
-<nav><button data-t="dcr" class="on">DCR अपलोड</button><button data-t="cases">गुन्हे व शेरा</button><button data-t="letters">DCR चेक नोंदवही</button><button data-t="bpart">B भाग</button><button data-t="set">सेटिंग्ज</button></nav></header>
+<div class="app">
+<aside class="side">
+<div class="brand"><img id="brand" alt=""><div><b>DCR चेक</b><small>नागपूर ग्रामीण • CRO</small></div></div>
+<nav>
+<button data-t="dcr" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><span>DCR अपलोड</span></button>
+<button data-t="cases"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg><span>गुन्हे व शेरा</span></button>
+<button data-t="letters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 14l2 2 4-4"/></svg><span>पत्र नोंदवही</span></button>
+<button data-t="bpart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></svg><span>B भाग</span></button>
+<button data-t="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>सेटिंग्ज</span></button>
+</nav>
+<div class="side-foot"><a id="lnkRoot" target="_blank" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Drive फोल्डर</span></a><a id="lnkSs" target="_blank" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 3v18"/></svg><span>नोंदवही (Sheet)</span></a><small id="ver"></small></div>
+</aside>
+<div class="body">
+<header class="bar"><div><h1 id="ptitle">DCR अपलोड</h1><small id="psub">पोलीस अधीक्षक कार्यालय, नागपूर जिल्हा (ग्रामीण)</small></div><span class="sp"></span></header>
 <main id="main"><div class="card muted">ॲप सुरू होत आहे...</div></main>
+</div>
+</div>
 <div id="print"></div>
 <script>/*JS*/</script>
 </body>

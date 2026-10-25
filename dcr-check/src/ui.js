@@ -16,6 +16,7 @@
     });
   }
   function toast(m, bad) {
+    document.querySelectorAll('.toast').forEach(function (x) { x.remove(); });
     var t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = m; document.body.appendChild(t);
     setTimeout(function () { t.remove(); }, bad ? 6000 : 3000);
   }
@@ -32,19 +33,31 @@
     document.querySelectorAll('nav button').forEach(function (b) { b.onclick = function () { show(b.dataset.t); }; });
     call('init').then(function (d) {
       S.settings = d.settings; S.dcrs = d.dcrs; S.ps = d.ps; S.today = d.today;
-      $('#lnkRoot').href = d.rootUrl; $('#lnkSs').href = d.ssUrl; $('#ver').textContent = 'v' + d.version;
-      show('dcr');
+      $('#lnkRoot').href = d.rootUrl; $('#lnkSs').href = d.ssUrl; $('#ver').textContent = 'आवृत्ती ' + d.version; if (d.brand) $('#brand').src = d.brand;
+      imeBar(); show('dcr');
     }).catch(function (e) { $('#main').innerHTML = '<div class="card"><h2>ॲप सुरू झाले नाही</h2><p>' + esc(e.message) + '</p></div>'; });
   }
   function show(t) {
     S.tab = t;
     document.querySelectorAll('nav button').forEach(function (b) { b.classList.toggle('on', b.dataset.t === t); });
+    var P = { dcr: ['DCR अपलोड', 'रोजचा DCR (Word) तपासा व नोंदवहीत जतन करा'], cases: ['गुन्हे व शेरा', 'SP शेरा, DCR चेक पत्रे व एकत्र पत्रे'], letters: ['DCR चेक नोंदवही', 'दिलेली पत्रे, अनुपालन अहवाल व मुदत'],
+      bpart: ['हेडवाइज B भाग', 'दैनिक तपासणी, संपादन व मासिक B भाग'], set: ['सेटिंग्ज', 'पत्राचे तपशील, शेरे, लोगो व पो.स्टे. यादी'] }[t];
+    $('#ptitle').textContent = P[0]; $('#psub').textContent = P[1]; window.scrollTo(0, 0);
     ({ dcr: vDcr, cases: vCases, letters: vLetters, bpart: vBpart, set: vSet })[t]();
   }
 
   /* ---------- 1. DCR अपलोड ---------- */
+  /* महिन्याचा आढावा: वरच्या चार चौकटी */
+  function stats() {
+    var m = curMonth(), ds = S.dcrs.filter(function (r) { return String(r.reportDate).slice(0, 7) === m && +r.cases > 0; });
+    var n = 0, bad = 0, add = 0; ds.forEach(function (r) { n += +r.cases || 0; if (+r.bad) bad++; if (r.bAdded) add++; });
+    var last = ds.map(function (r) { return r.reportDate; }).sort().pop();
+    var T = [['या महिन्याचे DCR', ds.length, last ? 'शेवटचा: ' + dmy(last) : 'अजून नाही'], ['गुन्हे (महिना)', n, 'NC सोडून सर्व नोंदी'],
+      ['त्रुटी असलेले DCR', bad, bad ? 'तपासून PS ला कळवा' : 'सर्व ठीक', bad ? 'bad' : 'ok'], ['मासिक B भागात', add + '/' + ds.length, 'दिवस जोडले', add < ds.length ? 'warn' : 'ok']];
+    return '<div class="kpis">' + T.map(function (t) { return '<div class="kpi ' + (t[3] || '') + '"><span>' + t[0] + '</span><b>' + t[1] + '</b><small>' + esc(t[2]) + '</small></div>'; }).join('') + '</div>';
+  }
   function vDcr() {
-    $('#main').innerHTML =
+    $('#main').innerHTML = stats() +
       '<div class="card"><h2>रोजचा DCR टाका</h2><p class="muted">Word (.docx) फाइल द्या: ॲप Kruti Dev मजकूर Unicode मध्ये बदलून गुन्हे नोंदवहीत घेईल, त्रुटी सांगेल आणि मूळ फाइल Drive मध्ये ठेवेल. PDF फक्त Drive मध्ये जपली जाते (वाचली जात नाही). एकाच वेळी अनेक तारखांच्या फाइल्स देता येतात.</p>' +
       '<label class="drop" id="drop">येथे फाइल्स ओढा किंवा <b>निवडण्यासाठी दाबा</b><input type="file" id="fi" accept=".docx,.pdf" multiple hidden></label><div id="res"></div></div>' +
       '<div class="card"><h2>आलेले DCR</h2><div id="dl"></div></div>';
@@ -109,7 +122,7 @@
       '<button class="btn sm ghost" data-bp="' + R.reportDate + '">दैनिक B भाग तपासा →</button></div></div>';
   }
   function bindCard(d) { var bp = document.querySelector('[data-bp="' + d + '"]'); if (bp) bp.onclick = function () { S.pickDay = d; show('bpart'); }; var b = document.querySelector('[data-go="' + d + '"]'); if (b) b.onclick = function () { S.pickDate = d; show('cases'); }; }
-  function refreshDcrs() { call('init').then(function (d) { S.dcrs = d.dcrs; S.ps = d.ps; dcrList(); }); }
+  function refreshDcrs() { call('init').then(function (d) { S.dcrs = d.dcrs; S.ps = d.ps; dcrList(); var k = $('.kpis'); if (k) k.outerHTML = stats(); }); }
 
   /* ---------- 2. गुन्हे व शेरा ---------- */
   function vCases() {
@@ -138,7 +151,17 @@
       list.forEach(bindCase); updateBulk();
     }).catch(function (e) { $('#cl').innerHTML = '<div class="card"><ul class="iss"><li class="bad">' + esc(e.message) + '</li></ul></div>'; });
   }
-  function quickChips() { return String(S.settings.quick || '').split('\n').filter(String).map(function (q) { return '<span class="chip q">' + esc(q) + '</span>'; }).join(''); }
+  function qHead() { try { return JSON.parse(S.settings.quickHead || '{}') || {}; } catch (e) { return {}; } }
+  /* शेऱ्याचे पर्याय: आधी गुन्ह्याच्या शीर्षकाचे (सेटिंग्जमधील), मग सर्वसाधारण */
+  function quickList(head) {
+    var a = String(qHead()[head] || '').split('\n').concat(String(S.settings.quick || '').split('\n')).map(function (x) { return x.trim(); }).filter(String);
+    return a.filter(function (x, i) { return a.indexOf(x) === i; });
+  }
+  function quickChips(head) {
+    var own = String(qHead()[head] || '').split('\n').map(function (x) { return x.trim(); });
+    return quickList(head).map(function (q) { return '<span class="chip q' + (own.indexOf(q) >= 0 ? ' hq' : '') + '">' + esc(q) + '</span>'; }).join('') +
+      '<span class="chip qadd" title="लिहिलेला शेरा या शीर्षकाच्या पर्यायांत जोडा">+ हा शेरा "' + esc(DCR.HEAD_MR[head] || 'इतर') + '" साठी जतन</span>';
+  }
   function caseHtml(c) {
     var id = 'c' + btoa(unescape(encodeURIComponent(c.key))).replace(/[^a-z0-9]/gi, '');
     c._id = id;
@@ -146,7 +169,7 @@
       '<span class="chip">' + esc(DCR.HEAD_MR[c.head] || DCR.SEC_MR[c.sec] || '') + '</span>' + (+c.letters ? '<span class="chip ok">पत्र ' + c.letters + '</span>' : '') + '</div>' +
       '<div class="muted">' + (c.div ? esc(c.div) + ' विभाग • ' : '') + 'दाखल ' + dmy(c.regDate) + (c.label ? ' • ' + esc(c.label) : '') + (c.io ? ' • तपास: ' + esc(c.io.slice(0, 60)) : '') + '</div>' +
       '<div class="facts">' + esc(c.facts || ('फिर्यादी: ' + c.comp + ' • आरोपी: ' + c.acc)) + '</div>' +
-      '<textarea placeholder="SP साहेबांचा शेरा येथे लिहा...">' + esc(c.shera) + '</textarea><div class="qk">' + quickChips() + '</div>' +
+      '<textarea placeholder="SP साहेबांचा शेरा येथे लिहा...">' + esc(c.shera) + '</textarea><div class="qk">' + quickChips(c.head) + '</div>' +
       '<div class="row" style="margin-top:6px"><button class="btn sm ghost" data-a="save">शेरा जतन</button><button class="btn sm gold" data-a="letter">DCR चेक पत्र बनवा</button>' +
       '<span class="grow"></span><span class="muted">शीर्षक:</span>' + headSel(c.head, 'hs') + '</div></div>';
   }
@@ -156,7 +179,16 @@
     $('.facts', el).onclick = function () { this.classList.toggle('open'); };
     $('.pk1', el).onchange = function () { if (this.checked) S.picked[c.key] = c; else delete S.picked[c.key]; updateBulk(); };
     ta.onfocus = function () { el.classList.add('qo'); };
-    el.querySelectorAll('.chip.q').forEach(function (q) { q.onclick = function () { ta.value = (ta.value.trim() ? ta.value.trim().replace(/[.।]?$/, '. ') : '') + q.textContent; }; });
+    function bindQ() {
+      el.querySelectorAll('.chip.q').forEach(function (q) { q.onclick = function () { ta.value = (ta.value.trim() ? ta.value.trim().replace(/[.।]?$/, '. ') : '') + q.textContent; }; });
+      $('.chip.qadd', el).onclick = function () {
+        var t = ta.value.trim().replace(/[.।]$/, ''); if (!t) return toast('आधी शेरा लिहा', 1);
+        var o = qHead(), l = String(o[c.head] || '').split('\n').filter(String);
+        if (l.indexOf(t) < 0) l.push(t); o[c.head] = l.join('\n');
+        call('saveSettings', { quickHead: JSON.stringify(o) }).then(function (d) { S.settings = d; $('.qk', el).innerHTML = quickChips(c.head); bindQ(); toast('या शीर्षकाच्या पर्यायांत जोडला'); }).catch(function (e) { toast(e.message, 1); });
+      };
+    }
+    bindQ();
     $('[data-a=save]', el).onclick = function () {
       var b = this; busy(b, true);
       call('saveShera', c.key, ta.value.trim()).then(function () { c.shera = ta.value.trim(); el.classList.toggle('has', !!c.shera); toast('शेरा जतन झाला'); })
@@ -164,7 +196,7 @@
     };
     $('[data-a=letter]', el).onclick = function () { c.shera = ta.value.trim(); letterEditor(c, el); };
     $('.hs', el).onchange = function () {
-      var v = this.value; call('setHead', c.key, v).then(function () { c.head = v; toast('शीर्षक बदलले'); }).catch(function (e) { toast(e.message, 1); });
+      var v = this.value; call('setHead', c.key, v).then(function () { c.head = v; $('.qk', el).innerHTML = quickChips(v); bindQ(); toast('शीर्षक बदलले'); }).catch(function (e) { toast(e.message, 1); });
     };
   }
   function printSheet() {
@@ -320,7 +352,8 @@
     var mo = $('#bm').value;
     $('#bdl').innerHTML = '<p class="muted"><span class="spin"></span> दिवस शोधत आहे...</p>';
     call('bDays', mo).then(function (r) {
-      $('#bmo').innerHTML = r.monthly ? '<span class="chip ok">मासिक B भाग: ' + r.monthly.cases + ' गुन्हे</span>' + bLinks(r.monthly) + '<span class="muted">अद्ययावत ' + esc(r.monthly.created) + '</span>' : '<span class="muted">या महिन्याचा मासिक B भाग अजून बनलेला नाही.</span>';
+      $('#bmo').innerHTML = r.monthly ? '<span class="chip ok">मासिक B भाग: ' + r.monthly.cases + ' गुन्हे</span>' + bLinks(r.monthly) + '<span class="muted">अद्ययावत ' + esc(r.monthly.created) + '</span> <button class="btn sm gold" id="bme">मासिक B भाग ॲपमध्ये तपासा / संपादन</button>' : '<span class="muted">या महिन्याचा मासिक B भाग अजून बनलेला नाही.</span>';
+      if (r.monthly) $('#bme').onclick = function () { bEditor({ month: mo }); };
       if (!r.days.length) { $('#bdl').innerHTML = '<div class="card muted">या महिन्याचे DCR अपलोड झालेले नाहीत.</div>'; return; }
       var added = r.days.filter(function (x) { return x.bAdded; }).length;
       $('#bdl').innerHTML = '<div class="card"><h3>' + mo.slice(5) + '/' + mo.slice(0, 4) + ' चे DCR दिवस (' + added + '/' + r.days.length + ' मासिक B भागात)</h3><div class="scroll"><table class="t"><tr><th>DCR दि.</th><th>गुन्हे</th><th>त्रुटी</th><th>स्थिती</th><th></th></tr>' +
@@ -343,6 +376,7 @@
     busy(b, true, on ? 'जोडत आहे...' : 'काढत आहे...');
     call('addDay', d, on).then(function (r) {
       toast(on ? dmy(d) + ' मासिक B भागात जोडला (' + r.cases + ' गुन्हे)' : dmy(d) + ' मासिक B भागातून काढला');
+      S.dcrs.forEach(function (x) { if (x.reportDate === d) x.bAdded = on ? 'होय' : ''; });
       days(); if ($('#bdv [data-day]') && $('#bdv [data-day]').dataset.day === d) dayView(d);
     }).catch(function (e) { toast(e.message, 1); busy(b, false); });
   }
@@ -350,7 +384,7 @@
     $('#bdv').innerHTML = '<div class="card"><p class="muted"><span class="spin"></span> ' + dmy(d) + ' चा दैनिक B भाग बनत आहे...</p></div>';
     call('dayBPart', d).then(function (r) {
       var li = r.issues.map(function (i) { return '<li class="' + i.level + '">' + esc(i.msg) + '</li>'; }).join('');
-      $('#bdv').innerHTML = '<div class="card" data-day="' + d + '"><div class="row"><h3 class="grow" style="margin:0">दैनिक B भाग: DCR दि. ' + dmy(d) + ' (' + r.cases + ' गुन्हे)</h3><span class="links">' + bLinks(r) + '</span></div>' +
+      $('#bdv').innerHTML = '<div class="card" data-day="' + d + '"><div class="row"><h3 class="grow" style="margin:0">दैनिक B भाग: DCR दि. ' + dmy(d) + ' (' + r.cases + ' गुन्हे)</h3><span class="links">' + bLinks(r) + '</span><button class="btn sm gold" id="bde">ॲपमध्ये तपासा / संपादन</button></div>' +
         '<div class="scroll"><table class="t" style="margin-top:8px"><tr><th>शीर्षक</th><th>गुन्हे</th></tr>' + r.counts.map(function (c) { return '<tr><td>' + esc(c[1]) + '</td><td>' + c[2] + '</td></tr>'; }).join('') + '</table></div>' +
         (li ? '<h3>DCR मधील त्रुटी (जोडण्यापूर्वी तपासा)</h3><ul class="iss">' + li + '</ul>' : '<p class="muted">मोठ्या त्रुटी नाहीत.</p>') +
         (r.others.length ? '<h3>"इतर" मधील गुन्हे: योग्य शीर्षक निवडा</h3>' + r.others.map(function (o) { return '<div class="case row" data-k="' + esc(o.key) + '"><span class="grow"><b>' + esc(o.ps) + ' ' + o.no + '/' + String(o.yr).slice(2) + '</b> ' + esc(o.kalam) + ' (' + esc(o.label) + ')</span>' + headSel(o.head, 'hs') + '</div>'; }).join('') : '') +
@@ -358,10 +392,71 @@
       $('#bdv').querySelectorAll('[data-k]').forEach(function (row) {
         $('.hs', row).onchange = function () { var v = this.value; call('setHead', row.dataset.k, v).then(function () { toast('शीर्षक बदलले. दैनिक B भाग पुन्हा पाहा.'); }).catch(function (e) { toast(e.message, 1); }); };
       });
+      $('#bde').onclick = function () { bEditor({ date: d }); };
       var a = $('#bda'), rr = $('#bdr');
       if (a) a.onclick = function () { addDay(d, true, a); };
       if (rr) rr.onclick = function () { addDay(d, false, rr); };
     }).catch(function (e) { $('#bdv').innerHTML = '<div class="card"><ul class="iss"><li class="bad">' + esc(e.message) + '</li></ul></div>'; });
+  }
+  /* B भाग ॲपमध्येच तपासणे व संपादन (दैनिक: {date}, मासिक: {month}). बदल गुन्ह्यावर जतन होतात, त्यामुळे दैनिक व मासिक दोन्हीत येतात. */
+  var BCOLS = ['अ.क्र.', 'पोस्टे', 'अप.क्र. व कलम', 'घटनास्थळ', 'घ. ता. वेळ', 'दा. ता. वेळ', 'फिर्यादी व आरोपीचे नाव व पत्ता', 'अटक / प्रतिबंधक', 'तपास अधिकारी', 'घटनेचे थोडक्यात विवरण'];
+  var BADC = ['अ.क्र.', 'पोस्टे', 'मर्ग क्र. व कलम', 'घटनास्थळ', 'घ. ता. वेळ', 'दा. ता. वेळ', 'फिर्यादीचे नाव', 'मृतकाचे नाव', 'दाखल / तपास', 'मरणाचे कारण'];
+  function bEditor(q) {
+    var name = q.date ? 'दैनिक B भाग: DCR दि. ' + dmy(q.date) : 'मासिक B भाग: ' + q.month.slice(5) + '/' + q.month.slice(0, 4);
+    $('#bdv').innerHTML = '<div class="card"><p class="muted"><span class="spin"></span> ' + name + ' उघडत आहे...</p></div>';
+    $('#bdv').scrollIntoView({ behavior: 'smooth' });
+    call('bView', q).then(function (r) {
+      S.bv = r;
+      $('#bdv').innerHTML = '<div class="card bed"><div class="row"><h3 class="grow" style="margin:0">' + name + ' (' + r.total + ' गुन्हे) • तपासणी व संपादन</h3>' +
+        '<input type="search" id="bef" placeholder="पो.स्टे. / अप.क्र. / शब्द शोधा" style="width:220px"><button class="btn gold" id="bgo">Word / PDF पुन्हा बनवा</button></div>' +
+        '<p class="muted">ओळीवर "बदला" दाबून मजकूर, शीर्षक दुरुस्त करा किंवा गुन्हा B भागातून वगळा. बदल त्या गुन्ह्यावर जतन होतात; दैनिक व मासिक दोन्ही B भागात येतात. शेवटी "Word / PDF पुन्हा बनवा" दाबा.</p><div id="bgl" class="links"></div>' +
+        r.secs.map(function (sc, si) {
+          var cols = sc.head === 'AD' ? BADC : BCOLS;
+          return '<h3>' + (si + 1) + ') ' + esc(sc.title) + ' - ' + sc.rows.filter(function (x) { return !x.skip; }).length + '</h3><div class="scroll"><table class="t bt"><tr><th></th>' + cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr>' +
+            sc.rows.map(function (x, ri) {
+              return '<tr data-s="' + si + '" data-r="' + ri + '" class="' + (x.skip ? 'skip' : '') + '"><td class="act"><button class="btn sm ghost" data-a="ed">बदला</button>' + (x.edited ? '<span class="chip warn">बदललेले</span>' : '') + (x.skip ? '<span class="chip bad">वगळले</span>' : '') + '</td>' +
+                x.cells.map(function (c) { return '<td>' + esc(c).replace(/\n/g, '<br>') + '</td>'; }).join('') + '</tr>';
+            }).join('') + '</table></div>';
+        }).join('') + '</div>';
+      $('#bef').oninput = function () {
+        var t = this.value.trim();
+        $('#bdv').querySelectorAll('tr[data-r]').forEach(function (tr) { tr.style.display = !t || tr.textContent.indexOf(t) >= 0 ? '' : 'none'; });
+      };
+      $('#bdv').querySelectorAll('tr[data-r]').forEach(function (tr) {
+        var sc = r.secs[+tr.dataset.s], x = sc.rows[+tr.dataset.r];
+        $('[data-a=ed]', tr).onclick = function () { bRowEditor(q, sc, x); };
+      });
+      $('#bgo').onclick = function () {
+        var b = this; busy(b, true, 'बनत आहे...');
+        (q.date ? call('dayBPart', q.date) : call('buildBPart', q.month, 'ALL')).then(function (o) {
+          $('#bgl').innerHTML = '<span class="chip ok">नवीन फाईल तयार: ' + o.cases + ' गुन्हे</span>' + bLinks(o); toast('Word / PDF अद्ययावत झाले');
+          if (q.month) days();
+        }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
+      };
+    }).catch(function (e) { $('#bdv').innerHTML = '<div class="card"><ul class="iss"><li class="bad">' + esc(e.message) + '</li></ul></div>'; });
+  }
+  function bRowEditor(q, sc, x) {
+    var cols = sc.head === 'AD' ? BADC : BCOLS, m = document.createElement('div');
+    m.className = 'modal';
+    m.innerHTML = '<div class="sheet"><div class="row"><h2 class="grow" style="margin:0">B भाग ओळ: ' + esc(x.cells[1]) + ' ' + esc(String(x.cells[2]).split('\n')[0]) + '</h2><button class="btn ghost sm" data-x>बंद</button></div>' +
+      '<div class="row"><span class="muted">शीर्षक:</span>' + headSel(sc.head, 'bh') + '<label class="row" style="margin:0"><input type="checkbox" id="bsk"' + (x.skip ? ' checked' : '') + '> हा गुन्हा B भागातून वगळा</label></div>' +
+      cols.slice(1).map(function (c, i) { return '<label>' + esc(c) + '</label><textarea data-c="' + (i + 1) + '" style="min-height:' + (i === 8 ? 150 : 44) + 'px">' + esc(x.cells[i + 1]) + '</textarea>'; }).join('') +
+      '<div class="row" style="margin-top:12px"><button class="btn gold" id="bsv">जतन करा</button>' + (x.edited ? '<button class="btn ghost" id="brs">DCR मधील मूळ मजकूर परत आणा</button>' : '') + '</div></div>';
+    document.body.appendChild(m);
+    $('[data-x]', m).onclick = function () { m.remove(); };
+    function send(o, b) {
+      busy(b, true);
+      call('saveBRow', x.key, o).then(function () { m.remove(); toast('जतन झाले. शेवटी "Word / PDF पुन्हा बनवा" दाबा.'); bEditor(q); }).catch(function (e) { toast(e.message, 1); busy(b, false); });
+    }
+    $('#bsv', m).onclick = function () {
+      var cells = [x.cells[0]], ch = false;
+      m.querySelectorAll('textarea[data-c]').forEach(function (t) { cells[+t.dataset.c] = t.value.trim(); });
+      for (var i = 1; i < cells.length; i++) if (cells[i] !== String(x.auto[i]).trim()) ch = true;
+      var o = { skip: $('#bsk', m).checked, head: $('.bh', m).value };
+      o.cells = ch ? cells : null;
+      send(o, this);
+    };
+    var rs = $('#brs', m); if (rs) rs.onclick = function () { send({ cells: null }, this); };
   }
   function check() {
     $('#br').innerHTML = '<div class="card muted"><span class="spin"></span> तपासत आहे...</div>';
@@ -390,14 +485,22 @@
       f('jaKrPrefix', 'जा.क्र. सुरुवात') + f('jaKrFile', 'जा.क्र. फाईल क्रमांक (उदा. 26-1962)') + '<div class="row"><div><label>जा.क्र. आपोआप क्रमांक</label><select data-s="autoNo"><option' + (s.autoNo === 'होय' ? ' selected' : '') + '>होय</option><option' + (s.autoNo !== 'होय' ? ' selected' : '') + '>नाही</option></select></div>' +
       '<div><label>शेवटचा जा.क्र. क्रमांक (पुढचा आपोआप +1)</label><input type="text" data-s="letterSeq" value="' + esc(s.letterSeq) + '" style="width:90px"></div><div><label>अहवालाची मुदत (दिवस)</label><input type="text" data-s="days" value="' + esc(s.days) + '" style="width:70px"></div>' +
       '<div><label>फॉन्ट (Word/PDF)</label><input type="text" data-s="font" value="' + esc(s.font) + '" style="width:160px"></div></div>' +
-      f('quick', 'नेहमीचे शेरे (एका ओळीत एक)', 1) + f('distName', 'B भागावरील घटकाचे नाव') + f('divOrder', 'उपविभागांचा क्रम (स्वल्पविरामाने)') +
+      f('quick', 'नेहमीचे शेरे, सर्व गुन्ह्यांसाठी (एका ओळीत एक)', 1) + f('distName', 'B भागावरील घटकाचे नाव') + f('divOrder', 'उपविभागांचा क्रम (स्वल्पविरामाने)') +
       '<div class="row" style="margin-top:12px"><button class="btn" id="ss">जतन करा</button></div></div>' +
       '<div class="card"><h2>पो.स्टे. → उपविभाग</h2><p class="muted">DCR मधील "... विभाग" ओळींवरून ॲप हे आपोआप शिकते. इथे दुरुस्ती करता येते.</p><div id="pst"></div><button class="btn ghost" id="psv">पो.स्टे. यादी जतन</button></div>';
     $('#ss').onclick = function () {
       var o = {}, b = this; document.querySelectorAll('[data-s]').forEach(function (e) { o[e.dataset.s] = e.value; });
       busy(b, true); call('saveSettings', o).then(function (d) { S.settings = d; toast('सेटिंग्ज जतन'); }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };
-    $('#main').insertAdjacentHTML('beforeend', logoCard() + rulesCard());
+    $('#main').insertAdjacentHTML('beforeend', quickCard() + logoCard() + rulesCard());
+    var qh = qHead(), qs = $('#qhs'), qt = $('#qht');
+    function qShow() { qt.value = qh[qs.value] || ''; }
+    qs.onchange = qShow; qShow();
+    qt.oninput = function () { qh[qs.value] = qt.value; };
+    $('#qhv').onclick = function () {
+      var b = this, o = {}; Object.keys(qh).forEach(function (k) { var v = String(qh[k] || '').trim(); if (v) o[k] = v; });
+      busy(b, true); call('saveSettings', { quickHead: JSON.stringify(o) }).then(function (d) { S.settings = d; toast('शीर्षकनिहाय शेरे जतन'); }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
+    };
     $('#main').querySelectorAll('[data-lsave]').forEach(function (bt) {
       bt.onclick = function () {
         var k = bt.dataset.lsave, fi = $('[data-logo="' + k + '"]'), f = fi.files && fi.files[0];
@@ -427,6 +530,12 @@
     };
   }
 
+  function quickCard() {
+    var qh = qHead();
+    return '<div class="card"><h2>शीर्षकनिहाय शेरे</h2><p class="muted">गुन्ह्याच्या शीर्षकानुसार (खुन, चोरी, अपघात इ.) शेरा लिहिताना हे पर्याय आधी दिसतात, त्यानंतर सर्वसाधारण शेरे. शीर्षक निवडा, एका ओळीत एक शेरा लिहा, "जतन" दाबा.</p>' +
+      '<div class="row"><select id="qhs">' + DCR.HEADS.map(function (h) { return '<option value="' + h[0] + '">' + esc(h[1]) + (qh[h[0]] ? ' ✓' : '') + '</option>'; }).join('') + '</select><button class="btn ghost" id="qhv">शीर्षकनिहाय शेरे जतन</button></div>' +
+      '<textarea id="qht" style="min-height:130px;margin-top:8px"></textarea></div>';
+  }
   function logoCard() {
     var s = S.settings, nm = { L: 'डावा (पोलीस लोगो)', C: 'मध्य (राजमुद्रा)', R: 'उजवा' };
     return '<div class="card"><h2>पत्राचे लोगो</h2><p class="muted">DCR FORMAT मधील तीन लोगो आधीपासून पत्रांत येतात. वेगळा लोगो हवा असेल तरच लहान PNG/JPG निवडून "जतन" दाबा.</p>' +
@@ -441,6 +550,52 @@
         return '<tr><td>' + esc(r.f) + '</td><td>' + esc(r.t) + '</td><td><button class="btn ghost sm" data-rdel="' + i + '">काढा</button></td></tr>';
       }).join('') + '</table></div>' : '<p class="muted">अजून नियम नाहीत.</p>') + '</div>';
   }
+
+  /* ---------- टायपिंग: युनिकोड / कृतिदेव / रोमन (ॲपमधील सर्व मजकूर चौकटींत) ---------- */
+  var IME = { mode: 'uni', st: null };
+  try { IME.mode = localStorage.getItem('dcrIme') || 'uni'; } catch (e) {}
+  var IME_T = { uni: 'युनिकोड (मराठी कीबोर्ड)', kruti: 'कृतिदेव कीबोर्डप्रमाणे टाइप करा, युनिकोडमध्ये दिसेल', roman: 'Roman: gunha → गुन्हा, aaropi → आरोपी, ThaaNe → ठाणे. aa=ा ii=ी uu=ू T=ट D=ड N=ण L=ळ sh=श Sh=ष dny=ज्ञ M=ं | = ।' };
+  function imeBar() {
+    var top = $('.bar .sp'); if (!top || $('#ime')) return;
+    top.insertAdjacentHTML('afterend', '<span id="ime" class="ime" title="' + esc(IME_T[IME.mode]) + '">टायपिंग: ' +
+      [['uni', 'युनिकोड'], ['kruti', 'कृतिदेव'], ['roman', 'Roman']].map(function (x) { return '<button data-ime="' + x[0] + '"' + (IME.mode === x[0] ? ' class="on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</span>');
+    $('#ime').querySelectorAll('button').forEach(function (b) {
+      b.onclick = function () {
+        IME.mode = b.dataset.ime; IME.st = null;
+        try { localStorage.setItem('dcrIme', IME.mode); } catch (e) {}
+        $('#ime').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
+        $('#ime').title = IME_T[IME.mode]; toast(IME_T[IME.mode]);
+      };
+    });
+  }
+  function imeOk(el) { return el && !el.hasAttribute('data-noime') && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && /^(text|search)$/.test(el.type))); }
+  function imeConv(buf) { return IME.mode === 'kruti' ? kruti2uni(buf) : roman2uni(buf); }
+  function imeBuf(ch) { return IME.mode === 'kruti' ? !/\s/.test(ch) : /[A-Za-z~]/.test(ch); }
+  /* चालू शब्दाची मूळ अक्षरे (buf) लक्षात ठेवून तो शब्द प्रत्येक अक्षराला पुन्हा रूपांतरित होतो; जागा/Enter/कर्सर हलवल्यास शब्द पूर्ण */
+  document.addEventListener('beforeinput', function (e) {
+    var el = e.target;
+    if (IME.mode === 'uni' || !imeOk(el)) return;
+    var st = IME.st, a = el.selectionStart, z = el.selectionEnd;
+    var live = st && st.el === el && a === z && a === st.at + st.out.length && el.value.substr(st.at, st.out.length) === st.out;
+    function put(out) { el.setRangeText(out, st.at, st.at + st.out.length, 'end'); st.out = out; }
+    if (e.inputType === 'insertText' && e.data) {
+      e.preventDefault();
+      if (a !== z) { el.setRangeText('', a, z, 'end'); live = false; }
+      if (!live) st = IME.st = { el: el, at: el.selectionStart, buf: '', out: '' };
+      e.data.split('').forEach(function (ch) {
+        if (imeBuf(ch)) { st.buf += ch; put(imeConv(st.buf)); }
+        else {
+          el.setRangeText(IME.mode === 'roman' && ch === '|' ? '।' : ch, el.selectionStart, el.selectionEnd, 'end');
+          st = IME.st = { el: el, at: el.selectionStart, buf: '', out: '' };
+        }
+      });
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (e.inputType === 'deleteContentBackward' && live && st.buf) {
+      e.preventDefault(); st.buf = st.buf.slice(0, -1); put(st.buf ? imeConv(st.buf) : '');
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    } else IME.st = null;
+  }, true);
+  document.addEventListener('mousedown', function () { IME.st = null; }, true);
 
   window.addEventListener('load', boot);
 })();
