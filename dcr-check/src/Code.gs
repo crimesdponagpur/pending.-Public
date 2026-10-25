@@ -12,9 +12,9 @@ var CASE_COLS = ['key', 'kind', 'sec', 'ps', 'div', 'no', 'yr', 'kalam', 'label'
   'nCases', 'nAcc', 'psCr', 'dcrDate', 'dcrIssue', 'dcrList', 'shera', 'sheraAt', 'letters', 'updated'];
 var SHEETS = {
   CASES: CASE_COLS,
-  DCRS: ['reportDate', 'issueDate', 'jaKr', 'fileName', 'fileUrl', 'pdfUrl', 'cases', 'bad', 'warn', 'info', 'uploaded'],
+  DCRS: ['reportDate', 'issueDate', 'jaKr', 'fileName', 'fileUrl', 'pdfUrl', 'cases', 'bad', 'warn', 'info', 'uploaded', 'bAdded'],
   ISSUES: ['reportDate', 'level', 'msg', 'key'],
-  LETTERS: ['id', 'jaKr', 'date', 'key', 'ps', 'div', 'crime', 'head', 'shera', 'keys', 'docxUrl', 'krutiUrl', 'pdfUrl', 'created', 'status', 'replyDate', 'note'],
+  LETTERS: ['id', 'jaKr', 'date', 'key', 'ps', 'div', 'crime', 'head', 'shera', 'keys', 'docxUrl', 'pdfUrl', 'created', 'status', 'replyDate', 'note', 'krutiUrl'],
   BPART: ['month', 'scope', 'cases', 'docxUrl', 'pdfUrl', 'created'],
   PS: ['ps', 'div'],
   SETTINGS: ['key', 'value']
@@ -36,7 +36,7 @@ function doGet() {
 }
 /** ॲपमधील सर्व विनंत्या इथून जातात: उत्तर नेहमी { ok, d } किंवा { ok:false, e } */
 function api(fn, args) {
-  var F = { init: init_, saveDcr: saveDcr_, savePdf: savePdf_, search: search_, saveShera: saveShera_, setHead: setHead_, makeLetter: makeLetter_, makeLetters: makeLetters_, saveLogo: saveLogo_,
+  var F = { init: init_, saveDcr: saveDcr_, savePdf: savePdf_, search: search_, saveShera: saveShera_, setHead: setHead_, makeLetter: makeLetter_, makeLetters: makeLetters_, saveLogo: saveLogo_, dayBPart: dayBPart_, addDay: addDay_, bDays: bDays_,
     letters: letters_, setLetter: setLetter_, monthCheck: monthCheck_, buildBPart: buildBPart_, saveSettings: saveSettings_, savePs: savePs_ };
   try {
     if (!F[fn]) throw new Error('अज्ञात क्रिया: ' + fn);
@@ -117,13 +117,7 @@ function init_() {
 }
 
 /* ---------- DCR जतन ---------- */
-/* DCR जतन केल्यावर त्या महिन्याचा जिल्हा B भाग आपोआप पुन्हा बनतो: रोजचे गुन्हे एकाच महिन्याच्या फाईलमध्ये जमा होत राहतात */
 function saveDcr_(p) {
-  var r = saveDcrCore_(p);
-  try { var b = buildBPart_(r.month, 'ALL'); r.bpartUrl = b.docxUrl; r.bpartPdf = b.pdfUrl; } catch (e) { r.bpartErr = String(e && e.message || e); }
-  return r;
-}
-function saveDcrCore_(p) {
   if (!p || !p.reportDate) throw new Error('DCR ची तारीख नाही');
   var lock = LockService.getScriptLock(); lock.waitLock(30000);
   try {
@@ -164,7 +158,7 @@ function saveDcrCore_(p) {
     var cnt = function (l) { return (p.issues || []).filter(function (i) { return i.level === l; }).length; };
     var dS = sh_('DCRS'), dR = rows_('DCRS').filter(function (r) { return r.reportDate === p.reportDate; })[0];
     var row = { reportDate: p.reportDate, issueDate: p.issueDate, jaKr: p.jaKr, fileName: p.fileName, fileUrl: file ? file.getUrl() : (dR ? dR.fileUrl : ''),
-      pdfUrl: dR ? dR.pdfUrl : '', cases: (p.cases || []).length, bad: cnt('bad'), warn: cnt('warn'), info: cnt('info'), uploaded: ts };
+      pdfUrl: dR ? dR.pdfUrl : '', cases: (p.cases || []).length, bad: cnt('bad'), warn: cnt('warn'), info: cnt('info'), uploaded: ts, bAdded: dR ? dR.bAdded : '' };
     if (dR) dS.getRange(dR._row, 1, 1, SHEETS.DCRS.length).setValues([toRow_('DCRS', row)]); else dS.appendRow(toRow_('DCRS', row));
     return { added: add.length, updated: upd, fileUrl: row.fileUrl, month: month };
   } finally { lock.releaseLock(); }
@@ -373,33 +367,69 @@ function pdfFromDocx_(blob, folder, base) {
 }
 /* हेडवाइज B भाग (महिना): विभागाचे नाव नाही, थेट पो.स्टे.; गुन्हे DCR च्या दिनांकानुसार क्रमाने (रोजचे गुन्हे शेवटी जोडले जातात).
    एकच फाईल "B_भाग_जिल्हा_MM-YYYY" दर वेळी अद्ययावत होते. */
-function buildBPart_(month, scope) {
-  var S = settings_(), cs = monthCases_(month, scope);
-  if (!cs.length) throw new Error(month + ' या महिन्याचे गुन्हे नोंदवहीत नाहीत. आधी DCR अपलोड करा.');
+/* हेडवाइज तक्ते (विभागाचे नाव नाही, थेट पो.स्टे.; DCR दिनांकानुसार क्रम) → Word + PDF */
+function bpartFile_(cs, titles, folder, base) {
   var HD = DCR.HEADS, groups = {};
   cs.forEach(function (c) { var h = c.head || 'OTH5'; (groups[h] = groups[h] || []).push(c); });
-  var mm = month.slice(5) + '/' + month.slice(0, 4), all = !scope || scope === 'ALL';
-  var folder = folder_(['B_भाग', month]), base = 'B_भाग_' + (all ? 'जिल्हा' : scope) + '_' + month.slice(5) + '-' + month.slice(0, 4);
-  var dates = cs.map(function (c) { return c.dcrDate || ''; }).filter(String).sort();
-  var upto = dates.length ? dmy_(dates[dates.length - 1]) : '';
-  var sum = [['अ.क्र.', 'शीर्षक', 'गुन्हे']], k = 0;
-  HD.forEach(function (h) { var g = groups[h[0]]; if (g) sum.push([String(++k), h[1], String(g.length)]); });
+  var sum = [['अ.क्र.', 'शीर्षक', 'गुन्हे']], k = 0, counts = [];
+  HD.forEach(function (h) { var g = groups[h[0]]; if (g) { sum.push([String(++k), h[1], String(g.length)]); counts.push([h[0], h[1], g.length]); } });
   sum.push(['', 'एकूण', String(cs.length)]);
   var COLS = ['अ.क्र.', 'पोस्टे', 'अप.क्र. व कलम', 'घटनास्थळ', 'घ. ता. वेळ', 'दा. ता. वेळ', 'फिर्यादी व आरोपीचे नाव व पत्ता', 'अटक / प्रतिबंधक', 'तपास अधिकारी', 'घटनेचे थोडक्यात विवरण'];
   var ADC = ['अ.क्र.', 'पोस्टे', 'मर्ग क्र. व कलम', 'घटनास्थळ', 'घ. ता. वेळ', 'दा. ता. वेळ', 'फिर्यादीचे नाव', 'मृतकाचे नाव', 'दाखल / तपास', 'मरणाचे कारण'];
-  var W = [440, 1000, 1600, 1360, 1120, 1120, 2400, 1200, 1400, 4238];
+  var W = [440, 1000, 1600, 1360, 1120, 1120, 2400, 1200, 1400, 4238], sections = [];
   k = 0;
-  var sections = [];
   HD.forEach(function (h) {
     var g = groups[h[0]]; if (!g) return;
     g.sort(function (a, z) { var x = String(a.dcrDate || '').localeCompare(String(z.dcrDate || '')); return x || (a.ps < z.ps ? -1 : a.ps > z.ps ? 1 : 0) || (+a.no - +z.no); });
     sections.push({ title: (++k) + ') ' + h[1] + ' - ' + g.length, widths: W, rows: [h[0] === 'AD' ? ADC : COLS].concat(g.map(function (c, i) { return bRow_(c, i + 1); })) });
   });
-  var m = { titles: [all ? S.distName : scope + ' विभाग', 'बी पार्ट (हेडवाइज)', 'माहे ' + mm + (upto ? ' (दि. ' + upto + ' पर्यंत)' : '')], summary: { rows: sum, widths: [800, 6000, 1500] }, sections: sections };
+  var m = { titles: titles, summary: { rows: sum, widths: [800, 6000, 1500] }, sections: sections };
   var fD = saveBlob_(folder, docxBlob_(DOCXB.bpart(m, { font: 'Mangal' }), base + '.docx'));
   var pdfUrl = '';
   try { pdfUrl = pdfFromDocx_(docxBlob_(DOCXB.bpart(m, { font: 'Mukta' }), base + '_tmp.docx'), folder, base).getUrl(); } catch (e) { Logger.log('B भाग PDF: ' + e); }
-  var out = { docxUrl: fD.getUrl(), pdfUrl: pdfUrl, cases: cs.length };
+  return { docxUrl: fD.getUrl(), pdfUrl: pdfUrl, cases: cs.length, counts: counts };
+}
+function dd_(iso) { return iso.slice(8, 10) + '-' + iso.slice(5, 7) + '-' + iso.slice(0, 4); }
+/* एका दिवसाचा (DCR) हेडवाइज B भाग: तपासण्यासाठी */
+function dayBPart_(date) {
+  var S = settings_(), cs = rows_('CASES').filter(function (r) { return r.kind !== 'NC' && r.dcrDate === date; }).map(caseObj_);
+  if (!cs.length) throw new Error(dmy_(date) + ' च्या DCR मधील गुन्हे सापडले नाहीत.');
+  var out = bpartFile_(cs, [S.distName, 'दैनिक बी पार्ट (हेडवाइज)', 'DCR दि. ' + dmy_(date)], folder_(['B_भाग', date.slice(0, 7), 'दैनिक']), 'B_भाग_दैनिक_' + dd_(date));
+  out.issues = rows_('ISSUES').filter(function (r) { return r.reportDate === date && r.level !== 'info'; }).map(function (r) { return { level: r.level, msg: r.msg }; });
+  var d = rows_('DCRS').filter(function (r) { return r.reportDate === date; })[0];
+  out.bAdded = d ? d.bAdded : '';
+  out.others = cs.filter(function (c) { return c.head === 'OTH5' || c.head === 'OTH6'; }).map(function (c) { return { key: c.key, ps: c.ps, no: c.no, yr: c.yr, kalam: c.kalam, label: c.label, head: c.head }; });
+  return out;
+}
+/* तपासलेला दिवस मासिक B भागात जोडा (on=true) / काढा; नंतर महिन्याची एकच फाईल पुन्हा बनते */
+function addDay_(date, on) {
+  var d = rows_('DCRS').filter(function (r) { return r.reportDate === date; })[0];
+  if (!d) throw new Error(dmy_(date) + ' चा DCR नोंदवहीत नाही.');
+  sh_('DCRS').getRange(d._row, SHEETS.DCRS.indexOf('bAdded') + 1).setValue(on ? now_() : '');
+  var month = date.slice(0, 7), any = rows_('DCRS').some(function (r) { return String(r.reportDate).slice(0, 7) === month && r.bAdded; });
+  return any ? buildBPart_(month, 'ALL') : { cases: 0 };
+}
+/* महिन्यातील DCR दिवस व त्यांची स्थिती, आणि सध्याची मासिक फाईल */
+function bDays_(month) {
+  var days = rows_('DCRS').filter(function (r) { return String(r.reportDate).slice(0, 7) === month && +r.cases > 0; })
+    .sort(function (a, b) { return a.reportDate < b.reportDate ? -1 : 1; })
+    .map(function (r) { return { date: r.reportDate, cases: +r.cases, bad: +r.bad || 0, warn: +r.warn || 0, bAdded: r.bAdded }; });
+  var bp = rows_('BPART').filter(function (r) { return r.month === month && r.scope === 'ALL'; })[0];
+  return { days: days, monthly: bp ? { docxUrl: bp.docxUrl, pdfUrl: bp.pdfUrl, cases: bp.cases, created: bp.created } : null };
+}
+/* मासिक हेडवाइज B भाग: फक्त "मासिक B भागात जोडा" केलेल्या दिवसांचे गुन्हे, एकाच फाईलमध्ये ("B_भाग_जिल्हा_MM-YYYY") */
+function buildBPart_(month, scope) {
+  var S = settings_(), all = !scope || scope === 'ALL';
+  var added = {}; rows_('DCRS').forEach(function (r) { if (String(r.reportDate).slice(0, 7) === month && r.bAdded) added[r.reportDate] = 1; });
+  var dates = Object.keys(added).sort();
+  if (!dates.length) throw new Error(month.slice(5) + '/' + month.slice(0, 4) + ' मध्ये अजून कोणताही दिवस मासिक B भागात जोडलेला नाही. आधी दैनिक B भाग तपासून "मासिक B भागात जोडा" करा.');
+  var cs = monthCases_(month, scope).filter(function (c) { return added[c.dcrDate]; });
+  if (!cs.length) throw new Error('जोडलेल्या दिवसांचे गुन्हे सापडले नाहीत.');
+  var mm = month.slice(5) + '/' + month.slice(0, 4);
+  var span = 'DCR दि. ' + dmy_(dates[0]).slice(0, 5) + (dates.length > 1 ? ' ते ' + dmy_(dates[dates.length - 1]).slice(0, 5) : '') + ', ' + dates.length + ' दिवस';
+  var base = 'B_भाग_' + (all ? 'जिल्हा' : scope) + '_' + month.slice(5) + '-' + month.slice(0, 4);
+  var out = bpartFile_(cs, [all ? S.distName : scope + ' विभाग', 'बी पार्ट (हेडवाइज)', 'माहे ' + mm + ' (' + span + ')'], folder_(['B_भाग', month]), base);
+  out.days = dates.length;
   var bs = sh_('BPART'), old = rows_('BPART').filter(function (r) { return r.month === month && r.scope === (scope || 'ALL'); })[0];
   var row = toRow_('BPART', { month: month, scope: scope || 'ALL', cases: cs.length, docxUrl: out.docxUrl, pdfUrl: out.pdfUrl, created: now_() });
   if (old) bs.getRange(old._row, 1, 1, row.length).setValues([row]); else bs.appendRow(row);

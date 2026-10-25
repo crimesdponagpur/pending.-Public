@@ -106,10 +106,9 @@
       (lv.bad.length || lv.warn.length ? '<ul class="iss">' + li(lv.bad, 'bad') + li(lv.warn, 'warn') + '</ul>' : '<p class="muted">शीर्षकातील संख्या व ओळी जुळल्या. मोठी त्रुटी नाही.</p>') +
       (lv.info.length ? '<details><summary>माहितीसाठी (' + lv.info.length + ')</summary><ul class="iss">' + li(lv.info, 'info') + '</ul></details>' : '') +
       '<div class="row links" style="margin-top:8px"><button class="btn sm" data-go="' + R.reportDate + '">या DCR वर शेरा / पत्र →</button>' +
-      (r.bpartUrl ? '<span class="muted">महिन्याचा B भाग अद्ययावत:</span><a target="_blank" href="' + esc(r.bpartUrl) + '">Word</a>' + (r.bpartPdf ? '<a target="_blank" href="' + esc(r.bpartPdf) + '">PDF</a>' : '') : '') +
-      (r.bpartErr ? '<span class="chip warn" title="' + esc(r.bpartErr) + '">B भाग अद्ययावत झाला नाही</span>' : '') + '</div></div>';
+      '<button class="btn sm ghost" data-bp="' + R.reportDate + '">दैनिक B भाग तपासा →</button></div></div>';
   }
-  function bindCard(d) { var b = document.querySelector('[data-go="' + d + '"]'); if (b) b.onclick = function () { S.pickDate = d; show('cases'); }; }
+  function bindCard(d) { var bp = document.querySelector('[data-bp="' + d + '"]'); if (bp) bp.onclick = function () { S.pickDay = d; show('bpart'); }; var b = document.querySelector('[data-go="' + d + '"]'); if (b) b.onclick = function () { S.pickDate = d; show('cases'); }; }
   function refreshDcrs() { call('init').then(function (d) { S.dcrs = d.dcrs; S.ps = d.ps; dcrList(); }); }
 
   /* ---------- 2. गुन्हे व शेरा ---------- */
@@ -307,23 +306,67 @@
 
   /* ---------- 4. B भाग ---------- */
   function vBpart() {
-    var m = curMonth(); if (+String(S.today).slice(8, 10) <= 7) { var d = new Date(m + '-01T00:00:00'); d.setMonth(d.getMonth() - 1); m = d.toISOString().slice(0, 7); }
-    $('#main').innerHTML = '<div class="card"><h2>हेडवाइज B भाग (मासिक)</h2><p class="muted">प्रत्येक DCR अपलोड केल्यावर त्या महिन्याचा जिल्हा B भाग आपोआप अद्ययावत होतो (एकच फाईल, रोजचे गुन्हे जोडले जातात). इथून हाताने पुन्हा बनवता येतो.</p><div class="row"><input type="month" id="bm" value="' + m + '"><select id="bs"><option value="ALL">पूर्ण जिल्हा</option>' +
-      divs().map(function (d) { return '<option value="' + esc(d) + '">' + esc(d) + ' विभाग</option>'; }).join('') + '</select><button class="btn ghost" id="bc">तपासणी</button><button class="btn gold" id="bb">B भाग बनवा (Word + PDF)</button></div><div id="bo" class="links" style="margin-top:8px"></div></div><div id="br"></div>';
-    $('#bc').onclick = check; $('#bm').onchange = check; $('#bs').onchange = check;
-    $('#bb').onclick = function () {
-      var b = this; busy(b, true, 'B भाग बनत आहे (1-2 मिनिटे)...');
-      call('buildBPart', $('#bm').value, $('#bs').value).then(function (r) {
-        $('#bo').innerHTML = '<span class="chip ok">' + r.cases + ' गुन्हे</span><a target="_blank" href="' + esc(r.docxUrl) + '">Word</a>' + (r.pdfUrl ? '<a target="_blank" href="' + esc(r.pdfUrl) + '">PDF</a>' : '<span class="chip bad" title="' + esc(r.pdfNote || '') + '">PDF बनली नाही (appsscript.json तपासा)</span>');
-        toast('B भाग Drive मध्ये जतन झाला');
-      }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
-    };
-    check();
+    var m = (S.pickDay || '').slice(0, 7) || curMonth();
+    if (!S.pickDay && +String(S.today).slice(8, 10) <= 7) { var d = new Date(m + '-01T00:00:00'); d.setMonth(d.getMonth() - 1); m = d.toISOString().slice(0, 7); }
+    $('#main').innerHTML = '<div class="card"><h2>हेडवाइज B भाग</h2><p class="muted">रोज: DCR अपलोड → "दैनिक B भाग" पाहा व तपासा → "मासिक B भागात जोडा". जोडलेल्या सर्व दिवसांचे गुन्हे शीर्षकानुसार महिन्याच्या एकाच फाईलमध्ये जमा होतात.</p>' +
+      '<div class="row"><input type="month" id="bm" value="' + m + '"><button class="btn ghost" id="bc">महिन्याची तपासणी</button></div><div id="bmo" class="links" style="margin-top:8px"></div></div>' +
+      '<div id="bdl"></div><div id="bdv"></div><div id="br"></div>';
+    $('#bm').onchange = function () { $('#bdv').innerHTML = ''; $('#br').innerHTML = ''; days(); };
+    $('#bc').onclick = check;
+    days(S.pickDay); S.pickDay = null;
+  }
+  function bLinks(r) { return '<a target="_blank" href="' + esc(r.docxUrl) + '">Word</a>' + (r.pdfUrl ? '<a target="_blank" href="' + esc(r.pdfUrl) + '">PDF</a>' : ''); }
+  function days(open) {
+    var mo = $('#bm').value;
+    $('#bdl').innerHTML = '<p class="muted"><span class="spin"></span> दिवस शोधत आहे...</p>';
+    call('bDays', mo).then(function (r) {
+      $('#bmo').innerHTML = r.monthly ? '<span class="chip ok">मासिक B भाग: ' + r.monthly.cases + ' गुन्हे</span>' + bLinks(r.monthly) + '<span class="muted">अद्ययावत ' + esc(r.monthly.created) + '</span>' : '<span class="muted">या महिन्याचा मासिक B भाग अजून बनलेला नाही.</span>';
+      if (!r.days.length) { $('#bdl').innerHTML = '<div class="card muted">या महिन्याचे DCR अपलोड झालेले नाहीत.</div>'; return; }
+      var added = r.days.filter(function (x) { return x.bAdded; }).length;
+      $('#bdl').innerHTML = '<div class="card"><h3>' + mo.slice(5) + '/' + mo.slice(0, 4) + ' चे DCR दिवस (' + added + '/' + r.days.length + ' मासिक B भागात)</h3><div class="scroll"><table class="t"><tr><th>DCR दि.</th><th>गुन्हे</th><th>त्रुटी</th><th>स्थिती</th><th></th></tr>' +
+        r.days.map(function (x) {
+          return '<tr data-d="' + x.date + '"><td>' + dmy(x.date) + '</td><td>' + x.cases + '</td><td>' + (x.bad ? '<span class="chip bad">' + x.bad + '</span>' : '') + (x.warn ? '<span class="chip warn">' + x.warn + '</span>' : '') + '</td>' +
+            '<td>' + (x.bAdded ? '<span class="chip ok">जोडला</span>' : '<span class="chip warn">बाकी</span>') + '</td>' +
+            '<td><button class="btn sm ghost" data-a="view">दैनिक B भाग</button> ' + (x.bAdded ? '<button class="btn sm ghost" data-a="rm">काढा</button>' : '<button class="btn sm gold" data-a="add">मासिक मध्ये जोडा</button>') + '</td></tr>';
+        }).join('') + '</table></div></div>';
+      $('#bdl').querySelectorAll('tr[data-d]').forEach(function (tr) {
+        var d = tr.dataset.d;
+        $('[data-a=view]', tr).onclick = function () { dayView(d); };
+        var ad = $('[data-a=add]', tr), rm = $('[data-a=rm]', tr);
+        if (ad) ad.onclick = function () { addDay(d, true, ad); };
+        if (rm) rm.onclick = function () { addDay(d, false, rm); };
+      });
+      if (open) dayView(open);
+    }).catch(function (e) { $('#bdl').innerHTML = '<div class="card"><ul class="iss"><li class="bad">' + esc(e.message) + '</li></ul></div>'; });
+  }
+  function addDay(d, on, b) {
+    busy(b, true, on ? 'जोडत आहे...' : 'काढत आहे...');
+    call('addDay', d, on).then(function (r) {
+      toast(on ? dmy(d) + ' मासिक B भागात जोडला (' + r.cases + ' गुन्हे)' : dmy(d) + ' मासिक B भागातून काढला');
+      days(); if ($('#bdv [data-day]') && $('#bdv [data-day]').dataset.day === d) dayView(d);
+    }).catch(function (e) { toast(e.message, 1); busy(b, false); });
+  }
+  function dayView(d) {
+    $('#bdv').innerHTML = '<div class="card"><p class="muted"><span class="spin"></span> ' + dmy(d) + ' चा दैनिक B भाग बनत आहे...</p></div>';
+    call('dayBPart', d).then(function (r) {
+      var li = r.issues.map(function (i) { return '<li class="' + i.level + '">' + esc(i.msg) + '</li>'; }).join('');
+      $('#bdv').innerHTML = '<div class="card" data-day="' + d + '"><div class="row"><h3 class="grow" style="margin:0">दैनिक B भाग: DCR दि. ' + dmy(d) + ' (' + r.cases + ' गुन्हे)</h3><span class="links">' + bLinks(r) + '</span></div>' +
+        '<div class="scroll"><table class="t" style="margin-top:8px"><tr><th>शीर्षक</th><th>गुन्हे</th></tr>' + r.counts.map(function (c) { return '<tr><td>' + esc(c[1]) + '</td><td>' + c[2] + '</td></tr>'; }).join('') + '</table></div>' +
+        (li ? '<h3>DCR मधील त्रुटी (जोडण्यापूर्वी तपासा)</h3><ul class="iss">' + li + '</ul>' : '<p class="muted">मोठ्या त्रुटी नाहीत.</p>') +
+        (r.others.length ? '<h3>"इतर" मधील गुन्हे: योग्य शीर्षक निवडा</h3>' + r.others.map(function (o) { return '<div class="case row" data-k="' + esc(o.key) + '"><span class="grow"><b>' + esc(o.ps) + ' ' + o.no + '/' + String(o.yr).slice(2) + '</b> ' + esc(o.kalam) + ' (' + esc(o.label) + ')</span>' + headSel(o.head, 'hs') + '</div>'; }).join('') : '') +
+        '<div class="row" style="margin-top:10px">' + (r.bAdded ? '<span class="chip ok">हा दिवस मासिक B भागात आहे</span><button class="btn ghost" id="bdr">मासिक मधून काढा</button>' : '<button class="btn gold" id="bda">तपासले, मासिक B भागात जोडा</button>') + '</div></div>';
+      $('#bdv').querySelectorAll('[data-k]').forEach(function (row) {
+        $('.hs', row).onchange = function () { var v = this.value; call('setHead', row.dataset.k, v).then(function () { toast('शीर्षक बदलले. दैनिक B भाग पुन्हा पाहा.'); }).catch(function (e) { toast(e.message, 1); }); };
+      });
+      var a = $('#bda'), rr = $('#bdr');
+      if (a) a.onclick = function () { addDay(d, true, a); };
+      if (rr) rr.onclick = function () { addDay(d, false, rr); };
+    }).catch(function (e) { $('#bdv').innerHTML = '<div class="card"><ul class="iss"><li class="bad">' + esc(e.message) + '</li></ul></div>'; });
   }
   function check() {
     $('#br').innerHTML = '<div class="card muted"><span class="spin"></span> तपासत आहे...</div>';
-    call('monthCheck', $('#bm').value, $('#bs').value).then(function (r) {
-      var ds = r.divs.filter(function (d) { return $('#bs').value === 'ALL' || d === $('#bs').value; });
+    call('monthCheck', $('#bm').value, 'ALL').then(function (r) {
+      var ds = [];
       var rows = DCR.HEADS.filter(function (h) { return r.counts[h[0]]; }).map(function (h) {
         var c = r.counts[h[0]], t = 0; Object.keys(c).forEach(function (k) { t += c[k]; });
         return '<tr><td>' + esc(h[1]) + '</td>' + ds.map(function (d) { return '<td>' + (c[d] || '') + '</td>'; }).join('') + '<td><b>' + t + '</b></td></tr>';
