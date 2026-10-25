@@ -117,7 +117,13 @@ function init_() {
 }
 
 /* ---------- DCR जतन ---------- */
+/* DCR जतन केल्यावर त्या महिन्याचा जिल्हा B भाग आपोआप पुन्हा बनतो: रोजचे गुन्हे एकाच महिन्याच्या फाईलमध्ये जमा होत राहतात */
 function saveDcr_(p) {
+  var r = saveDcrCore_(p);
+  try { var b = buildBPart_(r.month, 'ALL'); r.bpartUrl = b.docxUrl; r.bpartPdf = b.pdfUrl; } catch (e) { r.bpartErr = String(e && e.message || e); }
+  return r;
+}
+function saveDcrCore_(p) {
   if (!p || !p.reportDate) throw new Error('DCR ची तारीख नाही');
   var lock = LockService.getScriptLock(); lock.waitLock(30000);
   try {
@@ -209,55 +215,6 @@ function setHead_(key, head) {
   return { ok: 1 };
 }
 
-/* ---------- Google Doc → Word / PDF ---------- */
-function exportDocx_(docId, folder, base) {
-  var res = UrlFetchApp.fetch('https://docs.google.com/document/d/' + docId + '/export?format=docx', { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
-  if (res.getResponseCode() !== 200) throw new Error('Word फाइल बनवता आली नाही (' + res.getResponseCode() + ')');
-  var docx = saveBlob_(folder, res.getBlob().setName(base + '.docx'));
-  DriveApp.getFileById(docId).setTrashed(true);
-  return { docxUrl: docx.getUrl(), docxId: docx.getId() };
-}
-function exportDoc_(docId, folder, base) {
-  var out = exportDocx_(docId, folder, base);
-  var pdf = saveBlob_(folder, DriveApp.getFileById(docId).getAs('application/pdf').setName(base + '.pdf'));
-  return { docxUrl: out.docxUrl, docxId: out.docxId, pdfUrl: pdf.getUrl(), pdfId: pdf.getId() };
-}
-function newDoc_(name, folder) {
-  var d = DocumentApp.create(name);
-  DriveApp.getFileById(d.getId()).moveTo(folder);
-  return d;
-}
-function para_(body, text, o) {
-  o = o || {};
-  var p = body.appendParagraph('');
-  p.setAlignment(o.align || DocumentApp.HorizontalAlignment.JUSTIFY).setSpacingAfter(o.after == null ? 6 : o.after).setLineSpacing(o.line || 1.15);
-  if (o.indent) p.setIndentFirstLine(o.indent);
-  if (o.start) p.setIndentStart(o.start);
-  rich_(p, text, o);
-  return p;
-}
-/* मजकूर लिहितो. कृतिदेव मोडमध्ये देवनागरी → Kruti Dev; इंग्रजी अक्षरे (E-mail, SP, CDR) Arial मध्ये राहतात. */
-function rich_(p, text, o) {
-  var kr = !!o.kr, segs = [], re = /[A-Za-z][A-Za-z0-9@._\-\/]*/g, last = 0, m;
-  text = String(text || '');
-  while ((m = re.exec(text))) { if (m.index > last) segs.push({ t: text.slice(last, m.index), lat: 0 }); segs.push({ t: m[0], lat: 1 }); last = re.lastIndex; }
-  if (last < text.length) segs.push({ t: text.slice(last), lat: 0 });
-  var full = '', ranges = [];
-  segs.forEach(function (s) {
-    var conv = kr && !s.lat ? uni2kruti(s.t) : s.t, st = full.length;
-    full += conv; if (conv.length) ranges.push({ s: st, e: full.length - 1, lat: s.lat });
-  });
-  p.setText(full);
-  var t = p.editAsText(), mainF = o.font || 'Mukta';
-  if (o.size) t.setFontSize(o.size);
-  if (full.length) {
-    t.setFontFamily(mainF);
-    if (kr) ranges.forEach(function (r) { if (r.lat) t.setFontFamily(r.s, r.e, 'Arial'); });
-    if (o.bold) t.setBold(true);
-    if (o.boldPre) { var n = Math.min((kr ? uni2kruti(o.boldPre) : o.boldPre).length, full.length); t.setBold(0, n - 1, true); }
-  }
-  return p;
-}
 function jaKrText_(S, date, seq) {
   return S.jaKrPrefix + '/' + S.jaKrFile + '/ ' + (seq || '______') + ' /' + date.slice(0, 4);
 }
@@ -311,22 +268,12 @@ function makeLetters_(items) {
   var one = built.length === 1, c0 = built[0].c;
   var base = one ? c0.ps + '_' + (c0.kind === 'AD' ? 'मर्ग_' : '') + c0.no + '-' + String(c0.yr).slice(2) + '_तपास_सूचना' : 'DCR_चेक_पत्रे_' + built.length + '_' + date;
   var logos = logos_(S), letters = built.map(function (x) { return x.L; });
-  var ctype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-  var mk = function (font, kr) {
-    var blobs = DOCXB.build(letters, S, { kr: kr, font: font, logos: logos }).map(function (f) {
-      return f.text != null ? Utilities.newBlob(f.text, 'text/xml', f.name) : Utilities.newBlob(Utilities.base64Decode(f.b64), 'image/png', f.name);
-    });
-    return Utilities.zip(blobs).setContentType(ctype);
-  };
-  var fU = saveBlob_(folder, mk('Mangal', false).setName(base + '.docx'));
-  var fK = saveBlob_(folder, mk('Kruti Dev 010', true).setName(base + '_कृतिदेव.docx'));
+  var mk = function (font, kr, name) { return docxBlob_(DOCXB.build(letters, S, { kr: kr, font: font, logos: logos }), name); };
+  var fU = saveBlob_(folder, mk('Mangal', false, base + '.docx'));
+  var fK = saveBlob_(folder, mk('Kruti Dev 010', true, base + '_कृतिदेव.docx'));
   var pdfUrl = '', pdfNote = '';
-  try { /* PDF: Word → Google Doc (Drive सेवा) → PDF; PDF साठी Google मध्ये असलेला Mukta फॉन्ट */
-    var tmp = Drive.Files.create({ name: base + '_tmp', mimeType: 'application/vnd.google-apps.document', parents: [folder.getId()] }, mk('Mukta', false).setName(base + '_tmp.docx'));
-    var pf = saveBlob_(folder, DriveApp.getFileById(tmp.id).getAs('application/pdf').setName(base + '.pdf'));
-    DriveApp.getFileById(tmp.id).setTrashed(true);
-    pdfUrl = pf.getUrl();
-  } catch (e) { pdfNote = 'PDF बनली नाही: appsscript.json मध्ये Drive सेवा (dependencies) जोडा. ' + e; }
+  try { pdfUrl = pdfFromDocx_(mk('Mukta', false, base + '_tmp.docx'), folder, base).getUrl(); } /* PDF साठी Google मध्ये असलेला Mukta फॉन्ट */
+  catch (e) { pdfNote = 'PDF बनली नाही: appsscript.json मध्ये Drive सेवा (dependencies) जोडा. ' + e; }
   var outU = { docxUrl: fU.getUrl(), pdfUrl: pdfUrl }, outK = { docxUrl: fK.getUrl() };
   var sL = sh_('LETTERS'), sC = sh_('CASES'), now = now_(), ids = [];
   built.forEach(function (x) {
@@ -412,62 +359,50 @@ function bRow_(c, n) {
   return [String(n), c.ps, cr, c.place, sl(c.occ), sl(c.reg),
     'फिर्यादी: ' + (c.comp || '-') + '\nआरोपी: ' + (c.acc || '-'), arrest, c.io || '-', facts];
 }
+/* DOCXB च्या फाईल्स → .docx blob; आणि .docx → PDF (Drive सेवेद्वारे Google Doc करून) */
+function docxBlob_(files, name) {
+  return Utilities.zip(files.map(function (f) {
+    return f.text != null ? Utilities.newBlob(f.text, 'text/xml', f.name) : Utilities.newBlob(Utilities.base64Decode(f.b64), 'image/png', f.name);
+  })).setContentType('application/vnd.openxmlformats-officedocument.wordprocessingml.document').setName(name);
+}
+function pdfFromDocx_(blob, folder, base) {
+  var tmp = Drive.Files.create({ name: base + '_tmp', mimeType: 'application/vnd.google-apps.document', parents: [folder.getId()] }, blob);
+  var pf = saveBlob_(folder, DriveApp.getFileById(tmp.id).getAs('application/pdf').setName(base + '.pdf'));
+  DriveApp.getFileById(tmp.id).setTrashed(true);
+  return pf;
+}
+/* हेडवाइज B भाग (महिना): विभागाचे नाव नाही, थेट पो.स्टे.; गुन्हे DCR च्या दिनांकानुसार क्रमाने (रोजचे गुन्हे शेवटी जोडले जातात).
+   एकच फाईल "B_भाग_जिल्हा_MM-YYYY" दर वेळी अद्ययावत होते. */
 function buildBPart_(month, scope) {
-  var S = settings_(), cs = monthCases_(month, scope), font = S.font || 'Mukta';
+  var S = settings_(), cs = monthCases_(month, scope);
   if (!cs.length) throw new Error(month + ' या महिन्याचे गुन्हे नोंदवहीत नाहीत. आधी DCR अपलोड करा.');
-  var divs = String(S.divOrder).split(','), dIdx = {}; divs.forEach(function (d, i) { dIdx[d] = i; });
   var HD = DCR.HEADS, groups = {};
   cs.forEach(function (c) { var h = c.head || 'OTH5'; (groups[h] = groups[h] || []).push(c); });
-  var mm = month.slice(5) + '/' + month.slice(0, 4), scopeTxt = !scope || scope === 'ALL' ? S.distName : scope + ' विभाग';
-  var folder = folder_(['B_भाग', month]), base = 'B_भाग_' + (!scope || scope === 'ALL' ? 'जिल्हा' : scope) + '_' + month.slice(5) + '-' + month.slice(0, 4);
-  var doc = newDoc_(base, folder), b = doc.getBody(), A = DocumentApp.HorizontalAlignment;
-  b.setPageWidth(842).setPageHeight(595).setMarginTop(24).setMarginBottom(24).setMarginLeft(24).setMarginRight(24);
-  para_(b, scopeTxt, { align: A.CENTER, bold: true, size: 15, after: 0 });
-  para_(b, 'बी पार्ट (हेडवाइज)', { align: A.CENTER, bold: true, size: 13, after: 0 });
-  para_(b, 'माहे ' + mm, { align: A.CENTER, bold: true, size: 12, after: 8 });
-  /* गोषवारा */
-  var useDivs = !scope || scope === 'ALL' ? divs : [scope];
-  var sum = [['अ.क्र.', 'शीर्षक'].concat(useDivs).concat(['एकूण'])], k = 0, tot = useDivs.map(function () { return 0; }), gt = 0;
-  HD.forEach(function (h) {
-    var g = groups[h[0]]; if (!g) return;
-    var row = [String(++k), h[1]], n = 0;
-    useDivs.forEach(function (d, i) { var x = g.filter(function (c) { return c.div === d; }).length; tot[i] += x; n += x; row.push(String(x || '-')); });
-    var other = g.length - n; gt += g.length;
-    row.push(String(g.length) + (other ? ' (' + other + ' विभाग नाही)' : ''));
-    sum.push(row);
-  });
-  sum.push(['', 'एकूण'].concat(tot.map(String)).concat([String(gt)]));
-  var st = b.appendTable(sum); st.editAsText().setFontSize(9);
-  st.getRow(0).editAsText().setBold(true); st.getRow(sum.length - 1).editAsText().setBold(true);
-  for (var ci = 0; ci < sum[0].length; ci++) st.getRow(0).getCell(ci).setBackgroundColor('#e8eef9');
-  b.appendPageBreak();
-  /* शीर्षकवार तक्ते */
+  var mm = month.slice(5) + '/' + month.slice(0, 4), all = !scope || scope === 'ALL';
+  var folder = folder_(['B_भाग', month]), base = 'B_भाग_' + (all ? 'जिल्हा' : scope) + '_' + month.slice(5) + '-' + month.slice(0, 4);
+  var dates = cs.map(function (c) { return c.dcrDate || ''; }).filter(String).sort();
+  var upto = dates.length ? dmy_(dates[dates.length - 1]) : '';
+  var sum = [['अ.क्र.', 'शीर्षक', 'गुन्हे']], k = 0;
+  HD.forEach(function (h) { var g = groups[h[0]]; if (g) sum.push([String(++k), h[1], String(g.length)]); });
+  sum.push(['', 'एकूण', String(cs.length)]);
   var COLS = ['अ.क्र.', 'पोस्टे', 'अप.क्र. व कलम', 'घटनास्थळ', 'घ. ता. वेळ', 'दा. ता. वेळ', 'फिर्यादी व आरोपीचे नाव व पत्ता', 'अटक / प्रतिबंधक', 'तपास अधिकारी', 'घटनेचे थोडक्यात विवरण'];
   var ADC = ['अ.क्र.', 'पोस्टे', 'मर्ग क्र. व कलम', 'घटनास्थळ', 'घ. ता. वेळ', 'दा. ता. वेळ', 'फिर्यादीचे नाव', 'मृतकाचे नाव', 'दाखल / तपास', 'मरणाचे कारण'];
-  var W = [22, 50, 80, 68, 56, 56, 120, 60, 70, 212];
+  var W = [440, 1000, 1600, 1360, 1120, 1120, 2400, 1200, 1400, 4238];
   k = 0;
+  var sections = [];
   HD.forEach(function (h) {
     var g = groups[h[0]]; if (!g) return;
-    g.sort(function (a, z) { var da = dIdx[a.div] == null ? 99 : dIdx[a.div], dz = dIdx[z.div] == null ? 99 : dIdx[z.div]; return da - dz || (a.ps < z.ps ? -1 : a.ps > z.ps ? 1 : 0) || (+a.no - +z.no); });
-    para_(b, (++k) + ') ' + h[1] + ' - ' + g.length, { align: A.LEFT, bold: true, size: 11, after: 2 });
-    var rows = [h[0] === 'AD' ? ADC : COLS], divRows = [], cur = null, n = 0;
-    g.forEach(function (c) {
-      if ((!scope || scope === 'ALL') && c.div !== cur) { cur = c.div; divRows.push(rows.length); rows.push(['', (cur || 'विभाग नमूद नाही') + (cur ? ' विभाग' : ''), '', '', '', '', '', '', '', '']); }
-      rows.push(bRow_(c, ++n));
-    });
-    var t = b.appendTable(rows);
-    t.editAsText().setFontSize(8);
-    W.forEach(function (w, i) { t.setColumnWidth(i, w); });
-    t.getRow(0).editAsText().setBold(true);
-    for (var i = 0; i < 10; i++) t.getRow(0).getCell(i).setBackgroundColor('#e8eef9');
-    divRows.forEach(function (ri) { t.getRow(ri).editAsText().setBold(true); for (var i = 0; i < 10; i++) t.getRow(ri).getCell(i).setBackgroundColor('#f6f3e6'); });
-    para_(b, '', { after: 6 });
+    g.sort(function (a, z) { var x = String(a.dcrDate || '').localeCompare(String(z.dcrDate || '')); return x || (a.ps < z.ps ? -1 : a.ps > z.ps ? 1 : 0) || (+a.no - +z.no); });
+    sections.push({ title: (++k) + ') ' + h[1] + ' - ' + g.length, widths: W, rows: [h[0] === 'AD' ? ADC : COLS].concat(g.map(function (c, i) { return bRow_(c, i + 1); })) });
   });
-  b.editAsText().setFontFamily(font);
-  doc.saveAndClose();
-  var out = exportDoc_(doc.getId(), folder, base);
-  sh_('BPART').appendRow(toRow_('BPART', { month: month, scope: scope || 'ALL', cases: cs.length, docxUrl: out.docxUrl, pdfUrl: out.pdfUrl, created: now_() }));
-  out.cases = cs.length;
+  var m = { titles: [all ? S.distName : scope + ' विभाग', 'बी पार्ट (हेडवाइज)', 'माहे ' + mm + (upto ? ' (दि. ' + upto + ' पर्यंत)' : '')], summary: { rows: sum, widths: [800, 6000, 1500] }, sections: sections };
+  var fD = saveBlob_(folder, docxBlob_(DOCXB.bpart(m, { font: 'Mangal' }), base + '.docx'));
+  var pdfUrl = '';
+  try { pdfUrl = pdfFromDocx_(docxBlob_(DOCXB.bpart(m, { font: 'Mukta' }), base + '_tmp.docx'), folder, base).getUrl(); } catch (e) { Logger.log('B भाग PDF: ' + e); }
+  var out = { docxUrl: fD.getUrl(), pdfUrl: pdfUrl, cases: cs.length };
+  var bs = sh_('BPART'), old = rows_('BPART').filter(function (r) { return r.month === month && r.scope === (scope || 'ALL'); })[0];
+  var row = toRow_('BPART', { month: month, scope: scope || 'ALL', cases: cs.length, docxUrl: out.docxUrl, pdfUrl: out.pdfUrl, created: now_() });
+  if (old) bs.getRange(old._row, 1, 1, row.length).setValues([row]); else bs.appendRow(row);
   return out;
 }
 

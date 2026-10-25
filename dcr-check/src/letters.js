@@ -64,29 +64,33 @@ var LETTER = (function () {
   function draft(c, o) {
     o = o || {};
     var S = o.settings || {}, list = o.paras || PARAS;
-    var ps = c.ps, div = c.div || '', crTxt = c.kind === 'AD' ? 'मर्ग क्र. ' + c.no + '/' + c.yr : 'अप.क्र. ' + c.no + '/' + c.yr;
+    var ps = c.ps, div = c.div || '', crTxt = c.kind === 'AD' ? 'मर्ग क्र. ' + c.no + '/' + c.yr : 'गुन्हा रजि. ' + c.no + '/' + c.yr;
     var kal = c.kalam ? ' कलम ' + c.kalam : '';
     var vars = { 'विभाग': div, 'नाते': o.relation || 'एकमेकांच्या ओळखीचे', 'ठिकाण': o.place || 'गावात', 'पूर्वगुन्हे': priorText(c), 'अधिकारी': o.officer || '______', 'शेरा': (o.shera || '').trim().replace(/[.।\s]+$/, '') };
     function fill(t) { return t.replace(/\{([^}]+)\}/g, function (m, k) { return k in vars ? vars[k] : m; }); }
     var keys = o.keys || suggest(c, o.shera, list);
     var dd = DCR.dmy(o.refDate || c.issueDate || c.dcrIssue || ''), rd = DCR.dmy(c.regDate || '');
     var sum = o.summary != null ? o.summary : DCR.summary(c, true);
-    var intro = 'दिनांक ' + (dd || '__/__/____') + ' च्या दैनिक गुन्हे अहवालाचे अवलोकन केले असता दिनांक ' + (rd || '__/__/____') + ' रोजी पोलीस ठाणे ' + ps + ' ' + crTxt + kal +
-      (c.kind === 'AD' ? ' अन्वये मर्ग दाखल असून' : ' अन्वये गुन्हा नोंद असून') + ' दैनिक गुन्हे अहवालात नमूद केल्याप्रमाणे ' + (sum ? sum.replace(/[.।\s]+$/, '') : '__________') +
-      (c.kind === 'AD' ? ', अशा रिपोर्टवरून सदर मर्ग नोंद करण्यात आला आहे.' : ', अशा फिर्यादीच्या तक्रारीवरून सदर गुन्हा नोंद करण्यात आला आहे.');
+    /* DCR FORMAT प्रमाणे: अहवालाचा दिनांक → घटनेची वेळ व ठिकाण → गुन्हा नोंद → DCR मधील हकीकत */
+    var occ = String(c.occ || '').replace(/\s*\/\s+/g, ' ').replace(/\s+/g, ' ').replace(/[\s.]*(दरम्यान|दर\.?)\s*$/, '').trim();
+    var place = String(c.place || '').replace(/\s*\/\s+/g, ' ').replace(/[\s,]*\d+[\s.]*(कि\.?\s*मी\.?|किमी|कि\s*मि|िेकमी)\.?.*$/, '').replace(/\s+/g, ' ').trim();
+    var when = occ ? 'दिनांक ' + occ.replace(/^दि\.?\s*/, '') + (/वा\.?$/.test(occ) ? '. च्या दरम्यान ' : ' च्या दरम्यान ') : 'दिनांक ' + (rd || '__/__/____') + ' रोजी ';
+    var intro = 'दिनांक ' + (dd || '__/__/____') + ' चे दैनिक गुन्हे अहवालाचे अवलोकन केले असता, ' + when + (place ? place + ' येथे घडलेल्या घटनेबाबत ' : '') +
+      'पोलीस ठाणे ' + ps + ' येथे ' + crTxt + kal + (c.kind === 'AD' ? ' अन्वये मर्ग दाखल करण्यात आला आहे.' : ' अन्वये नोंद करण्यात आला आहे.') +
+      ' दैनिक गुन्हे अहवालातील माहितीनुसार, ' + (sum ? sum.replace(/[.।\s]+$/, '') : '__________') + '.';
     var body = keys.map(function (k) { var p = para(k, list); return p ? fill(p.x) : ''; }).filter(Boolean);
     var addl = keys.some(function (k) { var p = para(k, list); return p && p.addl; });
     var days = S.days || 3;
-    var prati = ['ठाणेप्रभारी अधिकारी, पोलीस ठाणे ' + ps];
-    if (addl) prati.unshift('अपर पोलीस अधीक्षक, नागपूर जिल्हा (ग्रामीण)');
+    var prati = ['ठाणेदार, पोलीस ठाणे ' + ps + '.'];
+    if (addl) prati.unshift('अपर पोलीस अधीक्षक, नागपूर जिल्हा (ग्रामीण).');
     var R = o.rules || [];
     var ap = function (t) { return applyRules(t, R); };
     return {
       jaKr: o.jaKr || '', date: o.date || '',
-      ref: ap('दिनांक ' + (dd || '__/__/____') + ' चा दैनिक गुन्हे अहवाल.'),
-      subject: ap('पोलीस ठाणे ' + ps + ' ' + crTxt + kal + (c.kind === 'AD' ? ' च्या मर्गच्या चौकशीकरिता सूचना.' : ' या गुन्ह्याच्या तपासाकरिता सूचना.')),
-      intro: ap(intro), body: body.map(ap), close: ap('केलेल्या कार्यवाहीचा अहवाल ' + days + ' दिवसांत या कार्यालयात सादर करावा.'),
-      prati: prati, prat: div ? ['उपविभागीय पोलीस अधिकारी, ' + div + ' विभाग'] : [], keys: keys
+      ref: ap('दिनांक ' + (dd || '__/__/____') + ' चे दैनिक गुन्हे अहवाल.'),
+      subject: ap('पोलीस ठाणे ' + ps + ' ' + crTxt + kal + (c.kind !== 'AD' && c.label ? ' (' + c.label + ')' : '') + (c.kind === 'AD' ? ' बाबत चौकशी सूचना.' : ' बाबत तपास सूचना.')),
+      intro: ap(intro), body: body.map(ap), close: ap('केलेल्या कार्यवाहीचा अहवाल ' + days + ' दिवसात कार्यालयात सादर करावा.'),
+      prati: prati, prat: div ? ['उपविभागीय पोलीस अधिकारी, ' + div + ' विभाग ' + div + '.'] : [], keys: keys
     };
   }
   /* शिकलेले नियम: { f: जुना मजकूर, t: नवा मजकूर }. SP/ठाणे पत्रात केलेले बदल पुढील पत्रांत आपोआप लागू होतात. */

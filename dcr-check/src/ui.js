@@ -105,7 +105,9 @@
       '<span class="chip ok">' + r.added + ' नवे, ' + r.updated + ' आधीचे</span><a target="_blank" href="' + esc(r.fileUrl) + '">Drive</a></div><div>' + cnt + '</div>' +
       (lv.bad.length || lv.warn.length ? '<ul class="iss">' + li(lv.bad, 'bad') + li(lv.warn, 'warn') + '</ul>' : '<p class="muted">शीर्षकातील संख्या व ओळी जुळल्या. मोठी त्रुटी नाही.</p>') +
       (lv.info.length ? '<details><summary>माहितीसाठी (' + lv.info.length + ')</summary><ul class="iss">' + li(lv.info, 'info') + '</ul></details>' : '') +
-      '<div class="row" style="margin-top:8px"><button class="btn sm" data-go="' + R.reportDate + '">या DCR वर शेरा / पत्र →</button></div></div>';
+      '<div class="row links" style="margin-top:8px"><button class="btn sm" data-go="' + R.reportDate + '">या DCR वर शेरा / पत्र →</button>' +
+      (r.bpartUrl ? '<span class="muted">महिन्याचा B भाग अद्ययावत:</span><a target="_blank" href="' + esc(r.bpartUrl) + '">Word</a>' + (r.bpartPdf ? '<a target="_blank" href="' + esc(r.bpartPdf) + '">PDF</a>' : '') : '') +
+      (r.bpartErr ? '<span class="chip warn" title="' + esc(r.bpartErr) + '">B भाग अद्ययावत झाला नाही</span>' : '') + '</div></div>';
   }
   function bindCard(d) { var b = document.querySelector('[data-go="' + d + '"]'); if (b) b.onclick = function () { S.pickDate = d; show('cases'); }; }
   function refreshDcrs() { call('init').then(function (d) { S.dcrs = d.dcrs; S.ps = d.ps; dcrList(); }); }
@@ -306,7 +308,7 @@
   /* ---------- 4. B भाग ---------- */
   function vBpart() {
     var m = curMonth(); if (+String(S.today).slice(8, 10) <= 7) { var d = new Date(m + '-01T00:00:00'); d.setMonth(d.getMonth() - 1); m = d.toISOString().slice(0, 7); }
-    $('#main').innerHTML = '<div class="card"><h2>हेडवाइज B भाग (मासिक)</h2><div class="row"><input type="month" id="bm" value="' + m + '"><select id="bs"><option value="ALL">पूर्ण जिल्हा</option>' +
+    $('#main').innerHTML = '<div class="card"><h2>हेडवाइज B भाग (मासिक)</h2><p class="muted">प्रत्येक DCR अपलोड केल्यावर त्या महिन्याचा जिल्हा B भाग आपोआप अद्ययावत होतो (एकच फाईल, रोजचे गुन्हे जोडले जातात). इथून हाताने पुन्हा बनवता येतो.</p><div class="row"><input type="month" id="bm" value="' + m + '"><select id="bs"><option value="ALL">पूर्ण जिल्हा</option>' +
       divs().map(function (d) { return '<option value="' + esc(d) + '">' + esc(d) + ' विभाग</option>'; }).join('') + '</select><button class="btn ghost" id="bc">तपासणी</button><button class="btn gold" id="bb">B भाग बनवा (Word + PDF)</button></div><div id="bo" class="links" style="margin-top:8px"></div></div><div id="br"></div>';
     $('#bc').onclick = check; $('#bm').onchange = check; $('#bs').onchange = check;
     $('#bb').onclick = function () {

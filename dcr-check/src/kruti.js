@@ -52,7 +52,7 @@ function kruti2uni(s){
 }
 
 /* Unicode → Kruti Dev (उलट रूपांतर): पत्र Kruti Dev फॉन्टमध्ये छापण्यासाठी. kruti2uni चा उलटा; जोड्या round-trip तपासून निवडतो.
-   फक्त देवनागरी अक्षरे व दंड (।) बदलतो; इंग्रजी अक्षरे, अंक व विरामचिन्हे जशीच्या तशी राहतात. */
+   देवनागरी अक्षरे व विरामचिन्हे बदलतो; अंक तसेच राहतात. इंग्रजी शब्द पत्रात वेगळे (Arial मध्ये) लिहिले जातात. */
 var UNI2K_MAP=null, UNI2K_RE=null;
 function uni2kruti(s){
   if(!s) return s;
@@ -64,7 +64,10 @@ function uni2kruti(s){
       if(kruti2uni(K1[i])===u) UNI2K_MAP[u]=K1[i];
     }
     UNI2K_MAP['ि']='f';
-    UNI2K_RE=new RegExp(Object.keys(UNI2K_MAP).sort(function(a,b){return b.length-a.length;}).join('|'),'g');
+    /* विरामचिन्हे: Kruti Dev मध्ये '.' चे चिन्ह '-' ने, ',' चे ']' ने, '/' चे '@' ने इ. येते */
+    var P={'.':'-', ',':']', '-':'&', '/':'@', '(':'¼', ')':'½', '{':'¿', '}':'À', '=':'¾', ';':'(', '?':'\\', ':':'%', "'":'^', '"':'Þ', '‘':'^', '’':'*', '“':'Þ', '”':'ß', '।':'A'};
+    for(var q in P) UNI2K_MAP[q]=P[q];
+    UNI2K_RE=new RegExp(Object.keys(UNI2K_MAP).sort(function(a,b){return b.length-a.length;}).map(function(k){return k.replace(/[.*+?^${}()|[\]\\\/-]/g,'\\$&');}).join('|'),'g');
   }
   var t=String(s);
   // reph: र् + अक्षर+मात्रा → अक्षर+मात्रा+Z

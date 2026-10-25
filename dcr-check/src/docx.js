@@ -60,8 +60,8 @@ var DOCXB = (function () {
     x += para(R('जा.क्र.:- ' + L.jaKr, 1), '<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="auto"/></w:pBdr><w:spacing w:before="120" w:after="160"/>');
     x += para(R('संदर्भ:- ', 1) + R(L.ref || '', 0), '<w:spacing w:after="160"/>');
     x += para(R('विषय:- ' + (L.subject || ''), 1), '<w:spacing w:after="280"/>');
-    x += para(R(L.intro || '', 0), IND + SP(120) + '<w:jc w:val="both"/>');
-    body.forEach(function (t) { x += para(R(t.trim(), 0), IND + SP(120) + '<w:jc w:val="both"/>'); });
+    x += para(R(L.intro || '', 0), IND + SP(160));
+    body.forEach(function (t) { x += para(R(t.trim(), 0), IND + SP(160)); });
     if (L.close) x += para(R(L.close, 1), IND + SP(480));
     x += para(R(sig, 1), '<w:spacing w:after="480"/><w:ind w:left="6480"/><w:jc w:val="center"/>');
     if (pr.length) {
@@ -75,12 +75,40 @@ var DOCXB = (function () {
      उत्तर: [{ name, text } | { name, b64 }] — .docx ची आतील फाईल्स (zip करायच्या) */
   function build(letters, S, o) {
     did = 0;
-    var doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ' + NS + '><w:body>' +
-      letters.map(function (L, i) { return letter(L, S, o, i === 0); }).join('') +
-      '<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1152" w:right="1152" w:bottom="1152" w:left="1152" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr></w:body></w:document>';
+    return pack(letters.map(function (L, i) { return letter(L, S, o, i === 0); }).join(''), o,
+      '<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1152" w:right="1152" w:bottom="1152" w:left="1152" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>');
+  }
+  /* साधा तक्ता: rows = [[मजकूर]] (पहिली ओळ शीर्षक), widths = twips; '\n' → नवीन ओळ */
+  function table(rows, widths, o) {
+    var B = '<w:tblBorders>' + ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(function (k) { return '<w:' + k + ' w:val="single" w:sz="4" w:space="0" w:color="555555"/>'; }).join('') + '</w:tblBorders>';
+    var tw = widths.reduce(function (a, b) { return a + b; }, 0);
+    return '<w:tbl><w:tblPr><w:tblW w:w="' + tw + '" w:type="dxa"/>' + B + '<w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="50" w:type="dxa"/><w:right w:w="50" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>' +
+      widths.map(function (w) { return '<w:gridCol w:w="' + w + '"/>'; }).join('') + '</w:tblGrid>' +
+      rows.map(function (r, ri) {
+        var head = ri === 0 || (o.boldRows && o.boldRows.indexOf(ri) >= 0);
+        return '<w:tr>' + (ri === 0 ? '<w:trPr><w:tblHeader/></w:trPr>' : '') + r.map(function (t, ci) {
+          return '<w:tc><w:tcPr><w:tcW w:w="' + widths[ci] + '" w:type="dxa"/>' + (ri === 0 ? '<w:shd w:val="clear" w:color="auto" w:fill="E8EEF9"/>' : '') + '</w:tcPr>' +
+            String(t == null ? '' : t).split('\n').map(function (l) { return para(runs(l, { font: o.font, sz: o.sz, b: head }), '<w:spacing w:after="0" w:line="240" w:lineRule="auto"/>' + (ci === 0 ? '<w:jc w:val="center"/>' : '')); }).join('') + '</w:tc>';
+        }).join('') + '</w:tr>';
+      }).join('') + '</w:tbl>';
+  }
+  /* B भाग: m = { titles: [], summary: { rows, widths }, sections: [{ title, rows, widths }] } — A4 आडवे पान, Unicode */
+  function bpart(m, o) {
+    did = 0;
+    var C = '<w:spacing w:after="0"/><w:jc w:val="center"/>';
+    var x = m.titles.map(function (t, i) { return para(runs(t, { font: o.font, sz: i === 0 ? 30 : 26, b: 1 }), C); }).join('') + para('', '<w:spacing w:after="120"/>');
+    x += table(m.summary.rows, m.summary.widths, { font: o.font, sz: 18, boldRows: [m.summary.rows.length - 1] });
+    m.sections.forEach(function (s, i) {
+      x += para(runs(s.title, { font: o.font, sz: 22, b: 1 }), (i === 0 ? '<w:pageBreakBefore/>' : '') + '<w:keepNext/><w:spacing w:before="160" w:after="60"/>');
+      x += table(s.rows, s.widths, { font: o.font, sz: 16 });
+    });
+    return pack(x, o, '<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="480" w:right="480" w:bottom="480" w:left="480" w:header="360" w:footer="360" w:gutter="0"/></w:sectPr>');
+  }
+  function pack(bodyXml, o, sect) {
+    var doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ' + NS + '><w:body>' + bodyXml + sect + '</w:body></w:document>';
     var files = [], rels = '<Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>', exts = {};
     ['L', 'C', 'R'].forEach(function (k) {
-      var g = o.logos[k]; if (!g) return;
+      var g = o.logos && o.logos[k]; if (!g) return;
       var ext = /png/.test(g.mime) ? 'png' : 'jpeg'; exts[ext] = 1;
       files.push({ name: 'word/media/logo' + k + '.' + ext, b64: g.b64 });
       rels += '<Relationship Id="rIdLogo' + k + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo' + k + '.' + ext + '"/>';
@@ -96,6 +124,6 @@ var DOCXB = (function () {
       { name: 'word/styles.xml', text: H + '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="' + o.font + '" w:hAnsi="' + o.font + '" w:cs="' + o.font + '"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="en-IN" w:bidi="hi-IN"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>' });
     return files;
   }
-  return { build: build };
+  return { build: build, bpart: bpart };
 })();
 if (typeof module !== 'undefined') module.exports = DOCXB;
