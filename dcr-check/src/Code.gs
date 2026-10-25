@@ -436,6 +436,7 @@ function dayBPart_(date) {
   out.issues = rows_('ISSUES').filter(function (r) { return r.reportDate === date && r.level !== 'info'; }).map(function (r) { return { level: r.level, msg: r.msg }; });
   var d = rows_('DCRS').filter(function (r) { return r.reportDate === date; })[0];
   out.bAdded = d ? d.bAdded : '';
+  upsertB_(date.slice(0, 7), 'DAY:' + date, out);
   out.others = cs.filter(function (c) { return c.head === 'OTH5' || c.head === 'OTH6'; }).map(function (c) { return { key: c.key, ps: c.ps, no: c.no, yr: c.yr, kalam: c.kalam, label: c.label, head: c.head }; });
   return out;
 }
@@ -452,8 +453,12 @@ function bDays_(month) {
   var days = rows_('DCRS').filter(function (r) { return String(r.reportDate).slice(0, 7) === month && +r.cases > 0; })
     .sort(function (a, b) { return a.reportDate < b.reportDate ? -1 : 1; })
     .map(function (r) { return { date: r.reportDate, cases: +r.cases, bad: +r.bad || 0, warn: +r.warn || 0, bAdded: r.bAdded }; });
-  var bp = rows_('BPART').filter(function (r) { return r.month === month && r.scope === 'ALL'; })[0];
-  return { days: days, monthly: bp ? { docxUrl: bp.docxUrl, pdfUrl: bp.pdfUrl, cases: bp.cases, created: bp.created } : null };
+  var B = rows_('BPART'), f = function (r) { return { month: r.month, docxUrl: r.docxUrl, pdfUrl: r.pdfUrl, cases: r.cases, created: r.created }; };
+  var bp = B.filter(function (r) { return r.month === month && r.scope === 'ALL'; })[0], daily = {};
+  B.forEach(function (r) { if (r.month === month && String(r.scope).indexOf('DAY:') === 0) daily[r.scope.slice(4)] = f(r); });
+  days.forEach(function (d) { d.file = daily[d.date] || null; });
+  var all = B.filter(function (r) { return r.scope === 'ALL'; }).map(f).sort(function (a, b) { return a.month < b.month ? 1 : -1; });
+  return { days: days, monthly: bp ? f(bp) : null, all: all };
 }
 /* मासिक हेडवाइज B भाग: फक्त "मासिक B भागात जोडा" केलेल्या दिवसांचे गुन्हे, एकाच फाईलमध्ये ("B_भाग_जिल्हा_MM-YYYY") */
 function buildBPart_(month, scope) {
@@ -468,10 +473,14 @@ function buildBPart_(month, scope) {
   var base = 'B_भाग_' + (all ? 'जिल्हा' : scope) + '_' + month.slice(5) + '-' + month.slice(0, 4);
   var out = bpartFile_(cs, [all ? S.distName : scope + ' विभाग', 'बी पार्ट (हेडवाइज)', 'माहे ' + mm + ' (' + span + ')'], folder_(['B_भाग', month]), base);
   out.days = dates.length;
-  var bs = sh_('BPART'), old = rows_('BPART').filter(function (r) { return r.month === month && r.scope === (scope || 'ALL'); })[0];
-  var row = toRow_('BPART', { month: month, scope: scope || 'ALL', cases: out.cases, docxUrl: out.docxUrl, pdfUrl: out.pdfUrl, created: now_() });
-  if (old) bs.getRange(old._row, 1, 1, row.length).setValues([row]); else bs.appendRow(row);
+  upsertB_(month, scope || 'ALL', out);
   return out;
+}
+/* BPART नोंदवही: मासिक (scope ALL) व दैनिक (scope DAY:yyyy-mm-dd) फाईल्स */
+function upsertB_(month, scope, out) {
+  var bs = sh_('BPART'), old = rows_('BPART').filter(function (r) { return r.month === month && r.scope === scope; })[0];
+  var row = toRow_('BPART', { month: month, scope: scope, cases: out.cases, docxUrl: out.docxUrl, pdfUrl: out.pdfUrl, created: now_() });
+  if (old) bs.getRange(old._row, 1, 1, row.length).setValues([row]); else bs.appendRow(row);
 }
 
 /* B भाग ॲपमध्ये तपासणे/संपादन: q = {date} (दैनिक) किंवा {month} (मासिक: जोडलेले दिवस) */

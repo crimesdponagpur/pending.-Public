@@ -15,24 +15,29 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Mukta",
 button,input,select,textarea{font:inherit;color:inherit}
 a{color:var(--pri);text-decoration:none}a:hover{text-decoration:underline}
 .app{display:flex;min-height:100vh}
-.side{width:236px;flex:none;background:var(--navy);color:#c9d3ea;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
-.brand{display:flex;gap:10px;align-items:center;padding:18px 16px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
-.brand img{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:10px;padding:3px}
+.side{width:72px;flex:none;background:linear-gradient(180deg,#0b1f4b 0%,#0e2a63 100%);color:#c9d3ea;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:40;overflow:hidden;transition:width .22s ease,box-shadow .22s ease}
+.side:hover{width:248px;box-shadow:8px 0 32px rgba(11,31,75,.28)}
+.side span,.brand>div{white-space:nowrap;opacity:0;transition:opacity .15s ease}
+.side:hover span,.side:hover .brand>div{opacity:1;transition-delay:.06s}
+.brand{display:flex;gap:12px;align-items:center;padding:16px 15px 14px;border-bottom:1px solid rgba(255,255,255,.08);min-height:74px}
+.brand img{width:42px;height:42px;flex:none;object-fit:contain;background:#fff;border-radius:11px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .brand img:not([src]){visibility:hidden}
 .brand b{display:block;color:#fff;font-size:16.5px;letter-spacing:.2px}
 .brand small{font-size:12px;opacity:.75}
-.side nav{display:flex;flex-direction:column;gap:2px;padding:12px 10px;flex:1}
-.side nav button{display:flex;align-items:center;gap:11px;background:none;border:0;color:inherit;padding:9px 12px;border-radius:9px;cursor:pointer;font-weight:600;font-size:14.5px;text-align:left}
-.side nav button svg,.side-foot svg{width:19px;height:19px;flex:none;opacity:.85}
-.side nav button:hover{background:rgba(255,255,255,.06);color:#fff}
-.side nav button.on{background:#fff;color:var(--navy);box-shadow:var(--sh)}
-.side nav button.on svg{color:var(--pri);opacity:1}
-.side-foot{padding:12px 10px 16px;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:2px}
-.side-foot a{display:flex;align-items:center;gap:10px;color:#c9d3ea;font-size:13.5px;padding:6px 12px;border-radius:8px}
-.side-foot a:hover{background:rgba(255,255,255,.06);text-decoration:none;color:#fff}
-.side-foot small{padding:6px 12px 0;font-size:11.5px;opacity:.55}
-.body{flex:1;min-width:0;display:flex;flex-direction:column}
-.bar{position:sticky;top:0;z-index:25;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.side nav{display:flex;flex-direction:column;gap:4px;padding:14px 12px;flex:1}
+.side nav button{position:relative;display:flex;align-items:center;gap:14px;background:none;border:0;color:inherit;padding:11px 12px;border-radius:11px;cursor:pointer;font-weight:600;font-size:14.5px;text-align:left;transition:background .15s,color .15s}
+.side nav button svg,.side-foot svg{width:22px;height:22px;flex:none}
+.side nav button:hover{background:rgba(255,255,255,.08);color:#fff}
+.side nav button.on{background:rgba(255,255,255,.14);color:#fff}
+.side nav button.on:before{content:"";position:absolute;left:-12px;top:8px;bottom:8px;width:4px;border-radius:0 4px 4px 0;background:#ffcf5a}
+.side nav button.on svg{color:#ffcf5a}
+.side-foot{padding:12px 12px 16px;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:2px}
+.side-foot a{display:flex;align-items:center;gap:14px;color:#c9d3ea;font-size:13.5px;padding:9px 12px;border-radius:10px}
+.side-foot a:hover{background:rgba(255,255,255,.08);text-decoration:none;color:#fff}
+.side-foot small{padding:6px 12px 0;font-size:11.5px;opacity:0;white-space:nowrap}
+.side:hover .side-foot small{opacity:.55}
+.body{flex:1;min-width:0;display:flex;flex-direction:column;margin-left:72px}
+.bar{position:sticky;top:0;z-index:25;background:rgba(255,255,255,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .bar h1{font-size:20px;margin:0;font-weight:700;color:var(--navy);letter-spacing:.1px}
 .bar small{display:block;color:var(--muted);font-size:13px}
 .bar .sp{flex:1}
@@ -97,7 +102,8 @@ table.t tr:hover td{background:#fafbfe}
 @media print{body>*:not(#print){display:none!important}#print{display:block;font-size:11px}#print table{border-collapse:collapse;width:100%}#print td,#print th{border:1px solid #333;padding:3px 5px;vertical-align:top}#print h2{text-align:center;margin:0 0 6px;font-size:15px}}
 @media (max-width:860px){
 .app{flex-direction:column}
-.side{width:auto;height:auto;position:fixed;bottom:0;left:0;right:0;top:auto;z-index:15;flex-direction:row;box-shadow:0 -2px 12px rgba(0,0,0,.15)}
+.side,.side:hover{width:auto;height:auto;position:fixed;bottom:0;left:0;right:0;top:auto;z-index:40;flex-direction:row;box-shadow:0 -2px 12px rgba(0,0,0,.15)}
+.side span{opacity:1}.body{margin-left:0}.side nav button.on:before{display:none}
 .brand,.side-foot{display:none}
 .side nav{flex-direction:row;padding:6px;gap:2px;justify-content:space-around}
 .side nav button{flex-direction:column;gap:2px;font-size:11px;padding:6px 4px;flex:1;text-align:center}
@@ -127,6 +133,24 @@ main{padding:14px 16px 90px}.card{padding:14px}
 @media (max-width:860px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.kpi b{font-size:22px}}
 #rul textarea{min-height:44px}
 #rul td:first-child{width:46px;text-align:center}
+.hero{display:flex;gap:20px;align-items:stretch;justify-content:space-between;flex-wrap:wrap;background:radial-gradient(120% 140% at 100% 0%,#2a4fa8 0%,#13306e 45%,#0b1f4b 100%);color:#fff;border-radius:16px;padding:22px 26px;margin-bottom:16px;box-shadow:0 12px 30px rgba(11,31,75,.22)}
+.hero h2{margin:2px 0 4px;font-size:24px;color:#fff}
+.hero p{margin:0 0 12px;color:#c9d6f2;font-size:14px}
+.hero .links a[href]{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff}
+.hero .btn{background:#ffcf5a;color:#0b1f4b}.hero .btn:hover{background:#ffd978}
+.hero-n{display:flex;gap:12px}
+.hero-n>div{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:12px 18px;min-width:120px;display:flex;flex-direction:column;justify-content:center}
+.hero-n b{font:700 30px/1.1 "Inter","Mukta",sans-serif}.hero-n span{opacity:1;color:#c9d6f2;font-size:13px}
+.eyebrow{display:block;text-transform:uppercase;letter-spacing:.08em;font-size:11.5px;font-weight:700;color:#ffcf5a}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.tile{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:linear-gradient(180deg,#fff,#f8faff);transition:transform .15s,box-shadow .15s}
+.tile:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(15,23,42,.08)}
+.tile .eyebrow{color:var(--pri)}
+.tile b{display:block;font-size:18px;color:var(--navy);margin:2px 0}
+.tile small{display:block;color:var(--muted);margin-bottom:8px}
+.card,.kpi{transition:box-shadow .2s}
+.kpi:hover{box-shadow:0 8px 22px rgba(15,23,42,.08)}
+@media (max-width:860px){.hero{padding:18px}.hero-n>div{min-width:100px;padding:10px 12px}.hero-n b{font-size:24px}}
 </style>
 </head>
 <body>
@@ -1123,30 +1147,40 @@ var LETTER = (function () {
     var m = (S.pickDay || '').slice(0, 7) || curMonth();
     if (!S.pickDay && +String(S.today).slice(8, 10) <= 7) { var d = new Date(m + '-01T00:00:00'); d.setMonth(d.getMonth() - 1); m = d.toISOString().slice(0, 7); }
     $('#main').innerHTML = '<div class="card"><h2>हेडवाइज B भाग</h2><p class="muted">रोज: DCR अपलोड → "दैनिक B भाग" पाहा व तपासा → "मासिक B भागात जोडा". जोडलेल्या सर्व दिवसांचे गुन्हे शीर्षकानुसार महिन्याच्या एकाच फाईलमध्ये जमा होतात.</p>' +
-      '<div class="row"><input type="month" id="bm" value="' + m + '"><button class="btn ghost" id="bc">महिन्याची तपासणी</button></div><div id="bmo" class="links" style="margin-top:8px"></div></div>' +
-      '<div id="bdl"></div><div id="bdv"></div><div id="br"></div>';
+      '<div class="row"><input type="month" id="bm" value="' + m + '"><button class="btn ghost" id="bc">महिन्याची तपासणी</button></div></div>' +
+      '<div id="bmo"></div><div id="bdl"></div><div id="bdv"></div><div id="br"></div><div id="bal"></div>';
     $('#bm').onchange = function () { $('#bdv').innerHTML = ''; $('#br').innerHTML = ''; days(); };
     $('#bc').onclick = check;
     days(S.pickDay); S.pickDay = null;
   }
+  function monthName(m) { var M = ['जानेवारी', 'फेब्रुवारी', 'मार्च', 'एप्रिल', 'मे', 'जून', 'जुलै', 'ऑगस्ट', 'सप्टेंबर', 'ऑक्टोबर', 'नोव्हेंबर', 'डिसेंबर']; return M[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4); }
   function bLinks(r) { return '<a target="_blank" href="' + esc(r.docxUrl) + '">Word</a>' + (r.pdfUrl ? '<a target="_blank" href="' + esc(r.pdfUrl) + '">PDF</a>' : ''); }
   function days(open) {
     var mo = $('#bm').value;
     $('#bdl').innerHTML = '<p class="muted"><span class="spin"></span> दिवस शोधत आहे...</p>';
     call('bDays', mo).then(function (r) {
-      $('#bmo').innerHTML = r.monthly ? '<span class="chip ok">मासिक B भाग: ' + r.monthly.cases + ' गुन्हे</span>' + bLinks(r.monthly) + '<span class="muted">अद्ययावत ' + esc(r.monthly.created) + '</span> <button class="btn sm gold" id="bme">मासिक B भाग ॲपमध्ये तपासा / संपादन</button>' : '<span class="muted">या महिन्याचा मासिक B भाग अजून बनलेला नाही.</span>';
+      var nAdd = r.days.filter(function (x) { return x.bAdded; }).length;
+      $('#bmo').innerHTML = '<div class="hero"><div class="hero-l"><span class="eyebrow">मासिक हेडवाइज B भाग</span><h2>' + monthName(mo) + '</h2>' +
+        (r.monthly ? '<p>अद्ययावत ' + esc(r.monthly.created) + '</p><div class="links">' + bLinks(r.monthly) + '<button class="btn sm" id="bme">ॲपमध्ये पाहा / संपादन</button></div>' : '<p>अजून बनलेला नाही. दैनिक B भाग तपासून "मासिक मध्ये जोडा" करा.</p>') +
+        '</div><div class="hero-n"><div><b>' + (r.monthly ? r.monthly.cases : 0) + '</b><span>गुन्हे</span></div><div><b>' + nAdd + '/' + r.days.length + '</b><span>दिवस जोडले</span></div></div></div>';
       if (r.monthly) $('#bme').onclick = function () { bEditor({ month: mo }); };
+      $('#bal').innerHTML = r.all.length ? '<div class="card"><h2>बनलेले मासिक B भाग</h2><div class="tiles">' + r.all.map(function (x) {
+        return '<div class="tile"><span class="eyebrow">B भाग</span><b>' + monthName(x.month) + '</b><small>' + x.cases + ' गुन्हे • ' + esc(x.created) + '</small><div class="links">' + bLinks(x) + '<button class="btn sm ghost" data-mo="' + x.month + '">पाहा</button></div></div>';
+      }).join('') + '</div></div>' : '';
+      $('#bal').querySelectorAll('[data-mo]').forEach(function (b) { b.onclick = function () { bEditor({ month: b.dataset.mo }); }; });
       if (!r.days.length) { $('#bdl').innerHTML = '<div class="card muted">या महिन्याचे DCR अपलोड झालेले नाहीत.</div>'; return; }
       var added = r.days.filter(function (x) { return x.bAdded; }).length;
-      $('#bdl').innerHTML = '<div class="card"><h3>' + mo.slice(5) + '/' + mo.slice(0, 4) + ' चे DCR दिवस (' + added + '/' + r.days.length + ' मासिक B भागात)</h3><div class="scroll"><table class="t"><tr><th>DCR दि.</th><th>गुन्हे</th><th>त्रुटी</th><th>स्थिती</th><th></th></tr>' +
+      $('#bdl').innerHTML = '<div class="card"><h3>' + mo.slice(5) + '/' + mo.slice(0, 4) + ' चे DCR दिवस (' + added + '/' + r.days.length + ' मासिक B भागात)</h3><div class="scroll"><table class="t"><tr><th>DCR दि.</th><th>गुन्हे</th><th>त्रुटी</th><th>दैनिक B भाग</th><th>स्थिती</th><th></th></tr>' +
         r.days.map(function (x) {
           return '<tr data-d="' + x.date + '"><td>' + dmy(x.date) + '</td><td>' + x.cases + '</td><td>' + (x.bad ? '<span class="chip bad">' + x.bad + '</span>' : '') + (x.warn ? '<span class="chip warn">' + x.warn + '</span>' : '') + '</td>' +
+            '<td class="links">' + (x.file ? bLinks(x.file) + '<button class="btn sm ghost" data-a="see">पाहा</button>' : '<span class="muted">बनलेला नाही</span>') + '</td>' +
             '<td>' + (x.bAdded ? '<span class="chip ok">जोडला</span>' : '<span class="chip warn">बाकी</span>') + '</td>' +
             '<td><button class="btn sm ghost" data-a="view">दैनिक B भाग</button> ' + (x.bAdded ? '<button class="btn sm ghost" data-a="rm">काढा</button>' : '<button class="btn sm gold" data-a="add">मासिक मध्ये जोडा</button>') + '</td></tr>';
         }).join('') + '</table></div></div>';
       $('#bdl').querySelectorAll('tr[data-d]').forEach(function (tr) {
         var d = tr.dataset.d;
         $('[data-a=view]', tr).onclick = function () { dayView(d); };
+        var see = $('[data-a=see]', tr); if (see) see.onclick = function () { bEditor({ date: d }); };
         var ad = $('[data-a=add]', tr), rm = $('[data-a=rm]', tr);
         if (ad) ad.onclick = function () { addDay(d, true, ad); };
         if (rm) rm.onclick = function () { addDay(d, false, rm); };
@@ -1165,6 +1199,7 @@ var LETTER = (function () {
   function dayView(d) {
     $('#bdv').innerHTML = '<div class="card"><p class="muted"><span class="spin"></span> ' + dmy(d) + ' चा दैनिक B भाग बनत आहे...</p></div>';
     call('dayBPart', d).then(function (r) {
+      if (r.docxUrl) days();
       var li = r.issues.map(function (i) { return '<li class="' + i.level + '">' + esc(i.msg) + '</li>'; }).join('');
       $('#bdv').innerHTML = '<div class="card" data-day="' + d + '"><div class="row"><h3 class="grow" style="margin:0">दैनिक B भाग: DCR दि. ' + dmy(d) + ' (' + r.cases + ' गुन्हे)</h3><span class="links">' + bLinks(r) + '</span><button class="btn sm gold" id="bde">ॲपमध्ये तपासा / संपादन</button></div>' +
         '<div class="scroll"><table class="t" style="margin-top:8px"><tr><th>शीर्षक</th><th>गुन्हे</th></tr>' + r.counts.map(function (c) { return '<tr><td>' + esc(c[1]) + '</td><td>' + c[2] + '</td></tr>'; }).join('') + '</table></div>' +
