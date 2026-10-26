@@ -133,13 +133,28 @@ nav.tabs svg{width:24px;height:24px}
 .err p{color:var(--muted);margin:0 0 14px}
 .sheet[hidden],[hidden]{display:none!important}
 body:not(.ready) nav.tabs{display:none}
+
+/* लोगो अॅनिमेशन: हिरवे वर्तुळ भरते, मग खरी खूण (tick) काढली जाते */
+.logo{overflow:visible}
+.lg-ring{stroke-dasharray:780;stroke-dashoffset:0}
+.lg-tick{stroke-dasharray:150;stroke-dashoffset:0}
+.play .lg-ring{animation:lgRing .6s ease-out .1s both}
+.play .lg-tick{animation:lgTick .35s ease-out .7s both}
+@keyframes lgRing{from{stroke-dashoffset:780}to{stroke-dashoffset:0}}
+@keyframes lgTick{from{stroke-dashoffset:150}to{stroke-dashoffset:0}}
+.logo.big{width:120px;height:120px;border-radius:28px;box-shadow:var(--shadow)}
+#splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);animation:splashOut .3s ease 1.25s forwards}
+@keyframes splashOut{to{opacity:0;visibility:hidden}}
+#logo{cursor:pointer}
+@media(prefers-reduced-motion:reduce){#splash{display:none}.play .lg-ring,.play .lg-tick{animation:none}}
 </style>
 
 </head>
 <body>
+<div id="splash" aria-hidden="true"><svg class="logo big play" viewBox="0 0 512 512" aria-label="LifeOS"><rect width="512" height="512" rx="116" fill="#0F5132"/><circle cx="256" cy="256" r="124" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="40"/><circle class="lg-ring" cx="256" cy="256" r="124" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round" transform="rotate(-90 256 256)"/><path class="lg-tick" d="M212 262l34 34 62-72" fill="none" stroke="#7FE0B0" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
 <div class="app" id="app">
   <header class="top">
-    <svg class="logo" viewBox="0 0 512 512" aria-label="LifeOS"><rect width="512" height="512" rx="116" fill="#0F5132"/><circle cx="256" cy="256" r="124" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="40"/><path d="M256 132a124 124 0 1 1-107 62" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round"/><path d="M212 262l34 34 62-72" fill="none" stroke="#7FE0B0" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="logo play" id="logo" viewBox="0 0 512 512" aria-label="LifeOS"><rect width="512" height="512" rx="116" fill="#0F5132"/><circle cx="256" cy="256" r="124" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="40"/><circle class="lg-ring" cx="256" cy="256" r="124" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round" transform="rotate(-90 256 256)"/><path class="lg-tick" d="M212 262l34 34 62-72" fill="none" stroke="#7FE0B0" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <div class="hello"><b id="hdTitle">नमस्कार</b><span id="hdDate">&nbsp;</span></div>
     <button class="icon-btn" id="themeBtn" aria-label="Theme बदला"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
   </header>
@@ -596,6 +611,13 @@ body:not(.ready) nav.tabs{display:none}
     try { localStorage.setItem('lifeos-theme', r.dataset.theme); } catch (e) {}
   };
   try { var th = localStorage.getItem('lifeos-theme'); if (th) document.documentElement.dataset.theme = th; } catch (e) {}
+
+  // ---------- लोगो अॅनिमेशन ----------
+  (function () {
+    var lg = $('logo');
+    lg.onclick = function () { lg.classList.remove('play'); void lg.getBoundingClientRect(); lg.classList.add('play'); };
+    setTimeout(function () { var sp = $('splash'); if (sp && sp.parentNode) sp.parentNode.removeChild(sp); }, 1700);
+  })();
 
   load(false);
 })();
