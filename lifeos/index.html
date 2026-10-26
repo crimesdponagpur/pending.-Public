@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LifeOS</title>
+<meta name="theme-color" content="#0F5132">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="LifeOS">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap">
+<script src="config.js"></script>
+<style>
+/* Layout: one phone-width column, three tabs, floating + for capture. On desktop the column is centred on a calm backdrop. */
+:root{
+  --bg:#F3F6F4; --surface:#FFFFFF; --ink:#0E1F18; --muted:#66786F; --line:#E3EAE6;
+  --accent:#0F5132; --accent-2:#1B7A4E; --accent-soft:#E2F1E8; --on-accent:#FFFFFF;
+  --warn:#B7791F; --warn-soft:#FBF1DC; --bad:#C0392B; --shadow:0 8px 28px rgba(15,81,50,.14);
+  --font:'Plus Jakarta Sans','Noto Sans Devanagari',system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0A120E; --surface:#121E18; --ink:#E9F2ED; --muted:#8FA399; --line:#1F2E26;
+  --accent:#3FBF88; --accent-2:#2FA372; --accent-soft:#16301F; --on-accent:#06150E;
+  --warn:#E5B04E; --warn-soft:#2B2310; --bad:#F0705F; --shadow:0 8px 28px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0A120E; --surface:#121E18; --ink:#E9F2ED; --muted:#8FA399; --line:#1F2E26;
+  --accent:#3FBF88; --accent-2:#2FA372; --accent-soft:#16301F; --on-accent:#06150E;
+  --warn:#E5B04E; --warn-soft:#2B2310; --bad:#F0705F; --shadow:0 8px 28px rgba(0,0,0,.5); color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.45;padding-top:env(safe-area-inset-top,0px)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{max-width:440px;margin:0 auto;min-height:100%;position:relative;background:var(--bg);display:flex;flex-direction:column}
+@media(min-width:700px){body{background:color-mix(in srgb,var(--bg) 70%,var(--accent) 6%)}.app{box-shadow:0 0 0 1px var(--line),var(--shadow)}}
+.screen{flex:1;padding:8px max(16px,env(safe-area-inset-left,0px)) 150px max(16px,env(safe-area-inset-right,0px));display:none}
+.screen.on{display:block;animation:in .22s ease}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.screen.on{animation:none}}
+header.top{display:flex;align-items:center;gap:12px;padding:14px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px))}
+.logo{width:40px;height:40px;flex:none}
+.hello{min-width:0;flex:1}
+.hello b{display:block;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.hello span{color:var(--muted);font-size:13px}
+.icon-btn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--muted)}
+.icon-btn:hover{background:var(--surface)}
+h2.t{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;margin:22px 2px 10px;text-transform:uppercase}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px}
+.hero{background:var(--accent);color:var(--on-accent);border:0;position:relative;overflow:hidden}
+.hero small{opacity:.8;font-size:13px}
+.hero .big{font-size:40px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1;margin:4px 0 16px}
+.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.22);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:#fff;transition:width .4s}
+.hero .row{display:flex;justify-content:space-between;font-size:13px;margin-top:8px;opacity:.92;font-variant-numeric:tabular-nums}
+.list{display:flex;flex-direction:column}
+.item{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .main{flex:1;min-width:0}
+.item .main b{display:block;font-weight:600;overflow-wrap:anywhere}
+.item .main span{color:var(--muted);font-size:13px}
+.amt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chk{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none;color:transparent;transition:.15s}
+.chk:hover{border-color:var(--accent)}
+.done .chk{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.done .main b{text-decoration:line-through;color:var(--muted)}
+.dot{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);flex:none;font-size:18px}
+.pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.empty{color:var(--muted);text-align:center;padding:22px 8px;font-size:14px}
+.cats{display:flex;flex-direction:column;gap:14px}
+.cat .h{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
+.cat .h b{font-weight:600}
+.cat .tr{height:8px;border-radius:99px;background:var(--accent-soft);overflow:hidden}
+.cat .tr i{display:block;height:100%;background:var(--accent-2);border-radius:99px}
+.quick{display:flex;gap:10px;margin-top:4px}
+.quick button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:16px;background:var(--surface);border:1px solid var(--line);font-weight:600}
+.quick button:hover{border-color:var(--accent)}
+.line-in{display:flex;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px 6px 6px 16px;align-items:center}
+.line-in input{flex:1;min-width:0;border:0;background:none;outline:0;padding:10px 0;font-size:16px}
+.line-in:focus-within{border-color:var(--accent)}
+.hint{color:var(--muted);font-size:13px;margin:8px 4px 0}
+.btn{background:var(--accent);color:var(--on-accent);border-radius:12px;padding:12px 18px;font-weight:700}
+.btn:active{transform:scale(.98)}
+.btn.wide{width:100%;padding:16px;border-radius:16px;font-size:16px}
+/* tab bar */
+nav.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr 1fr;padding:8px max(16px,env(safe-area-inset-left,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));z-index:20}
+nav.tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-size:12px;font-weight:600;color:var(--muted);border-radius:12px}
+nav.tabs button.on{color:var(--accent)}
+nav.tabs svg{width:24px;height:24px}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(64px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;box-shadow:var(--shadow);z-index:30;transition:transform .15s}
+.fab:active{transform:translateX(-50%) scale(.94)}
+.fab svg{width:28px;height:28px}
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(5,15,10,.45);z-index:40;opacity:0;pointer-events:none;transition:.2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;bottom:0;width:100%;max-width:440px;transform:translate(-50%,105%);background:var(--surface);border-radius:26px 26px 0 0;z-index:50;padding:10px max(18px,env(safe-area-inset-left,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-right,0px));transition:transform .26s cubic-bezier(.2,.8,.2,1);max-height:92%;overflow:auto}
+.sheet.on{transform:translate(-50%,0)}
+.grab{width:40px;height:4px;border-radius:9px;background:var(--line);margin:0 auto 12px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border-radius:14px;padding:4px;margin-bottom:14px}
+.seg button{padding:10px;border-radius:11px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.amount{display:flex;align-items:baseline;justify-content:center;gap:4px;font-size:52px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;padding:6px 0 10px}
+.amount span{font-size:28px;color:var(--muted);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
+.chip{padding:10px 14px;border-radius:99px;border:1px solid var(--line);font-weight:600;font-size:14px;background:var(--surface)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 14px}
+.pad button{padding:14px 0;border-radius:14px;background:var(--bg);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.pad button:active{background:var(--accent-soft)}
+.toast{position:fixed;left:50%;bottom:calc(140px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:14px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:60;display:flex;gap:14px;align-items:center;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{color:var(--accent-soft);font-weight:700;text-decoration:underline}
+:root:not([data-theme="dark"]) .toast button{color:#7FE0B0}
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin:6px 0 4px}
+.month-nav b{font-size:17px}
+.row-del{opacity:.5;padding:6px}
+.row-del:hover{opacity:1;color:var(--bad)}
+
+.skel{height:14px;border-radius:8px;background:linear-gradient(90deg,var(--line),var(--accent-soft),var(--line));background-size:200% 100%;animation:sh 1.2s infinite linear;margin:14px 0}
+@keyframes sh{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.skel{animation:none}}
+.pending{opacity:.55}
+.note-in{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:11px 14px;font-size:15px;outline:0;margin-bottom:6px}
+.note-in:focus{border-color:var(--accent)}
+.link{color:inherit;text-decoration:underline;opacity:.92}
+.err{padding:30px 16px;text-align:center}
+.err p{color:var(--muted);margin:0 0 14px}
+.sheet[hidden],[hidden]{display:none!important}
+body:not(.ready) nav.tabs{display:none}
+</style>
+
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <svg class="logo" viewBox="0 0 512 512" aria-label="LifeOS"><rect width="512" height="512" rx="116" fill="#0F5132"/><circle cx="256" cy="256" r="124" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="40"/><path d="M256 132a124 124 0 1 1-107 62" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round"/><path d="M212 262l34 34 62-72" fill="none" stroke="#7FE0B0" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="hello"><b id="hdTitle">नमस्कार</b><span id="hdDate">&nbsp;</span></div>
+    <button class="icon-btn" id="themeBtn" aria-label="Theme बदला"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </header>
+
+  <div id="loading" class="screen on" aria-busy="true">
+    <div class="card"><div class="skel" style="width:40%"></div><div class="skel" style="height:34px;width:60%"></div><div class="skel"></div></div>
+    <div class="card" style="margin-top:12px"><div class="skel"></div><div class="skel" style="width:80%"></div></div>
+  </div>
+  <div id="auth" class="screen" role="dialog" aria-label="LifeOS जोडा">
+    <div class="card">
+      <h2 class="t" style="margin:0 0 6px">पहिल्यांदा एकदाच जोडा</h2>
+      <p class="hint" style="margin:0 0 14px">Apps Script ची Web app URL आणि email वर आलेला पासकोड इथे paste करा. हे फक्त या फोनवर साठवले जाते.</p>
+      <div class="line-in" style="margin-bottom:10px"><input id="apiIn" placeholder="Web app URL (…/exec)" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Web app URL"></div>
+      <div class="line-in" style="margin-bottom:14px"><input id="keyIn" type="password" placeholder="पासकोड" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="पासकोड"></div>
+      <button class="btn wide" id="authBtn">जोडा</button>
+      <p class="hint" id="authErr" style="color:var(--bad)" hidden></p>
+    </div>
+  </div>
+  <div id="error" class="screen" role="alert">
+    <div class="card err"><p id="errMsg">लोड करता आले नाही.</p><button class="btn" id="retryBtn">पुन्हा प्रयत्न करा</button></div>
+  </div>
+
+  <!-- आज -->
+  <main class="screen" id="s-today">
+    <div class="card hero">
+      <small>आजचा खर्च</small>
+      <div class="big" id="todaySpent">₹0</div>
+      <div class="bar"><i id="budgetBar" style="width:0"></i></div>
+      <div class="row"><span id="monthSpent"></span><span id="budgetLeft"></span></div>
+    </div>
+    <div class="quick" style="margin-top:12px">
+      <button data-open="spend"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 4h12M6 9h12M9 4c5 0 6 5 0 5l7 11"/></svg>खर्च लिहा</button>
+      <button data-open="remind"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M10 21a2 2 0 0 0 4 0"/></svg>आठवण ठेवा</button>
+    </div>
+    <h2 class="t">आजच्या आठवणी</h2>
+    <div class="card" style="padding:6px 16px"><div class="list" id="todayRem"></div></div>
+    <h2 class="t">आजचा खर्च</h2>
+    <div class="card" style="padding:6px 16px"><div class="list" id="todayExp"></div></div>
+  </main>
+
+  <!-- खर्च -->
+  <main class="screen" id="s-spend">
+    <div class="card hero">
+      <small id="mLabel">या महिन्याचा खर्च</small>
+      <div class="big" id="mTotal">₹0</div>
+      <div class="bar"><i id="mBar" style="width:0"></i></div>
+      <div class="row"><span id="mBudget"></span><span id="mLeft"></span></div>
+    </div>
+    <h2 class="t">कशावर गेले</h2>
+    <div class="card"><div class="cats" id="cats"></div></div>
+    <h2 class="t">नोंदी</h2>
+    <div class="card" style="padding:6px 16px"><div class="list" id="allExp"></div></div>
+  </main>
+
+  <!-- आठवणी -->
+  <main class="screen" id="s-remind">
+    <h2 class="t" style="margin-top:8px">नवी आठवण</h2>
+    <form class="line-in" id="qForm" autocomplete="off">
+      <input id="qIn" placeholder="उदा. वीज बिल उद्या" aria-label="आठवण लिहा" maxlength="120">
+      <button class="btn" type="submit">जोडा</button>
+    </form>
+    <p class="hint">“उद्या”, “आज”, “4 वाजता” असे लिहिले तर तारीख आणि वेळ आपोआप ठरते. वेळ दिली तरच email येतो.</p>
+    <h2 class="t">येणाऱ्या</h2>
+    <div class="card" style="padding:6px 16px"><div class="list" id="remList"></div></div>
+  </main>
+
+  <button class="fab" id="fab" aria-label="नवी नोंद" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  <nav class="tabs" aria-label="मुख्य">
+    <button class="on" data-tab="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>आज</button>
+    <button data-tab="spend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg>खर्च</button>
+    <button data-tab="remind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M10 21a2 2 0 0 0 4 0"/></svg>आठवणी</button>
+  </nav>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="नवी नोंद">
+  <div class="grab"></div>
+  <div class="seg" id="seg"><button class="on" data-mode="spend">खर्च</button><button data-mode="remind">आठवण</button></div>
+  <div id="m-spend">
+    <div class="amount"><span>₹</span><b id="amtShow">0</b></div>
+    <div class="chips" id="catChips"></div>
+    <div class="chips" id="payChips"></div>
+    <input class="note-in" id="noteIn" placeholder="टीप (ऐच्छिक)" maxlength="200" autocomplete="off">
+    <div class="pad" id="pad"></div>
+    <button class="btn wide" id="saveExp">खर्च सेव्ह करा</button>
+  </div>
+  <div id="m-remind" hidden>
+    <div class="line-in" style="margin-top:4px"><input id="rIn" placeholder="काय आठवण ठेवायची?" aria-label="आठवण" maxlength="120" autocomplete="off"></div>
+    <p class="hint">उदा. “डॉक्टर उद्या 4 वाजता” किंवा “वीज बिल”</p>
+    <div class="chips" style="margin-top:14px" id="repChips"></div>
+    <button class="btn wide" id="saveRem" style="margin-top:8px">आठवण सेव्ह करा</button>
+  </div>
+  <div id="m-budget" hidden>
+    <p class="hint" style="margin:6px 0 12px">या महिन्यासाठी (आणि पुढच्या सर्वांसाठी) बजेट ₹ मध्ये.</p>
+    <div class="line-in"><input id="bIn" type="number" inputmode="numeric" min="0" placeholder="उदा. 12000" aria-label="मासिक बजेट"></div>
+    <button class="btn wide" id="saveBudget" style="margin-top:14px">बजेट सेव्ह करा</button>
+  </div>
+</div>
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="undoBtn" hidden>पूर्ववत</button></div>
+
+<script>
+
+(function () {
+  'use strict';
+  var CAT_ICON = { 'खाणे': '🍽', 'प्रवास': '🚌', 'खरेदी': '🛍', 'बिले': '🧾', 'आरोग्य': '💊', 'इतर': '•' };
+  var DAYS = ['रविवार', 'सोमवार', 'मंगळवार', 'बुधवार', 'गुरुवार', 'शुक्रवार', 'शनिवार'];
+  var MONTHS = ['जानेवारी', 'फेब्रुवारी', 'मार्च', 'एप्रिल', 'मे', 'जून', 'जुलै', 'ऑगस्ट', 'सप्टेंबर', 'ऑक्टोबर', 'नोव्हेंबर', 'डिसेंबर'];
+
+  var S = { ready: false, today: '', budget: 0, exp: [], rem: [], cats: [], pays: [], reps: [], loadedAt: 0 };
+  var tmpN = 0;
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function inr(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+  function dmy(s) { var p = s.split('-'); return p[2] + '-' + p[1] + '-' + p[0]; }
+  function addDays(iso, n) {
+    var d = new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10) + n));
+    return d.toISOString().slice(0, 10);
+  }
+  function weekday(iso) { return DAYS[new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10))).getUTCDay()]; }
+  function rid() {
+    var a = new Uint8Array(12);
+    (window.crypto || window.msCrypto).getRandomValues(a);
+    return Array.prototype.map.call(a, function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+  }
+  function dayLabel(s) {
+    if (s === S.today) return 'आज';
+    if (s === addDays(S.today, 1)) return 'उद्या';
+    if (s === addDays(S.today, -1)) return 'काल';
+    return weekday(s).slice(0, 3) + ', ' + dmy(s);
+  }
+
+  // ---------- सर्व्हरशी संवाद ----------
+  var LS = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+    del: function (k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+  function apiUrl() { return LS.get('lifeos-api') || (window.LIFEOS_API || ''); }
+  function authError() { var e = new Error('पासकोड चुकीचा आहे. पुन्हा जोडा.'); e.auth = true; return e; }
+  function call(name, args) {
+    var url = apiUrl(), key = LS.get('lifeos-key');
+    if (!url || !key) return Promise.reject(authError());
+    return fetch(url, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ k: key, fn: name, args: args || [] }) })
+      .then(function (r) { return r.text(); })
+      .then(function (t) {
+        var res; try { res = JSON.parse(t); } catch (e) { throw new Error('सर्व्हरचे उत्तर समजले नाही. Web app URL तपासा.'); }
+        if (res && res.ok) return res.data;
+        if (res && /^AUTH:/.test(res.error || '')) throw authError();
+        throw new Error((res && res.error) || 'काहीतरी चुकले.');
+      }, function () { throw new Error('सर्व्हरशी संपर्क होत नाही. इंटरनेट तपासा आणि पुन्हा प्रयत्न करा.'); });
+  }
+
+  // ---------- toast ----------
+  var tt, undoFn = null;
+  function toast(msg, undo) {
+    $('toastMsg').textContent = msg;
+    undoFn = undo || null;
+    $('undoBtn').hidden = !undo;
+    $('toast').classList.add('on');
+    clearTimeout(tt);
+    tt = setTimeout(function () { $('toast').classList.remove('on'); }, 4500);
+  }
+  $('undoBtn').onclick = function () {
+    var f = undoFn; undoFn = null; $('toast').classList.remove('on');
+    if (f) f();
+  };
+
+  // ---------- दाखवणे ----------
+  function expRow(e, full) {
+    var tmp = e.pending ? ' pending' : '';
+    return '<div class="item' + tmp + '"><div class="dot">' + (CAT_ICON[e.cat] || '•') + '</div><div class="main"><b>' +
+      esc(e.note || e.cat) + '</b><span>' + esc(e.cat) + ' · ' + esc(e.pay) + (full ? ' · ' + dayLabel(e.date) : '') +
+      '</span></div><div class="amt">' + inr(e.amt) + '</div>' +
+      (full && !e.pending ? '<button class="row-del" data-del="' + esc(e.id) + '" aria-label="हटवा"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>' : '') + '</div>';
+  }
+  function remRow(r) {
+    var when = dayLabel(r.date) + (r.time ? ', ' + r.time : '');
+    var over = r.date < S.today && !r.done;
+    return '<div class="item' + (r.done ? ' done' : '') + (r.pending ? ' pending' : '') + '"><button class="chk" data-chk="' + esc(r.id) +
+      '" aria-label="पूर्ण"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></button><div class="main"><b>' +
+      esc(r.title) + '</b><span>' + esc(when) + '</span></div>' +
+      (over ? '<span class="pill warn">थकीत</span>' : (r.rep ? '<span class="pill">' + esc(r.rep) + '</span>' : '')) +
+      (full(r) ? '<button class="row-del" data-delrem="' + esc(r.id) + '" aria-label="हटवा"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>' : '') + '</div>';
+  }
+  function full(r) { return !r.pending && document.getElementById('s-remind').classList.contains('on'); }
+  function sum(a) { return a.reduce(function (s, e) { return s + e.amt; }, 0); }
+
+  function render() {
+    if (!S.ready) return;
+    clearTimeout(S.cw); S.cw = setTimeout(function () { try { LS.set('lifeos-cache', JSON.stringify({ today: S.today, budget: S.budget, exp: S.exp.filter(function (x) { return !x.pending; }), rem: S.rem.filter(function (x) { return !x.pending; }), cats: S.cats, pays: S.pays, reps: S.reps })); } catch (e) {} }, 800);
+    var d = S.today;
+    $('hdDate').textContent = weekday(d) + ', ' + dmy(d);
+    var today = S.exp.filter(function (e) { return e.date === d; });
+    var mt = sum(S.exp), B = S.budget, pct = B ? Math.min(100, mt / B * 100) : 0;
+    $('todaySpent').textContent = inr(sum(today));
+    $('monthSpent').textContent = inr(mt) + ' या महिन्यात';
+    var leftTxt = B ? (B - mt >= 0 ? inr(B - mt) + ' शिल्लक' : inr(mt - B) + ' जास्त') : '';
+    $('budgetLeft').innerHTML = B ? esc(leftTxt) : '<button class="link" data-budget="1">बजेट ठरवा</button>';
+    $('budgetBar').style.width = pct + '%';
+    $('mLabel').textContent = MONTHS[+d.slice(5, 7) - 1] + ' ' + d.slice(0, 4) + ' चा खर्च';
+    $('mTotal').textContent = inr(mt);
+    $('mBar').style.width = pct + '%';
+    $('mBudget').innerHTML = B ? '<button class="link" data-budget="1">बजेट ' + inr(B) + '</button>' : '<button class="link" data-budget="1">बजेट ठरवा</button>';
+    $('mLeft').textContent = leftTxt;
+
+    var todayRem = S.rem.filter(function (r) { return r.date === d || (r.date < d && !r.done); })
+      .sort(function (a, b) { return (a.done - b.done) || ((a.date + (a.time || '99')) < (b.date + (b.time || '99')) ? -1 : 1); });
+    $('todayRem').innerHTML = todayRem.length ? todayRem.map(remRow).join('') : '<div class="empty">आज काहीही बाकी नाही. छान!</div>';
+    $('todayExp').innerHTML = today.length ? today.map(function (e) { return expRow(e, false); }).join('') : '<div class="empty">आज अजून खर्च नाही. खालच्या + ने पहिली नोंद करा.</div>';
+
+    var by = {};
+    S.exp.forEach(function (e) { by[e.cat] = (by[e.cat] || 0) + e.amt; });
+    var keys = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; });
+    $('cats').innerHTML = keys.length ? keys.map(function (k) {
+      return '<div class="cat"><div class="h"><b>' + esc(k) + '</b><span class="amt">' + inr(by[k]) + '</span></div><div class="tr"><i style="width:' + (by[k] / by[keys[0]] * 100) + '%"></i></div></div>';
+    }).join('') : '<div class="empty">या महिन्यात खर्च नाही.</div>';
+    var sorted = S.exp.slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+    $('allExp').innerHTML = sorted.length ? sorted.map(function (e) { return expRow(e, true); }).join('') : '<div class="empty">नोंदी नाहीत. + दाबून पहिली नोंद करा.</div>';
+
+    var up = S.rem.slice().sort(function (a, b) { return (a.done - b.done) || ((a.date + (a.time || '99')) < (b.date + (b.time || '99')) ? -1 : 1); });
+    $('remList').innerHTML = up.length ? up.map(remRow).join('') : '<div class="empty">आठवणी नाहीत. वर लिहून पहिली जोडा.</div>';
+  }
+
+  // ---------- सुरुवात ----------
+  function show(id) {
+    ['loading', 'error', 'auth'].forEach(function (k) { $(k).classList.toggle('on', k === id); });
+  }
+  function applyBoot(d) {
+    S.today = d.today; S.budget = d.budget; S.exp = d.exp; S.rem = d.rem; S.cats = d.cats; S.pays = d.pays; S.reps = d.reps;
+    S.ready = true; S.loadedAt = Date.now(); document.body.classList.add('ready');
+    if (!S.catSel) { S.catSel = S.cats[0]; S.paySel = S.pays[0]; }
+    show('none'); $('fab').hidden = false;
+    tab(S.tab || 'today');
+    render(); chips();
+  }
+  function needAuth(msg) {
+    S.ready = false; document.body.classList.remove('ready'); $('fab').hidden = true;
+    ['s-today', 's-spend', 's-remind'].forEach(function (k) { $(k).classList.remove('on'); });
+    $('apiIn').value = apiUrl(); $('keyIn').value = '';
+    $('authErr').hidden = !msg; $('authErr').textContent = msg || '';
+    show('auth');
+  }
+  function load(silent) {
+    if (!apiUrl() || !LS.get('lifeos-key')) { needAuth(''); return Promise.resolve(); }
+    if (!silent) {
+      var cached = null;
+      try { cached = JSON.parse(LS.get('lifeos-cache') || 'null'); } catch (e) {}
+      if (cached && cached.today) { applyBoot(cached); } // जुनी प्रत लगेच दाखवा, मग ताजी आणा
+      else { S.ready = false; $('fab').hidden = true; ['s-today', 's-spend', 's-remind'].forEach(function (k) { $(k).classList.remove('on'); }); show('loading'); }
+    }
+    return call('getBootstrap').then(function (d) {
+      LS.set('lifeos-cache', JSON.stringify(d));
+      applyBoot(d);
+    }).catch(function (e) {
+      if (e.auth) { LS.del('lifeos-cache'); needAuth(e.message); return; }
+      if (silent || S.ready) { if (!silent) toast('जुनी माहिती दिसत आहे. ' + e.message); return; }
+      $('errMsg').textContent = e.message;
+      show('error');
+    });
+  }
+  $('authBtn').onclick = function () {
+    var u = $('apiIn').value.trim(), k = $('keyIn').value.trim();
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(u)) { $('authErr').hidden = false; $('authErr').textContent = 'URL https://script.google.com/macros/s/…/exec अशी हवी.'; return; }
+    if (k.length < 20) { $('authErr').hidden = false; $('authErr').textContent = 'पासकोड email मधून पूर्ण copy करा.'; return; }
+    LS.set('lifeos-api', u); LS.set('lifeos-key', k); $('authErr').hidden = true;
+    load(false);
+  };
+  $('retryBtn').onclick = function () { load(false); };
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && S.ready && Date.now() - S.loadedAt > 60000 && !$('sheet').classList.contains('on')) load(true);
+  });
+
+  // ---------- tabs ----------
+  var titles = { today: 'नमस्कार', spend: 'खर्च', remind: 'आठवणी' };
+  function tab(n) {
+    S.tab = n;
+    ['today', 'spend', 'remind'].forEach(function (k) { $('s-' + k).classList.toggle('on', k === n); });
+    document.querySelectorAll('nav.tabs button').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === n); });
+    $('hdTitle').textContent = titles[n];
+    window.scrollTo(0, 0);
+    render();
+  }
+  document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { if (S.ready) tab(b.dataset.tab); }; });
+
+  // ---------- sheet ----------
+  var amt = '', rep = '', mode = 'spend';
+  function chips() {
+    $('catChips').innerHTML = S.cats.map(function (c) { return '<button class="chip' + (c === S.catSel ? ' on' : '') + '" data-cat="' + esc(c) + '">' + (CAT_ICON[c] || '') + ' ' + esc(c) + '</button>'; }).join('');
+    $('payChips').innerHTML = S.pays.map(function (p) { return '<button class="chip' + (p === S.paySel ? ' on' : '') + '" data-pay="' + esc(p) + '">' + esc(p) + '</button>'; }).join('');
+    $('repChips').innerHTML = [['', 'एकदाच']].concat(S.reps.map(function (r) { return [r, r]; })).map(function (r) {
+      return '<button class="chip' + (r[0] === rep ? ' on' : '') + '" data-rep="' + esc(r[0]) + '">' + esc(r[1]) + '</button>';
+    }).join('');
+    $('amtShow').textContent = amt ? Number(amt).toLocaleString('en-IN') : '0';
+  }
+  $('pad').innerHTML = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '00', '0', '⌫'].map(function (k) { return '<button data-k="' + k + '">' + k + '</button>'; }).join('');
+  function setMode(m) {
+    mode = m;
+    $('m-spend').hidden = m !== 'spend';
+    $('m-remind').hidden = m !== 'remind';
+    $('m-budget').hidden = m !== 'budget';
+    $('seg').hidden = m === 'budget';
+    document.querySelectorAll('#seg button').forEach(function (b) { b.classList.toggle('on', b.dataset.mode === m); });
+  }
+  function openSheet(m) {
+    if (!S.ready) return;
+    setMode(m || (S.tab === 'remind' ? 'remind' : 'spend'));
+    amt = ''; rep = ''; $('rIn').value = ''; $('noteIn').value = ''; $('bIn').value = S.budget || '';
+    chips();
+    $('scrim').classList.add('on'); $('sheet').classList.add('on');
+  }
+  function closeSheet() { $('scrim').classList.remove('on'); $('sheet').classList.remove('on'); }
+  $('fab').onclick = function () { openSheet(); };
+  document.addEventListener('click', function (e) {
+    var o = e.target.closest('[data-open]');
+    if (o) openSheet(o.dataset.open);
+    if (e.target.closest('[data-budget]')) openSheet('budget');
+  });
+  $('scrim').onclick = closeSheet;
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+  document.querySelectorAll('#seg button').forEach(function (b) { b.onclick = function () { setMode(b.dataset.mode); }; });
+  $('sheet').addEventListener('click', function (e) {
+    var t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.cat) { S.catSel = t.dataset.cat; chips(); }
+    else if (t.dataset.pay) { S.paySel = t.dataset.pay; chips(); }
+    else if (t.dataset.rep !== undefined) { rep = t.dataset.rep; chips(); }
+    else if (t.dataset.k) {
+      var k = t.dataset.k;
+      if (k === '⌫') amt = amt.slice(0, -1);
+      else if ((amt + k).length <= 7) amt = (amt + k).replace(/^0+/, '');
+      chips();
+    }
+  });
+
+  // ---------- खर्च नोंदवणे ----------
+  var busyExp = false;
+  $('saveExp').onclick = function () {
+    if (busyExp) return;
+    var a = Number(amt);
+    if (!a) { toast('रक्कम टाका'); return; }
+    busyExp = true;
+    var temp = { id: 'tmp' + (++tmpN), date: S.today, amt: a, cat: S.catSel, pay: S.paySel, note: $('noteIn').value.trim(), pending: true };
+    S.exp.push(temp); closeSheet(); render();
+    call('addExpense', [{ requestId: rid(), date: S.today, amt: a, cat: temp.cat, pay: temp.pay, note: temp.note }]).then(function (rec) {
+      var i = S.exp.indexOf(temp); if (i >= 0) S.exp[i] = rec;
+      render();
+      toast(inr(a) + ' नोंदवले', function () { removeExpense(rec, true); });
+    }).catch(function (err) {
+      S.exp = S.exp.filter(function (x) { return x !== temp; }); render();
+      toast('सेव्ह झाले नाही: ' + err.message);
+    }).then(function () { busyExp = false; });
+  };
+  function removeExpense(rec, quiet) {
+    S.exp = S.exp.filter(function (x) { return x.id !== rec.id; }); render();
+    call('deleteExpense', [rec.id]).then(function () {
+      if (!quiet) toast('नोंद हटवली', function () {
+        call('restoreExpense', [rec.id]).then(function (r) { S.exp.push(r); render(); }).catch(function (e) { toast(e.message); });
+      });
+      else toast('नोंद काढली');
+    }).catch(function (e) { S.exp.push(rec); render(); toast(e.message); });
+  }
+
+  // ---------- आठवण ----------
+  function parse(text) {
+    var d = S.today, time = '', t = text;
+    if (/उद्या|tomorrow/i.test(t)) { d = addDays(S.today, 1); t = t.replace(/उद्या|tomorrow/ig, ''); }
+    else if (/आज|today/i.test(t)) { t = t.replace(/आज|today/ig, ''); }
+    var m = t.match(/(\d{1,2})\s*(वाजता|pm|am)/i);
+    if (m) {
+      var h = Number(m[1]);
+      if (/pm/i.test(m[2]) && h < 12) h += 12;
+      else if (m[2] === 'वाजता' && h < 7) h += 12;
+      if (h < 24) { time = (h < 10 ? '0' : '') + h + ':00'; t = t.replace(m[0], ''); }
+    }
+    return { title: t.replace(/\s+/g, ' ').trim(), date: d, time: time };
+  }
+  var busyRem = false;
+  function addRem(text, repv) {
+    var p = parse(text);
+    if (!p.title) { toast('काय आठवण ठेवायची ते लिहा'); return false; }
+    if (busyRem) return false;
+    busyRem = true;
+    var temp = { id: 'tmp' + (++tmpN), title: p.title, date: p.date, time: p.time, rep: repv || '', done: false, pending: true };
+    S.rem.push(temp); render();
+    call('addReminder', [{ requestId: rid(), title: p.title, date: p.date, time: p.time, rep: repv || '' }]).then(function (rec) {
+      var i = S.rem.indexOf(temp); if (i >= 0) S.rem[i] = rec; render();
+      toast('आठवण जोडली', function () {
+        S.rem = S.rem.filter(function (x) { return x.id !== rec.id; }); render();
+        call('deleteReminder', [rec.id]).catch(function (e) { S.rem.push(rec); render(); toast(e.message); });
+      });
+    }).catch(function (err) {
+      S.rem = S.rem.filter(function (x) { return x !== temp; }); render();
+      toast('सेव्ह झाले नाही: ' + err.message);
+    }).then(function () { busyRem = false; });
+    return true;
+  }
+  $('saveRem').onclick = function () { if (addRem($('rIn').value, rep)) closeSheet(); };
+  $('qForm').onsubmit = function (e) { e.preventDefault(); if (addRem($('qIn').value, '')) $('qIn').value = ''; };
+
+  function replaceRem(rec) {
+    var found = false;
+    S.rem = S.rem.map(function (r) { if (r.id === rec.id) { found = true; return rec; } return r; });
+    if (!found) S.rem.push(rec);
+  }
+  function toggleRem(id) {
+    var r = S.rem.filter(function (x) { return x.id === id; })[0];
+    if (!r || r.pending) return;
+    if (!r.rep) { r.done = !r.done; render(); }
+    r.pending = true; render();
+    call('toggleReminder', [id]).then(function (res) {
+      res.reminder.pending = false; replaceRem(res.reminder); render();
+      var label = res.reminder.done ? 'पूर्ण' : (res.prev.done ? 'पुन्हा चालू केली' : 'पुढच्या तारखेला: ' + dmy(res.reminder.date));
+      toast(label, function () {
+        call('undoReminder', [id, res.prev.date, res.prev.done]).then(function (rec) { replaceRem(rec); render(); }).catch(function (e) { toast(e.message); });
+      });
+    }).catch(function (e) {
+      load(true).then(function () { toast(e.message); });
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var c = e.target.closest('[data-chk]');
+    if (c) toggleRem(c.dataset.chk);
+    var d = e.target.closest('[data-del]');
+    if (d) { var x = S.exp.filter(function (y) { return y.id === d.dataset.del; })[0]; if (x) removeExpense(x, false); }
+    var dr = e.target.closest('[data-delrem]');
+    if (dr) {
+      var r = S.rem.filter(function (y) { return y.id === dr.dataset.delrem; })[0];
+      if (!r) return;
+      S.rem = S.rem.filter(function (y) { return y !== r; }); render();
+      call('deleteReminder', [r.id]).then(function () {
+        toast('आठवण हटवली', function () {
+          call('restoreReminder', [r.id]).then(function (rec) { S.rem.push(rec); render(); }).catch(function (er) { toast(er.message); });
+        });
+      }).catch(function (er) { S.rem.push(r); render(); toast(er.message); });
+    }
+  });
+
+  // ---------- बजेट ----------
+  $('saveBudget').onclick = function () {
+    var v = $('bIn').value;
+    if (v === '' || Number(v) < 0) { toast('बजेट आकड्यात टाका'); return; }
+    var btn = $('saveBudget'); btn.disabled = true;
+    call('setBudget', [Number(v)]).then(function (b) {
+      S.budget = b; closeSheet(); render(); toast('बजेट सेव्ह झाले');
+    }).catch(function (e) { toast(e.message); }).then(function () { btn.disabled = false; });
+  };
+
+  // ---------- theme ----------
+  $('themeBtn').onclick = function () {
+    var r = document.documentElement;
+    var dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme:dark)').matches;
+    r.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('lifeos-theme', r.dataset.theme); } catch (e) {}
+  };
+  try { var th = localStorage.getItem('lifeos-theme'); if (th) document.documentElement.dataset.theme = th; } catch (e) {}
+
+  load(false);
+})();
+
+
+if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }
+</script>
+</body>
+</html>
