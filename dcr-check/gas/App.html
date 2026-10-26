@@ -151,6 +151,13 @@ main{padding:14px 16px 90px}.card{padding:14px}
 .card,.kpi{transition:box-shadow .2s}
 .kpi:hover{box-shadow:0 8px 22px rgba(15,23,42,.08)}
 @media (max-width:860px){.hero{padding:18px}.hero-n>div{min-width:100px;padding:10px 12px}.hero-n b{font-size:24px}}
+.case .sk{margin-top:8px;border:1px solid var(--line);border-radius:10px;background:#fafbfe}
+.case .sk summary{padding:7px 12px;font-size:13.5px;list-style-position:inside}
+.case .sk[open] summary{border-bottom:1px solid var(--line)}
+.case .skl{padding:6px 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 10px}
+.case .skl .pk{display:flex;gap:8px;align-items:center;margin:0;cursor:pointer;font-size:13.5px;padding:5px 10px}
+.case .skl .btn{justify-self:start}
+#bp{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 10px}#bp .pk{margin:0}
 </style>
 </head>
 <body>
@@ -976,17 +983,41 @@ var LETTER = (function () {
       '<div class="muted">' + (c.div ? esc(c.div) + ' विभाग • ' : '') + 'दाखल ' + dmy(c.regDate) + (c.label ? ' • ' + esc(c.label) : '') + (c.io ? ' • तपास: ' + esc(c.io.slice(0, 60)) : '') + '</div>' +
       '<div class="facts">' + esc(c.facts || ('फिर्यादी: ' + c.comp + ' • आरोपी: ' + c.acc)) + '</div>' +
       '<textarea placeholder="SP साहेबांचा शेरा येथे लिहा...">' + esc(c.shera) + '</textarea><div class="qk">' + quickChips(c.head) + '</div>' +
+      '<details class="sk"><summary>पत्रातील सूचना निवडा <span class="chip skn"></span></summary><div class="skl"></div></details>' +
       '<div class="row" style="margin-top:6px"><button class="btn sm ghost" data-a="save">शेरा जतन</button><button class="btn sm gold" data-a="letter">DCR चेक पत्र बनवा</button>' +
       '<span class="grow"></span><span class="muted">शीर्षक:</span>' + headSel(c.head, 'hs') + '</div></div>';
+  }
+  /* या गुन्ह्याच्या पत्रात जाणाऱ्या सूचना: स्वतः निवडलेल्या (sKeys) नाहीतर शेरा/शीर्षकानुसार सुचवलेल्या */
+  function caseKeys(c, shera) {
+    if (c.sKeys) return String(c.sKeys).split(',').filter(function (k) { return k && k !== '-'; });
+    return LETTER.suggest(c, shera == null ? c.shera : shera, paras());
   }
   function bindCase(c) {
     var el = document.getElementById(c._id); if (!el) return;
     var ta = $('textarea', el);
+    function skDraw() {
+      var P = paras(), ks = caseKeys(c, ta.value), H = LETTER.hints(ta.value, P);
+      $('.skn', el).textContent = '✓ ' + ks.length + (c.sKeys ? ' • स्वतः निवडलेल्या' : ' • आपोआप');
+      $('.skl', el).innerHTML = P.map(function (p) {
+        var on = ks.indexOf(p.k) >= 0;
+        return '<label class="pk' + (on ? ' on' : '') + '"><input type="checkbox" value="' + p.k + '"' + (on ? ' checked' : '') + '> ' + esc(p.t) + (H.indexOf(p.k) >= 0 && !on ? ' <span class="chip info">शेऱ्यानुसार सुचवलेले</span>' : '') + '</label>';
+      }).join('') + (c.sKeys ? '<button class="btn sm ghost" data-a="skr">आपोआप निवडीवर परत</button>' : '');
+      $('.skl', el).querySelectorAll('input').forEach(function (cb) {
+        cb.onchange = function () {
+          var sel = []; $('.skl', el).querySelectorAll('input:checked').forEach(function (x) { sel.push(x.value); });
+          c.sKeys = sel.join(',') || '-'; skDraw(); skSave(sel.length ? sel : ['-']);
+        };
+      });
+      var r = $('[data-a=skr]', el); if (r) r.onclick = function () { c.sKeys = ''; skDraw(); skSave([]); };
+    }
+    function skSave(sel) { call('saveShera', c.key, null, sel).catch(function (e) { toast(e.message, 1); }); }
+    skDraw();
+    ta.addEventListener('input', function () { c.shera = ta.value.trim(); if (!c.sKeys) skDraw(); });
     $('.facts', el).onclick = function () { this.classList.toggle('open'); };
     $('.pk1', el).onchange = function () { if (this.checked) S.picked[c.key] = c; else delete S.picked[c.key]; updateBulk(); };
-    ta.onfocus = function () { el.classList.add('qo'); };
+    ta.onfocus = function () { el.classList.add('qo'); $('.sk', el).open = true; };
     function bindQ() {
-      el.querySelectorAll('.chip.q').forEach(function (q) { q.onclick = function () { ta.value = (ta.value.trim() ? ta.value.trim().replace(/[.।]?$/, '. ') : '') + q.textContent; }; });
+      el.querySelectorAll('.chip.q').forEach(function (q) { q.onclick = function () { ta.value = (ta.value.trim() ? ta.value.trim().replace(/[.।]?$/, '. ') : '') + q.textContent; c.shera = ta.value.trim(); if (!c.sKeys) skDraw(); }; });
       $('.chip.qadd', el).onclick = function () {
         var t = ta.value.trim().replace(/[.।]$/, ''); if (!t) return toast('आधी शेरा लिहा', 1);
         var o = qHead(), l = String(o[c.head] || '').split('\n').filter(String);
@@ -997,12 +1028,12 @@ var LETTER = (function () {
     bindQ();
     $('[data-a=save]', el).onclick = function () {
       var b = this; busy(b, true);
-      call('saveShera', c.key, ta.value.trim()).then(function () { c.shera = ta.value.trim(); el.classList.toggle('has', !!c.shera); toast('शेरा जतन झाला'); })
+      call('saveShera', c.key, ta.value.trim(), c.sKeys ? c.sKeys.split(',') : null).then(function () { c.shera = ta.value.trim(); el.classList.toggle('has', !!c.shera); toast('शेरा जतन झाला'); })
         .catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };
     $('[data-a=letter]', el).onclick = function () { c.shera = ta.value.trim(); letterEditor(c, el); };
     $('.hs', el).onchange = function () {
-      var v = this.value; call('setHead', c.key, v).then(function () { c.head = v; $('.qk', el).innerHTML = quickChips(v); bindQ(); toast('शीर्षक बदलले'); }).catch(function (e) { toast(e.message, 1); });
+      var v = this.value; call('setHead', c.key, v).then(function () { c.head = v; $('.qk', el).innerHTML = quickChips(v); bindQ(); skDraw(); toast('शीर्षक बदलले'); }).catch(function (e) { toast(e.message, 1); });
     };
   }
   function printSheet() {
@@ -1017,7 +1048,9 @@ var LETTER = (function () {
   /* ---------- पत्र संपादक ---------- */
   function letterEditor(c, el) {
     var P = paras(), opt = { shera: c.shera, paras: P, settings: { days: S.settings.days }, relation: RELS[0], place: 'गावात', refDate: c.dcrIssue || '', rules: rules() };
+    if (c.sKeys) opt.keys = caseKeys(c);
     var D = LETTER.draft(c, opt), on = {};
+    delete opt.keys;
     D.keys.forEach(function (k) { on[k] = 1; });
     var texts = {};
     function fillOne(k) { var o = {}; for (var x in opt) o[x] = opt[x]; o.keys = [k]; return LETTER.draft(c, o).body[0] || ''; }
@@ -1083,14 +1116,18 @@ var LETTER = (function () {
   function bulkEditor(list) {
     var P = paras(), shera = '', rel = RELS[0], place = 'गावात';
     var on = {}, sugg = {};
-    list.forEach(function (c) { LETTER.suggest(c, '', P).forEach(function (k) { sugg[k] = 1; }); });
+    list.forEach(function (c) { if (!c.sKeys) LETTER.suggest(c, '', P).forEach(function (k) { sugg[k] = 1; }); });
+    var own = list.filter(function (c) { return c.sKeys; }).length;
     Object.keys(sugg).forEach(function (k) { on[k] = 1; });
     var m = document.createElement('div'); m.className = 'modal';
     m.innerHTML = '<div class="sheet"><div class="row"><h2 class="grow" style="margin:0">एकत्र पत्रे: ' + list.length + ' गुन्हे</h2><button class="btn ghost sm" data-x>बंद</button></div>' +
-      '<p class="muted">' + list.map(function (c) { return esc(c.ps) + ' ' + crTxt(c); }).join(' • ') + '</p>' +
-      '<label>SP शेरा (सर्व पत्रांत एकच)</label><textarea id="bsh" style="min-height:60px"></textarea>' +
+      '<div class="scroll" style="margin:8px 0"><table class="t"><tr><th>गुन्हा</th><th>शेरा</th><th>सूचना</th></tr>' + list.map(function (c) {
+        return '<tr><td><b>' + esc(c.ps) + ' ' + crTxt(c) + '</b></td><td>' + (c.shera ? esc(c.shera.slice(0, 90)) : '<span class="muted">खालील सामायिक शेरा</span>') + '</td><td>' +
+          (c.sKeys ? '<span class="chip ok">स्वतःच्या ✓ ' + caseKeys(c).length + '</span>' : '<span class="chip">सामायिक</span>') + '</td></tr>';
+      }).join('') + '</table></div>' +
+      '<label>सामायिक SP शेरा (रिकामा ठेवल्यास प्रत्येक गुन्ह्याचा स्वतःचा शेरा वापरला जातो)</label><textarea id="bsh" style="min-height:60px"></textarea>' +
       '<div class="row"><span class="muted">नाते:</span><select id="brel">' + RELS.map(function (r) { return '<option>' + r + '</option>'; }).join('') + '</select><select id="bpl"><option>गावात</option><option>घरात</option><option>परिसरात</option></select></div>' +
-      '<label>सूचना (सर्व पत्रांत जातील)</label><div id="bp">' + P.map(function (p) {
+      '<label>सामायिक सूचना (' + (own ? 'ज्या ' + (list.length - own) + ' गुन्ह्यांना स्वतःचे ✓ नाहीत त्यांनाच; बाकी ' + own + ' गुन्ह्यांना त्यांच्या खाली निवडलेल्या सूचना' : 'सर्व पत्रांत जातील; प्रत्येक गुन्ह्यासाठी वेगळ्या हव्या असल्यास गुन्ह्याखालील "पत्रातील सूचना निवडा" वापरा') + ')</label><div id="bp">' + P.map(function (p) {
         return '<div class="pk' + (on[p.k] ? ' on' : '') + '" data-k="' + p.k + '"><label><input type="checkbox"' + (on[p.k] ? ' checked' : '') + '> ' + esc(p.t) + '</label></div>';
       }).join('') + '</div>' +
       '<div class="row" style="margin-top:12px"><button class="btn gold" id="bmk">सर्व पत्रे बनवा (एका Word फाईलमध्ये)</button><span id="bout" class="links"></span></div></div>';
@@ -1104,15 +1141,16 @@ var LETTER = (function () {
       m.querySelectorAll('.pk.on').forEach(function (x) { keys.push(x.dataset.k); });
       shera = $('#bsh', m).value.trim();
       var items = list.map(function (c) {
-        var o = { shera: shera, paras: P, settings: { days: S.settings.days }, relation: rel, place: place, refDate: c.dcrIssue || '', keys: keys, rules: rules() };
+        var sh = shera || c.shera || '', ks = c.sKeys ? caseKeys(c) : (sh && keys.indexOf('shera') < 0 ? ['shera'].concat(keys) : keys);
+        var o = { shera: sh, paras: P, settings: { days: S.settings.days }, relation: rel, place: place, refDate: c.dcrIssue || '', keys: ks, rules: rules() };
         var D = LETTER.draft(c, o);
         return { key: c.key, orig: D, L: { jaKr: '', date: S.today, dateText: dmy(S.today), ref: D.ref, subject: D.subject, intro: D.intro, body: D.body, close: D.close,
-          prati: D.prati, prat: D.prat, keys: keys, shera: shera } };
+          prati: D.prati, prat: D.prat, keys: ks, shera: sh } };
       });
       busy(b, true, 'पत्रे बनत आहेत...');
       call('makeLetters', items).then(function (r) {
         $('#bout', m).innerHTML = '<span class="chip ok">' + r.count + ' पत्रे</span>' + links(r);
-        list.forEach(function (c) { c.shera = shera; c.letters = (+c.letters || 0) + 1; });
+        list.forEach(function (c) { if (shera) c.shera = shera; c.letters = (+c.letters || 0) + 1; });
         toast(r.count + ' पत्रे Drive मध्ये जतन झाली');
       }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };

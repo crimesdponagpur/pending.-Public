@@ -9,7 +9,7 @@ var ROOT_NAME = 'DCR_चेक_ॲप';
 var SS_NAME = 'DCR_नोंदवही';
 var CASE_COLS = ['key', 'kind', 'sec', 'ps', 'div', 'no', 'yr', 'kalam', 'label', 'sid', 'head', 'headSet', 'comp', 'acc', 'victim', 'deceased', 'place',
   'occ', 'reg', 'regDate', 'occDate', 'prop', 'io', 'incharge', 'regOff', 'visit', 'facts', 'prior', 'priorAction', 'arrest', 'arrestReason', 'cause',
-  'nCases', 'nAcc', 'psCr', 'dcrDate', 'dcrIssue', 'dcrList', 'shera', 'sheraAt', 'letters', 'updated', 'bRow'];
+  'nCases', 'nAcc', 'psCr', 'dcrDate', 'dcrIssue', 'dcrList', 'shera', 'sheraAt', 'letters', 'updated', 'bRow', 'sKeys'];
 var SHEETS = {
   CASES: CASE_COLS,
   DCRS: ['reportDate', 'issueDate', 'jaKr', 'fileName', 'fileUrl', 'pdfUrl', 'cases', 'bad', 'warn', 'info', 'uploaded', 'bAdded'],
@@ -167,7 +167,7 @@ function saveDcr_(p) {
         if (list.indexOf(p.reportDate) < 0) list.push(p.reportDate);
         c.dcrList = list.sort().join(',');
         c.dcrDate = list[0]; c.dcrIssue = old.dcrDate && old.dcrDate < p.reportDate ? old.dcrIssue : c.dcrIssue;
-        ['shera', 'sheraAt', 'letters', 'bRow'].forEach(function (k) { c[k] = old[k]; });
+        ['shera', 'sheraAt', 'letters', 'bRow', 'sKeys'].forEach(function (k) { c[k] = old[k]; });
         if (old.headSet) { c.head = old.head; c.headSet = old.headSet; }
         sh.getRange(old._row, 1, 1, CASE_COLS.length).setValues([toRow_('CASES', c)]);
         upd++;
@@ -229,9 +229,11 @@ function findCase_(key) {
   if (!r) throw new Error('गुन्हा सापडला नाही: ' + key);
   return r;
 }
-function saveShera_(key, shera) {
+/* शेरा व त्या गुन्ह्यासाठी निवडलेल्या सूचना (keys). shera = null → फक्त सूचना जतन */
+function saveShera_(key, shera, keys) {
   var r = findCase_(key), s = sh_('CASES');
-  s.getRange(r._row, CASE_COLS.indexOf('shera') + 1, 1, 2).setValues([[shera || '', shera ? now_() : '']]);
+  if (shera !== null && shera !== undefined) s.getRange(r._row, CASE_COLS.indexOf('shera') + 1, 1, 2).setValues([[shera || '', shera ? now_() : '']]);
+  if (keys) s.getRange(r._row, CASE_COLS.indexOf('sKeys') + 1).setValue(keys.join(','));
   return { ok: 1 };
 }
 function setHead_(key, head) {

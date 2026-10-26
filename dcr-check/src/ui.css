@@ -141,3 +141,10 @@ main{padding:14px 16px 90px}.card{padding:14px}
 .card,.kpi{transition:box-shadow .2s}
 .kpi:hover{box-shadow:0 8px 22px rgba(15,23,42,.08)}
 @media (max-width:860px){.hero{padding:18px}.hero-n>div{min-width:100px;padding:10px 12px}.hero-n b{font-size:24px}}
+.case .sk{margin-top:8px;border:1px solid var(--line);border-radius:10px;background:#fafbfe}
+.case .sk summary{padding:7px 12px;font-size:13.5px;list-style-position:inside}
+.case .sk[open] summary{border-bottom:1px solid var(--line)}
+.case .skl{padding:6px 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 10px}
+.case .skl .pk{display:flex;gap:8px;align-items:center;margin:0;cursor:pointer;font-size:13.5px;padding:5px 10px}
+.case .skl .btn{justify-self:start}
+#bp{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 10px}#bp .pk{margin:0}
