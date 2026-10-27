@@ -169,6 +169,11 @@ main{padding:14px 16px 90px}.card{padding:14px}
 .case .sk{display:none}.case.qo .sk{display:block}
 .case .skh{gap:6px}
 .card.done{background:linear-gradient(90deg,#f1f6ff,#fff);border-color:#c9d8f5}
+#cl.left .case.done{display:none}
+.case kbd{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:4px;background:#eef2f8;color:var(--muted);font:600 11px "Inter",sans-serif;border:1px solid var(--line2)}
+.prog{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;margin-bottom:12px;box-shadow:var(--sh)}
+.bar2{height:8px;border-radius:99px;background:#eef2f8;margin-top:8px;overflow:hidden}.bar2 i{display:block;height:100%;background:linear-gradient(90deg,var(--pri),#4f8bff);border-radius:99px;transition:width .3s}
+.case.done{border-left:4px solid var(--ok)}
 </style>
 </head>
 <body>
@@ -959,10 +964,11 @@ var LETTER = (function () {
       '<select id="qd"><option value="">सर्व तारखा</option>' + dates.map(function (d) { return '<option value="' + d + '"' + (d === d0 ? ' selected' : '') + '>DCR ' + dmy(d) + '</option>'; }).join('') + '</select>' +
       '<input type="text" id="qt" class="grow" placeholder="शोधा: पो.स्टे., अप.क्र. (1048/26), नाव, कलम...">' +
       '<select id="qh"><option value="">सर्व शीर्षके</option>' + DCR.HEADS.map(function (h) { return '<option value="' + h[0] + '">' + esc(h[1]) + '</option>'; }).join('') + '</select>' +
-      '<label class="muted"><input type="checkbox" id="qs"> फक्त शेरा असलेले</label><button class="btn" id="qb">शोधा</button><button class="btn ghost" id="qp" title="SP साहेबांसमोर ठेवण्यासाठी">शेरा पत्रक छापा</button></div></div><div id="bulk"></div><div id="cl"></div>';
+      '<label class="muted"><input type="checkbox" id="qs"> फक्त शेरा असलेले</label><label class="muted"><input type="checkbox" id="qr"> फक्त बाकी</label><button class="btn" id="qb">शोधा</button><button class="btn ghost" id="qp" title="SP साहेबांसमोर ठेवण्यासाठी">शेरा पत्रक छापा</button></div></div><div id="bulk"></div><div id="cl"></div>';
     $('#qb').onclick = find; $('#qt').onkeydown = function (e) { if (e.key === 'Enter') find(); };
     $('#qd').onchange = find; $('#qh').onchange = find; $('#qs').onchange = find;
     $('#qp').onclick = printSheet;
+    $('#qr').onchange = function () { $('#cl').classList.toggle('left', this.checked); };
     find();
   }
   function find() {
@@ -1015,7 +1021,7 @@ var LETTER = (function () {
       '<div class="muted">' + (c.div ? esc(c.div) + ' विभाग • ' : '') + 'दाखल ' + dmy(c.regDate) + (c.label ? ' • ' + esc(c.label) : '') + (c.io ? ' • तपास: ' + esc(c.io.slice(0, 60)) : '') + '</div>' +
       '<div class="facts">' + esc(c.facts || ('फिर्यादी: ' + c.comp + ' • आरोपी: ' + c.acc)) + '</div>' +
       '<textarea placeholder="SP साहेबांचा शेरा येथे लिहा...">' + esc(c.shera) + '</textarea>' +
-      '<div class="sk"><div class="skh row"><b>पत्रातील सूचना</b> <span class="muted">(फक्त ✓ केलेल्या पत्रात जातील)</span> <span class="chip skn"></span><span class="grow"></span><span class="qk">' + quickChips(c.head) + '</span></div><div class="skl"></div>' +
+      '<div class="sk"><div class="skh row"><b>पत्रातील सूचना</b> <span class="muted">(फक्त ✓ केलेल्या पत्रात जातील)</span> <span class="chip skn"></span><span class="grow"></span><span class="sklast"></span><span class="qk">' + quickChips(c.head) + '</span></div><div class="skl"></div>' +
       '<details class="sko"><summary>इतर सूचना (जुन्या पत्रांतील सर्व)</summary><div class="skl2"></div></details></div>' +
       '<div class="row" style="margin-top:8px"><button class="btn sm" data-a="save">शेरा व सूचना जतन</button><button class="btn sm gold" data-a="letter">DCR चेक पत्र बनवा</button>' +
       '<span class="grow"></span><span class="muted">शीर्षक:</span>' + headSel(c.head, 'hs') + '</div></div>';
@@ -1023,17 +1029,21 @@ var LETTER = (function () {
   function bindCase(c) {
     var el = document.getElementById(c._id); if (!el) return;
     var ta = $('textarea', el);
-    function item(k, ks, H) {
+    function item(k, ks, H, n) {
       var p = LETTER.para(k, paras()); if (!p) return '';
       var on = ks.indexOf(k) >= 0;
-      return '<label class="pk' + (on ? ' on' : '') + '"><input type="checkbox" value="' + esc(k) + '"' + (on ? ' checked' : '') + '> <span>' + esc(p.t) +
+      return '<label class="pk' + (on ? ' on' : '') + '">' + (n ? '<kbd title="Alt + ' + n + '">' + n + '</kbd>' : '') + '<input type="checkbox" value="' + esc(k) + '"' + (on ? ' checked' : '') + '> <span>' + esc(p.t) +
         (/^u:/.test(k) ? '' : '') + (H.indexOf(k) >= 0 ? ' <span class="chip info">शेऱ्यानुसार सुचवलेले</span>' : '') + '</span></label>';
     }
     function skDraw() {
       var P = paras(), ks = caseKeys(c), H = LETTER.hints(ta.value, P), main = caseItems(c);
       H.concat(ks).forEach(function (k) { if (main.indexOf(k) < 0) main.push(k); });
       $('.skn', el).textContent = '✓ ' + ks.length;
-      $('.skl', el).innerHTML = main.map(function (k) { return item(k, ks, H); }).join('');
+      $('.skl', el).innerHTML = main.map(function (k, i) { return item(k, ks, H, i < 10 ? String((i + 1) % 10) : ''); }).join('');
+      var last = lastKeys(c.head);
+      $('.sklast', el).innerHTML = last.length && JSON.stringify(last) !== JSON.stringify(ks.filter(function (k) { return k !== 'shera'; })) ? '<span class="chip qadd" title="या प्रकारच्या मागील गुन्ह्याला दिलेल्या सूचना">↺ मागील "' + esc(DCR.HEAD_MR[c.head] || '') + '" प्रमाणे ✓ (' + last.length + ')</span>' : '';
+      var lb = $('.sklast .chip', el); if (lb) lb.onclick = function () { var k2 = last.slice(); if (ta.value.trim() && k2.indexOf('shera') < 0) k2.unshift('shera'); c.sKeys = JSON.stringify(k2); skDraw(); skSave(k2); };
+      el.classList.toggle('done', !!(c.sheraAt || ks.length));
       $('.skl2', el).innerHTML = P.filter(function (p) { return main.indexOf(p.k) < 0; }).map(function (p) { return item(p.k, ks, H); }).join('');
       el.querySelectorAll('.sk input').forEach(function (cb) {
         cb.onchange = function () {
@@ -1050,7 +1060,7 @@ var LETTER = (function () {
       if (ta.value.trim() && !c._shTouched && ks.indexOf('shera') < 0) { ks.unshift('shera'); c.sKeys = JSON.stringify(ks); skSave(ks); }
       skDraw();
     }
-    skDraw();
+    skDraw(); c._draw = skDraw;
     ta.addEventListener('input', function () { c.shera = ta.value.trim(); shTick(); });
     $('.facts', el).onclick = function () { this.classList.toggle('open'); };
     $('.pk1', el).onchange = function () { if (this.checked) S.picked[c.key] = c; else delete S.picked[c.key]; updateBulk(); };
@@ -1066,9 +1076,22 @@ var LETTER = (function () {
     bindQ();
     $('[data-a=save]', el).onclick = function () {
       var b = this; busy(b, true);
-      call('saveShera', c.key, ta.value.trim(), caseKeys(c)).then(function () { c.shera = ta.value.trim(); c.sheraAt = c.shera ? 'होय' : ''; el.classList.toggle('has', !!c.shera); updateBulk(); toast('शेरा व सूचना जतन झाल्या'); })
+      var ks = caseKeys(c); if (ks.length) setLast(c.head, ks.filter(function (k) { return k !== 'shera'; }));
+      call('saveShera', c.key, ta.value.trim(), ks).then(function () { c.shera = ta.value.trim(); c.sheraAt = c.shera ? 'होय' : ''; el.classList.toggle('has', !!c.shera); (S.cases || []).forEach(function (x) { if (x.head === c.head && x._draw) x._draw(); }); updateBulk(); toast('शेरा व सूचना जतन झाल्या'); })
         .catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };
+    /* कीबोर्ड: Ctrl+S / Ctrl+Enter = जतन करून पुढचा गुन्हा; Alt+1…9, 0 = यादीतील ती सूचना ✓ */
+    ta.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'Enter')) {
+        e.preventDefault(); $('[data-a=save]', el).click();
+        var nx = el.nextElementSibling; while (nx && (!nx.classList.contains('case') || nx.offsetParent === null)) nx = nx.nextElementSibling;
+        if (nx) { var t = $('textarea', nx); t.focus(); nx.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      } else if (e.altKey && /^Digit\d$/.test(e.code)) {
+        e.preventDefault();
+        var n = +e.code.slice(5), cb = el.querySelectorAll('.skl input')[n === 0 ? 9 : n - 1];
+        if (cb) { cb.checked = !cb.checked; cb.onchange(); }
+      }
+    });
     $('[data-a=letter]', el).onclick = function () { c.shera = ta.value.trim(); letterEditor(c, el); };
     $('.hs', el).onchange = function () {
       var v = this.value; call('setHead', c.key, v).then(function () { c.head = v; $('.qk', el).innerHTML = quickChips(v); bindQ(); skDraw(); toast('शीर्षक बदलले'); }).catch(function (e) { toast(e.message, 1); });
@@ -1144,12 +1167,17 @@ var LETTER = (function () {
   }
   function rules() { try { return JSON.parse(S.settings.rules || '[]') || []; } catch (e) { return []; } }
   /* निवडलेल्या गुन्ह्यांसाठी एकच शेरा व एकत्र सूचना; सर्व पत्रे एका Word फाईलमध्ये */
+  /* या प्रकारच्या मागील गुन्ह्याला दिलेल्या सूचना (या ब्राउझरमध्ये लक्षात) */
+  function lastKeys(head) { try { return JSON.parse(localStorage.getItem('dcrLast_' + head) || '[]') || []; } catch (e) { return []; } }
+  function setLast(head, ks) { try { localStorage.setItem('dcrLast_' + head, JSON.stringify(ks)); } catch (e) {} }
   /* शेरा / सूचना जतन केलेले गुन्हे (DCR क्रमाने) */
   function doneCases() { return (S.cases || []).filter(function (c) { return c.kind !== 'NC' && (c.sheraAt || caseKeys(c).length); }); }
   function updateBulk() {
     var n = Object.keys(S.picked).length, el = $('#bulk'), dn = doneCases();
     if (!el) return;
-    el.innerHTML = (dn.length ? '<div class="card row done"><b>' + dn.length + ' गुन्ह्यांचे शेरा / सूचना जतन</b><span class="muted">DCR च्या क्रमाने सर्वांची पत्रे एकाच Word फाईलमध्ये</span><span class="grow"></span><button class="btn gold" id="bdone">जतन केलेल्या सर्व गुन्ह्यांची पत्रे बनवा</button></div>' : '') +
+    var tot = (S.cases || []).filter(function (c) { return c.kind !== 'NC'; }).length, pc = tot ? Math.round(dn.length * 100 / tot) : 0;
+    el.innerHTML = (tot ? '<div class="prog"><div class="row"><b>' + tot + ' पैकी ' + dn.length + ' गुन्ह्यांचे शेरा / सूचना पूर्ण</b><span class="grow"></span><span class="muted">Ctrl+S: जतन करून पुढचा गुन्हा • Alt+1…9: सूचना ✓</span></div><div class="bar2"><i style="width:' + pc + '%"></i></div></div>' : '') +
+      (dn.length ? '<div class="card row done"><b>' + dn.length + ' गुन्ह्यांचे शेरा / सूचना जतन</b><span class="muted">DCR च्या क्रमाने सर्वांची पत्रे एकाच Word फाईलमध्ये</span><span class="grow"></span><button class="btn gold" id="bdone">जतन केलेल्या सर्व गुन्ह्यांची पत्रे बनवा</button></div>' : '') +
       (n ? '<div class="card row"><b>' + n + ' गुन्हे निवडले</b><span class="grow"></span><button class="btn gold sm" id="bgo">निवडलेल्यांची एकत्र पत्रे बनवा</button><button class="btn ghost sm" id="bcl">निवड रद्द</button></div>' : '');
     if (dn.length) $('#bdone').onclick = function () { bulkEditor(doneCases()); };
     if (!n) return;
