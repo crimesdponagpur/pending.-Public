@@ -66,7 +66,7 @@ details summary{cursor:pointer;color:var(--pri);font-weight:600;font-size:14px}
 .case .facts{font-size:14px;color:var(--ink2);margin:6px 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
 .case .facts.open{display:block}
 .case textarea{min-height:52px}
-.case .qk{display:none;margin-top:4px}.case.qo .qk{display:block}
+.case .qk .chip{margin:0}
 table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:14px}
 table.t th,table.t td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
 table.t th{background:#f7f9fc;font-weight:700;color:var(--ink2);font-size:13px;position:sticky;top:0;border-bottom-color:var(--line2)}
@@ -156,3 +156,6 @@ main{padding:14px 16px 90px}.card{padding:14px}
 .case .skl2{padding:6px 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 10px}
 .case .skl2 .pk{display:flex;gap:8px;align-items:center;margin:0;cursor:pointer;font-size:13.5px;padding:5px 10px}
 .case .seq{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;border-radius:6px;background:var(--pri-l);color:var(--pri);font-size:12px;font-weight:700;margin-right:8px;padding:0 6px}
+.case .sk{display:none}.case.qo .sk{display:block}
+.case .skh{gap:6px}
+.card.done{background:linear-gradient(90deg,#f1f6ff,#fff);border-color:#c9d8f5}

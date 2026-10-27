@@ -146,7 +146,9 @@
       S.cases = r.cases;
       if (!r.cases.length) { $('#cl').innerHTML = '<div class="card muted">काही सापडले नाही.</div>'; return; }
       var list = r.cases.slice();
-      if (q.date && !q.text) list.sort(function (a, b) { return (+a.dcrSeq && +b.dcrSeq) ? a.dcrSeq - b.dcrSeq : SEC_ORDER.indexOf(a.sec) - SEC_ORDER.indexOf(b.sec) || divs().indexOf(a.div) - divs().indexOf(b.div); });
+      /* DCR मधील क्रम: नवीन DCR आधी, त्यातील गुन्हे DCR च्या क्रमाने */
+      if (!q.text) list.sort(function (a, b) { return String(b.dcrDate).localeCompare(String(a.dcrDate)) || ((+a.dcrSeq && +b.dcrSeq) ? a.dcrSeq - b.dcrSeq : SEC_ORDER.indexOf(a.sec) - SEC_ORDER.indexOf(b.sec) || divs().indexOf(a.div) - divs().indexOf(b.div)); });
+      S.cases = list;
       $('#cl').innerHTML = '<p class="muted">' + r.total + ' गुन्हे' + (r.more ? ' (पहिले 400 दाखवले)' : '') + '</p>' + list.map(caseHtml).join('');
       list.forEach(bindCase); updateBulk();
     }).catch(function (e) { $('#cl').innerHTML = '<div class="card"><ul class="iss"><li class="bad">' + esc(e.message) + '</li></ul></div>'; });
@@ -163,7 +165,11 @@
   }
   function hsOf(head) { var o = hsAll()[head] || {}; return { p: o.p || [], q: o.q || [] }; }
   /* गुन्ह्याखालील यादी: शेरा + त्या शीर्षकाच्या सूचना (जुन्या पत्रांतील व स्वतःच्या) */
-  function caseItems(c) { var h = hsOf(c.head); return ['shera'].concat(h.p).concat(h.q.map(function (t) { return 'u:' + t; })); }
+  function caseItems(c) {
+    var h = hsOf(c.head), gen = String(S.settings.quick || '').split('\n').map(function (x) { return x.trim(); }).filter(String);
+    var a = ['shera'].concat(h.p).concat(h.q.concat(gen).map(function (t) { return 'u:' + t; }));
+    return a.filter(function (k, i) { return a.indexOf(k) === i; });
+  }
   /* फक्त ✓ केलेल्या सूचना पत्रात जातात (ॲप स्वतःहून काही टिकत नाही) */
   function caseKeys(c) {
     var s = String(c.sKeys || '');
@@ -172,8 +178,7 @@
     return s.split(',').filter(function (k) { return k && k !== '-'; });
   }
   function quickChips(head) {
-    return String(S.settings.quick || '').split('\n').map(function (x) { return x.trim(); }).filter(String).map(function (q) { return '<span class="chip q">' + esc(q) + '</span>'; }).join('') +
-      '<span class="chip qadd" title="लिहिलेला शेरा या शीर्षकाच्या सूचनांत कायमचा जोडा">+ हा शेरा "' + esc(DCR.HEAD_MR[head] || 'इतर') + '" च्या सूचनांत जोडा</span>';
+    return '<span class="chip qadd" title="लिहिलेला शेरा या शीर्षकाच्या सूचनांत कायमचा जोडा">+ हा शेरा "' + esc(DCR.HEAD_MR[head] || 'इतर') + '" च्या सूचनांत जोडा</span>';
   }
   function caseHtml(c) {
     var id = 'c' + btoa(unescape(encodeURIComponent(c.key))).replace(/[^a-z0-9]/gi, '');
@@ -182,10 +187,10 @@
       '<span class="chip">' + esc(DCR.HEAD_MR[c.head] || DCR.SEC_MR[c.sec] || '') + '</span>' + (+c.letters ? '<span class="chip ok">पत्र ' + c.letters + '</span>' : '') + '</div>' +
       '<div class="muted">' + (c.div ? esc(c.div) + ' विभाग • ' : '') + 'दाखल ' + dmy(c.regDate) + (c.label ? ' • ' + esc(c.label) : '') + (c.io ? ' • तपास: ' + esc(c.io.slice(0, 60)) : '') + '</div>' +
       '<div class="facts">' + esc(c.facts || ('फिर्यादी: ' + c.comp + ' • आरोपी: ' + c.acc)) + '</div>' +
-      '<textarea placeholder="SP साहेबांचा शेरा येथे लिहा...">' + esc(c.shera) + '</textarea><div class="qk">' + quickChips(c.head) + '</div>' +
-      '<div class="sk"><div class="skh"><b>पत्रातील सूचना</b> <span class="muted">(फक्त ✓ केलेल्या पत्रात जातील)</span> <span class="chip skn"></span></div><div class="skl"></div>' +
+      '<textarea placeholder="SP साहेबांचा शेरा येथे लिहा...">' + esc(c.shera) + '</textarea>' +
+      '<div class="sk"><div class="skh row"><b>पत्रातील सूचना</b> <span class="muted">(फक्त ✓ केलेल्या पत्रात जातील)</span> <span class="chip skn"></span><span class="grow"></span><span class="qk">' + quickChips(c.head) + '</span></div><div class="skl"></div>' +
       '<details class="sko"><summary>इतर सूचना (जुन्या पत्रांतील सर्व)</summary><div class="skl2"></div></details></div>' +
-      '<div class="row" style="margin-top:8px"><button class="btn sm ghost" data-a="save">शेरा जतन</button><button class="btn sm gold" data-a="letter">DCR चेक पत्र बनवा</button>' +
+      '<div class="row" style="margin-top:8px"><button class="btn sm" data-a="save">शेरा व सूचना जतन</button><button class="btn sm gold" data-a="letter">DCR चेक पत्र बनवा</button>' +
       '<span class="grow"></span><span class="muted">शीर्षक:</span>' + headSel(c.head, 'hs') + '</div></div>';
   }
   function bindCase(c) {
@@ -224,7 +229,6 @@
     $('.pk1', el).onchange = function () { if (this.checked) S.picked[c.key] = c; else delete S.picked[c.key]; updateBulk(); };
     ta.onfocus = function () { el.classList.add('qo'); };
     function bindQ() {
-      el.querySelectorAll('.chip.q').forEach(function (q) { q.onclick = function () { ta.value = (ta.value.trim() ? ta.value.trim().replace(/[.।]?$/, '. ') : '') + q.textContent; c.shera = ta.value.trim(); shTick(); }; });
       $('.chip.qadd', el).onclick = function () {
         var t = ta.value.trim().replace(/[.।]$/, ''); if (!t) return toast('आधी शेरा लिहा', 1);
         var o = hsAll(), h = o[c.head] = o[c.head] || { p: [], q: [] };
@@ -235,7 +239,7 @@
     bindQ();
     $('[data-a=save]', el).onclick = function () {
       var b = this; busy(b, true);
-      call('saveShera', c.key, ta.value.trim(), caseKeys(c)).then(function () { c.shera = ta.value.trim(); el.classList.toggle('has', !!c.shera); toast('शेरा व सूचना जतन झाल्या'); })
+      call('saveShera', c.key, ta.value.trim(), caseKeys(c)).then(function () { c.shera = ta.value.trim(); c.sheraAt = c.shera ? 'होय' : ''; el.classList.toggle('has', !!c.shera); updateBulk(); toast('शेरा व सूचना जतन झाल्या'); })
         .catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };
     $('[data-a=letter]', el).onclick = function () { c.shera = ta.value.trim(); letterEditor(c, el); };
@@ -313,10 +317,14 @@
   }
   function rules() { try { return JSON.parse(S.settings.rules || '[]') || []; } catch (e) { return []; } }
   /* निवडलेल्या गुन्ह्यांसाठी एकच शेरा व एकत्र सूचना; सर्व पत्रे एका Word फाईलमध्ये */
+  /* शेरा / सूचना जतन केलेले गुन्हे (DCR क्रमाने) */
+  function doneCases() { return (S.cases || []).filter(function (c) { return c.kind !== 'NC' && (c.sheraAt || caseKeys(c).length); }); }
   function updateBulk() {
-    var n = Object.keys(S.picked).length, el = $('#bulk');
+    var n = Object.keys(S.picked).length, el = $('#bulk'), dn = doneCases();
     if (!el) return;
-    el.innerHTML = n ? '<div class="card row"><b>' + n + ' गुन्हे निवडले</b><span class="grow"></span><button class="btn gold sm" id="bgo">एकत्र पत्रे बनवा</button><button class="btn ghost sm" id="bcl">निवड रद्द</button></div>' : '';
+    el.innerHTML = (dn.length ? '<div class="card row done"><b>' + dn.length + ' गुन्ह्यांचे शेरा / सूचना जतन</b><span class="muted">DCR च्या क्रमाने सर्वांची पत्रे एकाच Word फाईलमध्ये</span><span class="grow"></span><button class="btn gold" id="bdone">जतन केलेल्या सर्व गुन्ह्यांची पत्रे बनवा</button></div>' : '') +
+      (n ? '<div class="card row"><b>' + n + ' गुन्हे निवडले</b><span class="grow"></span><button class="btn gold sm" id="bgo">निवडलेल्यांची एकत्र पत्रे बनवा</button><button class="btn ghost sm" id="bcl">निवड रद्द</button></div>' : '');
+    if (dn.length) $('#bdone').onclick = function () { bulkEditor(doneCases()); };
     if (!n) return;
     $('#bgo').onclick = function () { bulkEditor(Object.keys(S.picked).map(function (k) { return S.picked[k]; })); };
     $('#bcl').onclick = function () { S.picked = {}; document.querySelectorAll('.pk1').forEach(function (x) { x.checked = false; }); updateBulk(); };
