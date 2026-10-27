@@ -146,76 +146,96 @@
       S.cases = r.cases;
       if (!r.cases.length) { $('#cl').innerHTML = '<div class="card muted">काही सापडले नाही.</div>'; return; }
       var list = r.cases.slice();
-      if (q.date && !q.text) list.sort(function (a, b) { return SEC_ORDER.indexOf(a.sec) - SEC_ORDER.indexOf(b.sec) || divs().indexOf(a.div) - divs().indexOf(b.div); });
+      if (q.date && !q.text) list.sort(function (a, b) { return (+a.dcrSeq && +b.dcrSeq) ? a.dcrSeq - b.dcrSeq : SEC_ORDER.indexOf(a.sec) - SEC_ORDER.indexOf(b.sec) || divs().indexOf(a.div) - divs().indexOf(b.div); });
       $('#cl').innerHTML = '<p class="muted">' + r.total + ' गुन्हे' + (r.more ? ' (पहिले 400 दाखवले)' : '') + '</p>' + list.map(caseHtml).join('');
       list.forEach(bindCase); updateBulk();
     }).catch(function (e) { $('#cl').innerHTML = '<div class="card"><ul class="iss"><li class="bad">' + esc(e.message) + '</li></ul></div>'; });
   }
-  function qHead() { try { return JSON.parse(S.settings.quickHead || '{}') || {}; } catch (e) { return {}; } }
-  /* शेऱ्याचे पर्याय: आधी गुन्ह्याच्या शीर्षकाचे (सेटिंग्जमधील), मग सर्वसाधारण */
-  function quickList(head) {
-    var a = String(qHead()[head] || '').split('\n').concat(String(S.settings.quick || '').split('\n')).map(function (x) { return x.trim(); }).filter(String);
-    return a.filter(function (x, i) { return a.indexOf(x) === i; });
+  /* शीर्षकनिहाय सूचना (सेटिंग्ज): { HEAD: { p: [जुन्या पत्रांतील वाक्ये], q: ['स्वतःची सूचना', ...] } }.
+     सेटिंग्जमध्ये जतन केले नसल्यास जुन्या DCR चेक पत्रांवरून (BY_HEAD) व आधीच्या शीर्षकनिहाय शेऱ्यांवरून भरलेले. */
+  function hsAll() {
+    var o = null; try { o = JSON.parse(S.settings.headSuchna || 'null'); } catch (e) {}
+    if (o) return o;
+    var qh = {}; try { qh = JSON.parse(S.settings.quickHead || '{}') || {}; } catch (e) {}
+    o = {};
+    DCR.HEADS.forEach(function (h) { o[h[0]] = { p: (LETTER.BY_HEAD[h[0]] || []).slice(), q: String(qh[h[0]] || '').split('\n').map(function (x) { return x.trim(); }).filter(String) }; });
+    return o;
+  }
+  function hsOf(head) { var o = hsAll()[head] || {}; return { p: o.p || [], q: o.q || [] }; }
+  /* गुन्ह्याखालील यादी: शेरा + त्या शीर्षकाच्या सूचना (जुन्या पत्रांतील व स्वतःच्या) */
+  function caseItems(c) { var h = hsOf(c.head); return ['shera'].concat(h.p).concat(h.q.map(function (t) { return 'u:' + t; })); }
+  /* फक्त ✓ केलेल्या सूचना पत्रात जातात (ॲप स्वतःहून काही टिकत नाही) */
+  function caseKeys(c) {
+    var s = String(c.sKeys || '');
+    if (!s) return [];
+    if (s.charAt(0) === '[') { try { return JSON.parse(s) || []; } catch (e) { return []; } }
+    return s.split(',').filter(function (k) { return k && k !== '-'; });
   }
   function quickChips(head) {
-    var own = String(qHead()[head] || '').split('\n').map(function (x) { return x.trim(); });
-    return quickList(head).map(function (q) { return '<span class="chip q' + (own.indexOf(q) >= 0 ? ' hq' : '') + '">' + esc(q) + '</span>'; }).join('') +
-      '<span class="chip qadd" title="लिहिलेला शेरा या शीर्षकाच्या पर्यायांत जोडा">+ हा शेरा "' + esc(DCR.HEAD_MR[head] || 'इतर') + '" साठी जतन</span>';
+    return String(S.settings.quick || '').split('\n').map(function (x) { return x.trim(); }).filter(String).map(function (q) { return '<span class="chip q">' + esc(q) + '</span>'; }).join('') +
+      '<span class="chip qadd" title="लिहिलेला शेरा या शीर्षकाच्या सूचनांत कायमचा जोडा">+ हा शेरा "' + esc(DCR.HEAD_MR[head] || 'इतर') + '" च्या सूचनांत जोडा</span>';
   }
   function caseHtml(c) {
     var id = 'c' + btoa(unescape(encodeURIComponent(c.key))).replace(/[^a-z0-9]/gi, '');
     c._id = id;
-    return '<div class="case' + (c.shera ? ' has' : '') + '" id="' + id + '"><div class="row"><label class="pickl" title="एकत्र पत्रांसाठी निवडा"><input type="checkbox" class="pk1"' + (S.picked[c.key] ? ' checked' : '') + '></label><span class="t grow">' + esc(c.ps) + ' ' + crTxt(c) + (c.kalam ? ' • ' + esc(c.kalam) : '') + '</span>' +
+    return '<div class="case' + (c.shera ? ' has' : '') + '" id="' + id + '"><div class="row"><label class="pickl" title="एकत्र पत्रांसाठी निवडा"><input type="checkbox" class="pk1"' + (S.picked[c.key] ? ' checked' : '') + '></label><span class="t grow">' + (c.dcrSeq ? '<span class="seq">' + c.dcrSeq + '</span>' : '') + esc(c.ps) + ' ' + crTxt(c) + (c.kalam ? ' • ' + esc(c.kalam) : '') + '</span>' +
       '<span class="chip">' + esc(DCR.HEAD_MR[c.head] || DCR.SEC_MR[c.sec] || '') + '</span>' + (+c.letters ? '<span class="chip ok">पत्र ' + c.letters + '</span>' : '') + '</div>' +
       '<div class="muted">' + (c.div ? esc(c.div) + ' विभाग • ' : '') + 'दाखल ' + dmy(c.regDate) + (c.label ? ' • ' + esc(c.label) : '') + (c.io ? ' • तपास: ' + esc(c.io.slice(0, 60)) : '') + '</div>' +
       '<div class="facts">' + esc(c.facts || ('फिर्यादी: ' + c.comp + ' • आरोपी: ' + c.acc)) + '</div>' +
       '<textarea placeholder="SP साहेबांचा शेरा येथे लिहा...">' + esc(c.shera) + '</textarea><div class="qk">' + quickChips(c.head) + '</div>' +
-      '<details class="sk"><summary>पत्रातील सूचना निवडा <span class="chip skn"></span></summary><div class="skl"></div></details>' +
-      '<div class="row" style="margin-top:6px"><button class="btn sm ghost" data-a="save">शेरा जतन</button><button class="btn sm gold" data-a="letter">DCR चेक पत्र बनवा</button>' +
+      '<div class="sk"><div class="skh"><b>पत्रातील सूचना</b> <span class="muted">(फक्त ✓ केलेल्या पत्रात जातील)</span> <span class="chip skn"></span></div><div class="skl"></div>' +
+      '<details class="sko"><summary>इतर सूचना (जुन्या पत्रांतील सर्व)</summary><div class="skl2"></div></details></div>' +
+      '<div class="row" style="margin-top:8px"><button class="btn sm ghost" data-a="save">शेरा जतन</button><button class="btn sm gold" data-a="letter">DCR चेक पत्र बनवा</button>' +
       '<span class="grow"></span><span class="muted">शीर्षक:</span>' + headSel(c.head, 'hs') + '</div></div>';
-  }
-  /* या गुन्ह्याच्या पत्रात जाणाऱ्या सूचना: स्वतः निवडलेल्या (sKeys) नाहीतर शेरा/शीर्षकानुसार सुचवलेल्या */
-  function caseKeys(c, shera) {
-    if (c.sKeys) return String(c.sKeys).split(',').filter(function (k) { return k && k !== '-'; });
-    return LETTER.suggest(c, shera == null ? c.shera : shera, paras());
   }
   function bindCase(c) {
     var el = document.getElementById(c._id); if (!el) return;
     var ta = $('textarea', el);
+    function item(k, ks, H) {
+      var p = LETTER.para(k, paras()); if (!p) return '';
+      var on = ks.indexOf(k) >= 0;
+      return '<label class="pk' + (on ? ' on' : '') + '"><input type="checkbox" value="' + esc(k) + '"' + (on ? ' checked' : '') + '> <span>' + esc(p.t) +
+        (/^u:/.test(k) ? '' : '') + (H.indexOf(k) >= 0 ? ' <span class="chip info">शेऱ्यानुसार सुचवलेले</span>' : '') + '</span></label>';
+    }
     function skDraw() {
-      var P = paras(), ks = caseKeys(c, ta.value), H = LETTER.hints(ta.value, P);
-      $('.skn', el).textContent = '✓ ' + ks.length + (c.sKeys ? ' • स्वतः निवडलेल्या' : ' • आपोआप');
-      $('.skl', el).innerHTML = P.map(function (p) {
-        var on = ks.indexOf(p.k) >= 0;
-        return '<label class="pk' + (on ? ' on' : '') + '"><input type="checkbox" value="' + p.k + '"' + (on ? ' checked' : '') + '> ' + esc(p.t) + (H.indexOf(p.k) >= 0 && !on ? ' <span class="chip info">शेऱ्यानुसार सुचवलेले</span>' : '') + '</label>';
-      }).join('') + (c.sKeys ? '<button class="btn sm ghost" data-a="skr">आपोआप निवडीवर परत</button>' : '');
-      $('.skl', el).querySelectorAll('input').forEach(function (cb) {
+      var P = paras(), ks = caseKeys(c), H = LETTER.hints(ta.value, P), main = caseItems(c);
+      H.concat(ks).forEach(function (k) { if (main.indexOf(k) < 0) main.push(k); });
+      $('.skn', el).textContent = '✓ ' + ks.length;
+      $('.skl', el).innerHTML = main.map(function (k) { return item(k, ks, H); }).join('');
+      $('.skl2', el).innerHTML = P.filter(function (p) { return main.indexOf(p.k) < 0; }).map(function (p) { return item(p.k, ks, H); }).join('');
+      el.querySelectorAll('.sk input').forEach(function (cb) {
         cb.onchange = function () {
-          var sel = []; $('.skl', el).querySelectorAll('input:checked').forEach(function (x) { sel.push(x.value); });
-          c.sKeys = sel.join(',') || '-'; skDraw(); skSave(sel.length ? sel : ['-']);
+          var sel = []; el.querySelectorAll('.sk input:checked').forEach(function (x) { if (sel.indexOf(x.value) < 0) sel.push(x.value); });
+          if (cb.value === 'shera') c._shTouched = true;
+          c.sKeys = JSON.stringify(sel); skDraw(); skSave(sel);
         };
       });
-      var r = $('[data-a=skr]', el); if (r) r.onclick = function () { c.sKeys = ''; skDraw(); skSave([]); };
     }
     function skSave(sel) { call('saveShera', c.key, null, sel).catch(function (e) { toast(e.message, 1); }); }
+    /* शेरा लिहिला की "SP शेरा" ✓ होतो (तुम्ही लिहिलेलाच मजकूर; नको असल्यास ✓ काढा) */
+    function shTick() {
+      var ks = caseKeys(c);
+      if (ta.value.trim() && !c._shTouched && ks.indexOf('shera') < 0) { ks.unshift('shera'); c.sKeys = JSON.stringify(ks); skSave(ks); }
+      skDraw();
+    }
     skDraw();
-    ta.addEventListener('input', function () { c.shera = ta.value.trim(); if (!c.sKeys) skDraw(); });
+    ta.addEventListener('input', function () { c.shera = ta.value.trim(); shTick(); });
     $('.facts', el).onclick = function () { this.classList.toggle('open'); };
     $('.pk1', el).onchange = function () { if (this.checked) S.picked[c.key] = c; else delete S.picked[c.key]; updateBulk(); };
-    ta.onfocus = function () { el.classList.add('qo'); $('.sk', el).open = true; };
+    ta.onfocus = function () { el.classList.add('qo'); };
     function bindQ() {
-      el.querySelectorAll('.chip.q').forEach(function (q) { q.onclick = function () { ta.value = (ta.value.trim() ? ta.value.trim().replace(/[.।]?$/, '. ') : '') + q.textContent; c.shera = ta.value.trim(); if (!c.sKeys) skDraw(); }; });
+      el.querySelectorAll('.chip.q').forEach(function (q) { q.onclick = function () { ta.value = (ta.value.trim() ? ta.value.trim().replace(/[.।]?$/, '. ') : '') + q.textContent; c.shera = ta.value.trim(); shTick(); }; });
       $('.chip.qadd', el).onclick = function () {
         var t = ta.value.trim().replace(/[.।]$/, ''); if (!t) return toast('आधी शेरा लिहा', 1);
-        var o = qHead(), l = String(o[c.head] || '').split('\n').filter(String);
-        if (l.indexOf(t) < 0) l.push(t); o[c.head] = l.join('\n');
-        call('saveSettings', { quickHead: JSON.stringify(o) }).then(function (d) { S.settings = d; $('.qk', el).innerHTML = quickChips(c.head); bindQ(); toast('या शीर्षकाच्या पर्यायांत जोडला'); }).catch(function (e) { toast(e.message, 1); });
+        var o = hsAll(), h = o[c.head] = o[c.head] || { p: [], q: [] };
+        h.q = h.q || []; if (h.q.indexOf(t) < 0) h.q.push(t);
+        call('saveSettings', { headSuchna: JSON.stringify(o) }).then(function (d) { S.settings = d; skDraw(); toast('"' + (DCR.HEAD_MR[c.head] || '') + '" च्या सूचनांत जोडला. पुढे अशा सर्व गुन्ह्यांखाली दिसेल.'); }).catch(function (e) { toast(e.message, 1); });
       };
     }
     bindQ();
     $('[data-a=save]', el).onclick = function () {
       var b = this; busy(b, true);
-      call('saveShera', c.key, ta.value.trim(), c.sKeys ? c.sKeys.split(',') : null).then(function () { c.shera = ta.value.trim(); el.classList.toggle('has', !!c.shera); toast('शेरा जतन झाला'); })
+      call('saveShera', c.key, ta.value.trim(), caseKeys(c)).then(function () { c.shera = ta.value.trim(); el.classList.toggle('has', !!c.shera); toast('शेरा व सूचना जतन झाल्या'); })
         .catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };
     $('[data-a=letter]', el).onclick = function () { c.shera = ta.value.trim(); letterEditor(c, el); };
@@ -235,7 +255,8 @@
   /* ---------- पत्र संपादक ---------- */
   function letterEditor(c, el) {
     var P = paras(), opt = { shera: c.shera, paras: P, settings: { days: S.settings.days }, relation: RELS[0], place: 'गावात', refDate: c.dcrIssue || '', rules: rules() };
-    if (c.sKeys) opt.keys = caseKeys(c);
+    opt.keys = caseKeys(c);
+    caseItems(c).concat(opt.keys).forEach(function (k) { if (/^u:/.test(k) && !P.some(function (p) { return p.k === k; })) P.push(LETTER.para(k)); });
     var D = LETTER.draft(c, opt), on = {};
     delete opt.keys;
     D.keys.forEach(function (k) { on[k] = 1; });
@@ -301,20 +322,19 @@
     $('#bcl').onclick = function () { S.picked = {}; document.querySelectorAll('.pk1').forEach(function (x) { x.checked = false; }); updateBulk(); };
   }
   function bulkEditor(list) {
+    list = list.slice().sort(function (a, b) { return String(a.dcrDate).localeCompare(String(b.dcrDate)) || (+a.dcrSeq || 0) - (+b.dcrSeq || 0); }); // DCR मधील क्रमानेच पत्रे
     var P = paras(), shera = '', rel = RELS[0], place = 'गावात';
     var on = {}, sugg = {};
-    list.forEach(function (c) { if (!c.sKeys) LETTER.suggest(c, '', P).forEach(function (k) { sugg[k] = 1; }); });
-    var own = list.filter(function (c) { return c.sKeys; }).length;
-    Object.keys(sugg).forEach(function (k) { on[k] = 1; });
+    var own = list.filter(function (c) { return caseKeys(c).length; }).length;
     var m = document.createElement('div'); m.className = 'modal';
     m.innerHTML = '<div class="sheet"><div class="row"><h2 class="grow" style="margin:0">एकत्र पत्रे: ' + list.length + ' गुन्हे</h2><button class="btn ghost sm" data-x>बंद</button></div>' +
       '<div class="scroll" style="margin:8px 0"><table class="t"><tr><th>गुन्हा</th><th>शेरा</th><th>सूचना</th></tr>' + list.map(function (c) {
         return '<tr><td><b>' + esc(c.ps) + ' ' + crTxt(c) + '</b></td><td>' + (c.shera ? esc(c.shera.slice(0, 90)) : '<span class="muted">खालील सामायिक शेरा</span>') + '</td><td>' +
-          (c.sKeys ? '<span class="chip ok">स्वतःच्या ✓ ' + caseKeys(c).length + '</span>' : '<span class="chip">सामायिक</span>') + '</td></tr>';
+          (caseKeys(c).length ? '<span class="chip ok">✓ ' + caseKeys(c).length + '</span> ' + esc(caseKeys(c).map(function (k) { var p = LETTER.para(k, P); return p ? p.t : ''; }).join(', ').slice(0, 120)) : '<span class="chip warn">एकही ✓ नाही</span>') + '</td></tr>';
       }).join('') + '</table></div>' +
       '<label>सामायिक SP शेरा (रिकामा ठेवल्यास प्रत्येक गुन्ह्याचा स्वतःचा शेरा वापरला जातो)</label><textarea id="bsh" style="min-height:60px"></textarea>' +
       '<div class="row"><span class="muted">नाते:</span><select id="brel">' + RELS.map(function (r) { return '<option>' + r + '</option>'; }).join('') + '</select><select id="bpl"><option>गावात</option><option>घरात</option><option>परिसरात</option></select></div>' +
-      '<label>सामायिक सूचना (' + (own ? 'ज्या ' + (list.length - own) + ' गुन्ह्यांना स्वतःचे ✓ नाहीत त्यांनाच; बाकी ' + own + ' गुन्ह्यांना त्यांच्या खाली निवडलेल्या सूचना' : 'सर्व पत्रांत जातील; प्रत्येक गुन्ह्यासाठी वेगळ्या हव्या असल्यास गुन्ह्याखालील "पत्रातील सूचना निवडा" वापरा') + ')</label><div id="bp">' + P.map(function (p) {
+      '<label>सर्व पत्रांत जोडायच्या सामायिक सूचना (ऐच्छिक; प्रत्येक गुन्ह्याखाली ✓ केलेल्या सूचना त्या त्या पत्रात आधीच जातात)</label><div id="bp">' + P.map(function (p) {
         return '<div class="pk' + (on[p.k] ? ' on' : '') + '" data-k="' + p.k + '"><label><input type="checkbox"' + (on[p.k] ? ' checked' : '') + '> ' + esc(p.t) + '</label></div>';
       }).join('') + '</div>' +
       '<div class="row" style="margin-top:12px"><button class="btn gold" id="bmk">सर्व पत्रे बनवा (एका Word फाईलमध्ये)</button><span id="bout" class="links"></span></div></div>';
@@ -328,7 +348,9 @@
       m.querySelectorAll('.pk.on').forEach(function (x) { keys.push(x.dataset.k); });
       shera = $('#bsh', m).value.trim();
       var items = list.map(function (c) {
-        var sh = shera || c.shera || '', ks = c.sKeys ? caseKeys(c) : (sh && keys.indexOf('shera') < 0 ? ['shera'].concat(keys) : keys);
+        var sh = shera || c.shera || '', ks = caseKeys(c).slice();
+        if (shera && ks.indexOf('shera') < 0) ks.unshift('shera');
+        keys.forEach(function (k) { if (ks.indexOf(k) < 0) ks.push(k); });
         var o = { shera: sh, paras: P, settings: { days: S.settings.days }, relation: rel, place: place, refDate: c.dcrIssue || '', keys: ks, rules: rules() };
         var D = LETTER.draft(c, o);
         return { key: c.key, orig: D, L: { jaKr: '', date: S.today, dateText: dmy(S.today), ref: D.ref, subject: D.subject, intro: D.intro, body: D.body, close: D.close,
@@ -535,13 +557,23 @@
       busy(b, true); call('saveSettings', o).then(function (d) { S.settings = d; toast('सेटिंग्ज जतन'); }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };
     $('#main').insertAdjacentHTML('beforeend', quickCard() + logoCard() + rulesCard());
-    var qh = qHead(), qs = $('#qhs'), qt = $('#qht');
-    function qShow() { qt.value = qh[qs.value] || ''; }
+    var hs = hsAll(), qs = $('#qhs'), qt = $('#qht');
+    function qShow() {
+      var h = hs[qs.value] = hs[qs.value] || { p: [], q: [] };
+      $('#qhp').innerHTML = paras().filter(function (p) { return p.k !== 'shera'; }).map(function (p) {
+        var on = (h.p || []).indexOf(p.k) >= 0;
+        return '<label class="pk' + (on ? ' on' : '') + '"><input type="checkbox" value="' + p.k + '"' + (on ? ' checked' : '') + '> ' + esc(p.t) + '</label>';
+      }).join('');
+      $('#qhp').querySelectorAll('input').forEach(function (cb) {
+        cb.onchange = function () { h.p = []; $('#qhp').querySelectorAll('input:checked').forEach(function (x) { h.p.push(x.value); }); cb.parentNode.classList.toggle('on', cb.checked); };
+      });
+      qt.value = (h.q || []).join('\n');
+    }
     qs.onchange = qShow; qShow();
-    qt.oninput = function () { qh[qs.value] = qt.value; };
+    qt.oninput = function () { hs[qs.value].q = qt.value.split('\n').map(function (x) { return x.trim(); }).filter(String); };
     $('#qhv').onclick = function () {
-      var b = this, o = {}; Object.keys(qh).forEach(function (k) { var v = String(qh[k] || '').trim(); if (v) o[k] = v; });
-      busy(b, true); call('saveSettings', { quickHead: JSON.stringify(o) }).then(function (d) { S.settings = d; toast('शीर्षकनिहाय शेरे जतन'); }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
+      var b = this; busy(b, true);
+      call('saveSettings', { headSuchna: JSON.stringify(hs) }).then(function (d) { S.settings = d; toast('शीर्षकनिहाय सूचना जतन. आता त्या प्रकारच्या प्रत्येक गुन्ह्याखाली याच सूचना दिसतील.'); }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
     };
     $('#main').querySelectorAll('[data-lsave]').forEach(function (bt) {
       bt.onclick = function () {
@@ -589,10 +621,10 @@
   }
 
   function quickCard() {
-    var qh = qHead();
-    return '<div class="card"><h2>शीर्षकनिहाय शेरे</h2><p class="muted">गुन्ह्याच्या शीर्षकानुसार (खुन, चोरी, अपघात इ.) शेरा लिहिताना हे पर्याय आधी दिसतात, त्यानंतर सर्वसाधारण शेरे. शीर्षक निवडा, एका ओळीत एक शेरा लिहा, "जतन" दाबा.</p>' +
-      '<div class="row"><select id="qhs">' + DCR.HEADS.map(function (h) { return '<option value="' + h[0] + '">' + esc(h[1]) + (qh[h[0]] ? ' ✓' : '') + '</option>'; }).join('') + '</select><button class="btn ghost" id="qhv">शीर्षकनिहाय शेरे जतन</button></div>' +
-      '<textarea id="qht" style="min-height:130px;margin-top:8px"></textarea></div>';
+    return '<div class="card"><h2>शीर्षकनिहाय सूचना</h2><p class="muted">गुन्ह्याच्या प्रकारानुसार (खुन, चोरी, अपघात, मर्ग इ.) त्या गुन्ह्याखाली कोणत्या सूचना ✓ करण्यासाठी दिसाव्यात ते इथे ठरवा. सुरुवातीला जुन्या DCR चेक पत्रांवरून भरलेले आहे. पत्रात फक्त गुन्ह्याखाली ✓ केलेल्याच सूचना जातात.</p>' +
+      '<div class="row"><label style="margin:0">गुन्ह्याचा प्रकार</label><select id="qhs">' + DCR.HEADS.map(function (h) { return '<option value="' + h[0] + '">' + esc(h[1]) + '</option>'; }).join('') + '</select><span class="grow"></span><button class="btn" id="qhv">शीर्षकनिहाय सूचना जतन</button></div>' +
+      '<h3>जुन्या पत्रांतील सूचना (✓ केलेल्या या प्रकारच्या गुन्ह्याखाली दिसतील)</h3><div id="qhp" class="qgrid"></div>' +
+      '<h3>तुमच्या स्वतःच्या सूचना (एका ओळीत एक; पत्रात याच शब्दांत जातील)</h3><textarea id="qht" style="min-height:130px"></textarea></div>';
   }
   function logoCard() {
     var s = S.settings, nm = { L: 'डावा (पोलीस लोगो)', C: 'मध्य (राजमुद्रा)', R: 'उजवा' };

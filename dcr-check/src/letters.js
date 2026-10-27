@@ -36,7 +36,10 @@ var LETTER = (function () {
     [/वाहतूक|ट्राफिक|traffic/i, 'traffic'], [/पथक|टीम|team/i, 'team'], [/वर्ग|transfer/i, 'transfer'], [/बक्षीस|reward/i, 'reward'],
     [/जामीन|bail/i, 'bail'], [/सीसीटीव्ही|CCTV|तांत्रिक|CDR/i, 'cctv'], [/मुद्देमाल|माल\s*हस्त/, 'property'], [/शोध/, 'unknown'], [/मर्ग|घातपात/, 'ad']
   ];
-  function para(k, list) { list = list || PARAS; for (var i = 0; i < list.length; i++) if (list[i].k === k) return list[i]; return null; }
+  /* 'u:मजकूर' = सेटिंग्जमधील शीर्षकनिहाय स्वतःची सूचना (त्याच शब्दांत पत्रात जाते) */
+  function para(k, list) {
+    if (/^u:/.test(k)) { var t = k.slice(2).trim(); return { k: k, t: t, x: t.replace(/[.।\s]+$/, '') + '.' }; }
+    list = list || PARAS; for (var i = 0; i < list.length; i++) if (list[i].k === k) return list[i]; return null; }
   /* शीर्षक व DCR मधील माहितीवरून आपोआप निवडलेली वाक्ये (शेरा असल्यास तो सर्वात आधी) */
   function suggest(c, shera, list) {
     var ks = (BY_HEAD[c.head] || []).slice();

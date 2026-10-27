@@ -148,3 +148,11 @@ main{padding:14px 16px 90px}.card{padding:14px}
 .case .skl .pk{display:flex;gap:8px;align-items:center;margin:0;cursor:pointer;font-size:13.5px;padding:5px 10px}
 .case .skl .btn{justify-self:start}
 #bp{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 10px}#bp .pk{margin:0}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 10px}.qgrid .pk{margin:0;display:flex;gap:8px;align-items:center;cursor:pointer;font-size:13.5px}
+.case .sk{padding:0;background:#fbfcff}
+.case .skh{padding:8px 12px;border-bottom:1px solid var(--line);font-size:13.5px}
+.case .sko summary{padding:7px 12px;font-size:13px;color:var(--muted)}
+.case .sko[open] summary{border-bottom:1px solid var(--line)}
+.case .skl2{padding:6px 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 10px}
+.case .skl2 .pk{display:flex;gap:8px;align-items:center;margin:0;cursor:pointer;font-size:13.5px;padding:5px 10px}
+.case .seq{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;border-radius:6px;background:var(--pri-l);color:var(--pri);font-size:12px;font-weight:700;margin-right:8px;padding:0 6px}

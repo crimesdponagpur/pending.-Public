@@ -9,7 +9,7 @@ var ROOT_NAME = 'DCR_चेक_ॲप';
 var SS_NAME = 'DCR_नोंदवही';
 var CASE_COLS = ['key', 'kind', 'sec', 'ps', 'div', 'no', 'yr', 'kalam', 'label', 'sid', 'head', 'headSet', 'comp', 'acc', 'victim', 'deceased', 'place',
   'occ', 'reg', 'regDate', 'occDate', 'prop', 'io', 'incharge', 'regOff', 'visit', 'facts', 'prior', 'priorAction', 'arrest', 'arrestReason', 'cause',
-  'nCases', 'nAcc', 'psCr', 'dcrDate', 'dcrIssue', 'dcrList', 'shera', 'sheraAt', 'letters', 'updated', 'bRow', 'sKeys'];
+  'nCases', 'nAcc', 'psCr', 'dcrDate', 'dcrIssue', 'dcrList', 'shera', 'sheraAt', 'letters', 'updated', 'bRow', 'sKeys', 'dcrSeq'];
 var SHEETS = {
   CASES: CASE_COLS,
   DCRS: ['reportDate', 'issueDate', 'jaKr', 'fileName', 'fileUrl', 'pdfUrl', 'cases', 'bad', 'warn', 'info', 'uploaded', 'bAdded'],
@@ -25,7 +25,7 @@ var DEF = {
   jaKrPrefix: 'नाजिग्रा/डी-32/वाशा/दैगुअ तपास सूचना', jaKrFile: '26-1962', autoNo: 'होय', letterSeq: '0', rules: '[]', logoL: '', logoC: '', logoR: '', days: '3', font: 'Mukta',
   divOrder: 'काटोल,सावनेर,नागपूर,उमरेड,रामटेक,कन्हान', distName: 'नागपूर ग्रामीण जिल्हा',
   quick: 'आरोपीस तात्काळ अटक करावी\nउपविभागीय पोलीस अधिकारी यांनी घटनास्थळी भेट द्यावी\nआरोपीविरुद्ध प्रतिबंधक कार्यवाही करावी\nसीसीटीव्ही फुटेज तपासावे\nमुद्देमाल हस्तगत करावा\nगुन्हा लवकर उघडकीस आणावा\nपीडितेचा तात्काळ शोध घ्यावा\nतपास दुसऱ्या अधिकाऱ्याकडे वर्ग करावा',
-  paras: '', quickHead: ''
+  paras: '', quickHead: '', headSuchna: ''
 };
 /* शीर्षकनिहाय नेहमीचे शेरे (सेटिंग्जमध्ये बदलता येतात) */
 DEF.quickHead = (function () {
@@ -159,14 +159,15 @@ function saveDcr_(p) {
     }
     var sh = sh_('CASES'), all = rows_('CASES'), idx = {}, add = [], upd = 0, ts = now_();
     all.forEach(function (r) { idx[r.key] = r; });
-    (p.cases || []).forEach(function (c) {
-      c.dcrDate = p.reportDate; c.dcrIssue = p.issueDate || ''; c.updated = ts;
+    (p.cases || []).forEach(function (c, i) {
+      c.dcrDate = p.reportDate; c.dcrIssue = p.issueDate || ''; c.updated = ts; c.dcrSeq = i + 1; // DCR मधील क्रम
       var old = idx[c.key];
       if (old) {
         var list = (old.dcrList || '').split(',').filter(String);
         if (list.indexOf(p.reportDate) < 0) list.push(p.reportDate);
         c.dcrList = list.sort().join(',');
         c.dcrDate = list[0]; c.dcrIssue = old.dcrDate && old.dcrDate < p.reportDate ? old.dcrIssue : c.dcrIssue;
+        if (c.dcrDate !== p.reportDate && old.dcrSeq) c.dcrSeq = old.dcrSeq;
         ['shera', 'sheraAt', 'letters', 'bRow', 'sKeys'].forEach(function (k) { c[k] = old[k]; });
         if (old.headSet) { c.head = old.head; c.headSet = old.headSet; }
         sh.getRange(old._row, 1, 1, CASE_COLS.length).setValues([toRow_('CASES', c)]);
@@ -233,7 +234,7 @@ function findCase_(key) {
 function saveShera_(key, shera, keys) {
   var r = findCase_(key), s = sh_('CASES');
   if (shera !== null && shera !== undefined) s.getRange(r._row, CASE_COLS.indexOf('shera') + 1, 1, 2).setValues([[shera || '', shera ? now_() : '']]);
-  if (keys) s.getRange(r._row, CASE_COLS.indexOf('sKeys') + 1).setValue(keys.join(','));
+  if (keys) s.getRange(r._row, CASE_COLS.indexOf('sKeys') + 1).setValue(JSON.stringify(keys));
   return { ok: 1 };
 }
 function setHead_(key, head) {
@@ -1225,7 +1226,10 @@ var LETTER = (function () {
     [/वाहतूक|ट्राफिक|traffic/i, 'traffic'], [/पथक|टीम|team/i, 'team'], [/वर्ग|transfer/i, 'transfer'], [/बक्षीस|reward/i, 'reward'],
     [/जामीन|bail/i, 'bail'], [/सीसीटीव्ही|CCTV|तांत्रिक|CDR/i, 'cctv'], [/मुद्देमाल|माल\s*हस्त/, 'property'], [/शोध/, 'unknown'], [/मर्ग|घातपात/, 'ad']
   ];
-  function para(k, list) { list = list || PARAS; for (var i = 0; i < list.length; i++) if (list[i].k === k) return list[i]; return null; }
+  /* 'u:मजकूर' = सेटिंग्जमधील शीर्षकनिहाय स्वतःची सूचना (त्याच शब्दांत पत्रात जाते) */
+  function para(k, list) {
+    if (/^u:/.test(k)) { var t = k.slice(2).trim(); return { k: k, t: t, x: t.replace(/[.।\s]+$/, '') + '.' }; }
+    list = list || PARAS; for (var i = 0; i < list.length; i++) if (list[i].k === k) return list[i]; return null; }
   /* शीर्षक व DCR मधील माहितीवरून आपोआप निवडलेली वाक्ये (शेरा असल्यास तो सर्वात आधी) */
   function suggest(c, shera, list) {
     var ks = (BY_HEAD[c.head] || []).slice();
