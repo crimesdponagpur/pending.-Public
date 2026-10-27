@@ -368,7 +368,7 @@
       '<label>सर्व पत्रांत जोडायच्या सामायिक सूचना (ऐच्छिक; प्रत्येक गुन्ह्याखाली ✓ केलेल्या सूचना त्या त्या पत्रात आधीच जातात)</label><div id="bp">' + P.map(function (p) {
         return '<div class="pk' + (on[p.k] ? ' on' : '') + '" data-k="' + p.k + '"><label><input type="checkbox"' + (on[p.k] ? ' checked' : '') + '> ' + esc(p.t) + '</label></div>';
       }).join('') + '</div>' +
-      '<div class="row" style="margin-top:12px"><button class="btn gold" id="bmk">सर्व पत्रे बनवा (एका Word फाईलमध्ये)</button><span id="bout" class="links"></span></div></div>';
+      '<div class="row" style="margin-top:12px"><button class="btn gold" id="bmk">पत्रांची झलक पाहा व बदला →</button><span id="bout" class="links"></span></div></div>';
     document.body.appendChild(m);
     $('[data-x]', m).onclick = function () { m.remove(); };
     $('#brel', m).onchange = function () { rel = this.value; };
@@ -387,12 +387,43 @@
         return { key: c.key, orig: D, L: { jaKr: '', date: S.today, dateText: dmy(S.today), ref: D.ref, subject: D.subject, intro: D.intro, body: D.body, close: D.close,
           prati: D.prati, prat: D.prat, keys: ks, shera: sh } };
       });
+      preview(m, items, list, function () { list.forEach(function (c) { if (shera) c.shera = shera; c.letters = (+c.letters || 0) + 1; }); });
+    };
+  }
+  /* Word बनवण्यापूर्वी सर्व पत्रांची झलक (DCR क्रमाने); प्रत्येक भाग इथेच बदलता येतो. बदल नियम म्हणून शिकले जातात. */
+  function preview(m, items, list, done) {
+    var sh = $('.sheet', m), back = sh.innerHTML, st = S.settings;
+    var ta = function (f, v, cls) { return '<textarea class="lpf ' + (cls || '') + '" data-f="' + f + '" rows="1">' + esc(v) + '</textarea>'; };
+    sh.classList.add('wide');
+    sh.innerHTML = '<div class="row lphead"><h2 class="grow" style="margin:0">पत्रांची झलक: ' + items.length + ' पत्रे (DCR क्रमाने)</h2><button class="btn ghost sm" id="lpb">← मागे</button><button class="btn gold" id="lpgo">सर्व पत्रे बनवा (Word + PDF)</button></div>' +
+      '<p class="muted">कोणत्याही ओळीवर क्लिक करून मजकूर बदला. जा.क्र. Word बनवताना आपोआप लागेल. केलेले बदल पुढील पत्रांसाठी नियम म्हणून शिकले जातील.</p><div id="lpout" class="links"></div>' +
+      items.map(function (it, i) {
+        var L = it.L, c = list[i];
+        return '<div class="lpage" data-i="' + i + '"><div class="lpno">' + (i + 1) + ' / ' + items.length + ' • ' + esc(c.ps) + ' ' + crTxt(c) + (c.dcrSeq ? ' • DCR क्र. ' + c.dcrSeq : '') + '</div>' +
+          '<div class="lpoff">' + esc(String(st.office || '').split('\n')[0]) + '</div>' +
+          '<div class="lprow"><span>जा.क्र. ' + esc(st.jaKrPrefix || '') + '/ … (आपोआप)</span><span>दिनांक ' + esc(L.dateText) + '</span></div>' +
+          '<div class="lpl"><b>संदर्भ:</b> ' + ta('ref', L.ref) + '</div><div class="lpl"><b>विषय:</b> ' + ta('subject', L.subject, 'b') + '</div>' +
+          ta('intro', L.intro, 'p') + L.body.map(function (x, j) { return ta('body' + j, x, 'p'); }).join('') + ta('close', L.close, 'p b') +
+          '<div class="lpsig">' + esc(st.spName || '(पोलीस अधीक्षक)') + '<br><small>' + esc(String(st.spDesig || '').replace(/\n/g, ' ')) + '</small></div>' +
+          '<div class="lpl"><b>प्रति:</b> ' + ta('prati', L.prati.join('\n')) + '</div>' + (L.prat.length ? '<div class="lpl"><b>प्रत:</b> ' + ta('prat', L.prat.join('\n')) + '</div>' : '') + '</div>';
+      }).join('');
+    function grow(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 2 + 'px'; }
+    sh.querySelectorAll('.lpf').forEach(function (t) { grow(t); t.addEventListener('input', function () { grow(t); t.closest('.lpage').classList.add('ed'); }); });
+    $('#lpb', sh).onclick = function () { sh.classList.remove('wide'); sh.innerHTML = back; m.remove(); bulkEditor(list); };
+    $('#lpgo', sh).onclick = function () {
+      var b = this;
+      sh.querySelectorAll('.lpage').forEach(function (pg) {
+        var L = items[+pg.dataset.i].L, v = function (f) { var t = $('[data-f="' + f + '"]', pg); return t ? t.value.trim() : ''; };
+        L.ref = v('ref'); L.subject = v('subject'); L.intro = v('intro'); L.close = v('close');
+        L.body = L.body.map(function (x, j) { return v('body' + j); }).filter(String);
+        L.prati = v('prati').split('\n').map(function (x) { return x.trim(); }).filter(String);
+        if ($('[data-f=prat]', pg)) L.prat = v('prat').split('\n').map(function (x) { return x.trim(); }).filter(String);
+      });
       busy(b, true, 'पत्रे बनत आहेत...');
       call('makeLetters', items).then(function (r) {
-        $('#bout', m).innerHTML = '<span class="chip ok">' + r.count + ' पत्रे</span>' + links(r);
-        list.forEach(function (c) { if (shera) c.shera = shera; c.letters = (+c.letters || 0) + 1; });
-        toast(r.count + ' पत्रे Drive मध्ये जतन झाली');
-      }).catch(function (e) { toast(e.message, 1); }).then(function () { busy(b, false); });
+        $('#lpout', sh).innerHTML = '<span class="chip ok">' + r.count + ' पत्रे तयार</span>' + links(r);
+        done(); toast(r.count + ' पत्रे Drive मध्ये जतन झाली'); b.disabled = true; b.textContent = 'पत्रे बनली ✓';
+      }).catch(function (e) { toast(e.message, 1); busy(b, false); });
     };
   }
 

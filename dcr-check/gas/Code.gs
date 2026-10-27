@@ -277,7 +277,8 @@ function learn_(S, orig, L) {
     if (rules.some(function (x) { return x.f === r.f; })) return; // सेटिंग्जमध्ये तुम्ही बदललेला / बंद केलेला नियम तसाच राहतो
     rules.push(r);
   });
-  setSetting_('rules', JSON.stringify(rules.slice(-300)));
+  var js = JSON.stringify(rules.slice(-300));
+  if (js !== (S.rules || '[]')) { S.rules = js; setSetting_('rules', js); } // एकत्र पत्रांत प्रत्येक पत्राचे बदल जमा होतात
 }
 /* items: [{ key, L, orig }] → सर्व पत्रे एका Word फाईलमध्ये (Unicode व कृतिदेव) + Unicode PDF */
 function makeLetters_(items) {
