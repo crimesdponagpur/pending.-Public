@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<title>गोपनीय नोंदवही</title>
+<meta name="theme-color" content="#0b1f4b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="नोंदवही">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700&display=swap">
+<script src="config.js"></script>
+<style>
+/* एक कॉलम (फोन), खाली 4 टॅब. नोंद व फॉर्म पूर्ण पानावर उघडतात. फोनमध्ये कोणतीही नोंद साठवली जात नाही. */
+:root{
+  --bg:#f3f5f9;--card:#fff;--ink:#0f172a;--ink2:#334155;--muted:#64748b;--line:#e2e8f0;
+  --navy:#0b1f4b;--navy2:#13306e;--pri:#1d4ed8;--pri-l:#eaf0ff;--gold:#c8961a;--gold-l:#fdf6e3;
+  --ok:#047857;--ok-l:#e7f6ef;--warn:#a45a05;--warn-l:#fff4e0;--bad:#b91c1c;--bad-l:#fdecec;
+  --sh:0 1px 2px rgba(15,23,42,.05),0 2px 8px rgba(15,23,42,.06);--r:16px;
+  --font:"Mukta","Noto Sans Devanagari","Mangal",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a1020;--card:#121a2e;--ink:#e7ecf5;--ink2:#c3cbe0;--muted:#8b97b3;--line:#22304d;
+  --navy:#0b1736;--navy2:#1a2c5c;--pri:#7aa2ff;--pri-l:#17244a;--gold:#e0b44a;--gold-l:#2a2310;
+  --ok:#4ccf97;--ok-l:#11291f;--warn:#f0b35c;--warn-l:#2d2310;--bad:#ff7b7b;--bad-l:#331616;--sh:0 2px 10px rgba(0,0,0,.4);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a1020;--card:#121a2e;--ink:#e7ecf5;--ink2:#c3cbe0;--muted:#8b97b3;--line:#22304d;
+  --navy:#0b1736;--navy2:#1a2c5c;--pri:#7aa2ff;--pri-l:#17244a;--gold:#e0b44a;--gold-l:#2a2310;
+  --ok:#4ccf97;--ok-l:#11291f;--warn:#f0b35c;--warn-l:#2d2310;--bad:#ff7b7b;--bad-l:#331616;--sh:0 2px 10px rgba(0,0,0,.4);color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:16px/1.5 var(--font)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+.wrap{max-width:560px;margin:0 auto;min-height:100vh;position:relative}
+/* लॉक / लॉगिन */
+.lock{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:32px 20px;background:linear-gradient(170deg,#0b1f4b 0%,#13306e 60%,#0b1f4b 100%);color:#fff}
+.lock .box{max-width:380px;width:100%;margin:0 auto}
+.lock h1{font-size:26px;margin:14px 0 2px;text-align:center}
+.lock p.s{text-align:center;opacity:.8;margin:0 0 22px;font-size:14px}
+.lock label{display:block;font-size:14px;opacity:.85;margin:12px 0 4px}
+.lock input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:17px}
+.lock input:focus{outline:2px solid var(--gold);border-color:transparent}
+.lock .btn{width:100%;margin-top:20px;background:var(--gold);color:#0b1f4b;border:0;padding:14px;border-radius:12px;font-weight:700;font-size:17px}
+.lock .err{background:rgba(255,80,80,.18);border:1px solid rgba(255,120,120,.5);padding:10px 12px;border-radius:10px;margin-top:14px;font-size:14px}
+.lock .warn{font-size:12.5px;opacity:.7;text-align:center;margin-top:26px;line-height:1.5}
+.lock .lnk{background:none;border:0;color:#cfdcff;text-decoration:underline;font-size:13px;display:block;margin:14px auto 0}
+.seal{width:76px;height:76px;margin:0 auto;display:block}
+/* मुख्य */
+header.top{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;display:flex;align-items:center;gap:12px}
+header.top .t{flex:1;min-width:0}
+header.top b{display:block;font-size:17px;line-height:1.2}
+header.top small{opacity:.75;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.ib{width:40px;height:40px;border-radius:12px;border:0;background:rgba(255,255,255,.1);color:#fff;display:grid;place-items:center;flex:none}
+.ib svg{width:20px;height:20px}
+main{padding:14px 16px 110px}
+.tab{display:none}.tab.on{display:block}
+h2{font-size:14px;color:var(--muted);font-weight:600;margin:22px 2px 10px;letter-spacing:.02em}
+h2:first-child{margin-top:4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;text-align:left;box-shadow:var(--sh)}
+.cat b{font-size:30px;line-height:1.1;display:block;font-variant-numeric:tabular-nums}
+.cat span{font-weight:600}
+.cat small{display:block;color:var(--muted);font-size:12.5px}
+.cat i{display:block;width:28px;height:4px;border-radius:4px;margin-bottom:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.list .it{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-bottom:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:left}
+.list .it:last-child{border-bottom:0}
+.av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:700;flex:none;color:#fff;font-size:17px}
+.it .m{flex:1;min-width:0}
+.it .m b{display:block;font-size:16px;line-height:1.3}
+.it .m span{display:block;color:var(--muted);font-size:13px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:20px;background:var(--pri-l);color:var(--pri);white-space:nowrap}
+.pill.ok{background:var(--ok-l);color:var(--ok)}.pill.bad{background:var(--bad-l);color:var(--bad)}.pill.warn{background:var(--warn-l);color:var(--warn)}.pill.gray{background:var(--line);color:var(--ink2)}
+.empty{padding:22px 16px;text-align:center;color:var(--muted);font-size:14px}
+.search{display:flex;gap:8px;margin-bottom:10px}
+.search input{flex:1;min-width:0}
+input.f,select.f,textarea.f{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:16px}
+textarea.f{min-height:76px;resize:vertical}
+input.f:focus,select.f:focus,textarea.f:focus{outline:2px solid var(--pri);border-color:transparent}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none}
+.chips button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:5px 12px;font-size:14px;font-weight:600;color:var(--ink2)}
+.chips button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.row2{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.row2 select{flex:1;min-width:140px}
+.tog{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--ink2)}
+.btn{border:0;border-radius:12px;padding:11px 16px;font-weight:700;background:var(--navy);color:#fff}
+.btn.pri{background:var(--pri);color:#fff}
+.btn.gold{background:var(--gold);color:#0b1f4b}
+.btn.ghost{background:var(--card);border:1px solid var(--line);color:var(--ink)}
+.btn.danger{background:var(--bad-l);color:var(--bad)}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.55}
+.mi{display:flex;align-items:center;gap:12px;padding:14px;width:100%;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;font-weight:600}
+.mi:last-child{border-bottom:0}
+.mi small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+nav.bot{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.bot div{display:flex;max-width:560px;width:100%}
+nav.bot button{flex:1;background:none;border:0;padding:9px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12.5px;font-weight:600;color:var(--muted)}
+nav.bot button svg{width:23px;height:23px}
+nav.bot button.on{color:var(--pri)}
+nav.bot button.add{color:var(--gold)}
+/* पूर्ण पान */
+.page{position:fixed;inset:0;z-index:40;background:var(--bg);overflow-y:auto;display:none}
+.page.on{display:block}
+.page .inner{max-width:560px;margin:0 auto;padding:0 0 120px}
+.page header.top{background:var(--navy2)}
+.sec{margin:14px 16px 0}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:6px 12px;padding:14px;font-size:15px}
+.kv dt{color:var(--muted);font-size:13.5px;padding-top:1px}
+.kv dd{margin:0;white-space:pre-wrap;word-break:break-word}
+.hero{padding:16px;display:flex;gap:14px;align-items:center}
+.hero .av{width:54px;height:54px;font-size:24px;border-radius:16px}
+.hero b{font-size:20px;display:block;line-height:1.25}
+.sens{border:1px dashed var(--gold);background:var(--gold-l)}
+.sens .hd{display:flex;align-items:center;gap:10px;padding:12px 14px;font-weight:700;color:var(--warn)}
+.sens .hd span{flex:1}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin:14px 16px 0}
+.acts .btn{flex:1;min-width:130px}
+.fl{display:block;font-size:13.5px;color:var(--ink2);margin:12px 0 4px;font-weight:600}
+.fl em{font-style:normal;color:var(--bad)}
+.hint{font-size:12.5px;color:var(--muted);margin-top:3px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fbox{padding:2px 14px 16px}
+.fbox h3{font-size:15px;margin:16px 0 0;color:var(--navy2)}
+:root[data-theme="dark"] .fbox h3{color:var(--pri)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .fbox h3{color:var(--pri)}}
+.chk{padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px}
+.chk:last-child{border-bottom:0}
+.chk b{font-size:14.5px}
+/* खिडकी */
+.dlg{position:fixed;inset:0;z-index:60;background:rgba(5,12,30,.55);display:none;align-items:flex-end;justify-content:center}
+.dlg.on{display:flex}
+.dlg .bx{background:var(--card);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow-y:auto}
+.dlg h3{margin:0 0 6px;font-size:18px}
+.dlg .acts{margin:16px 0 0}
+@media(min-width:600px){.dlg{align-items:center}.dlg .bx{border-radius:20px}}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%) translateY(20px);background:#0f172a;color:#fff;padding:10px 16px;border-radius:12px;font-size:14.5px;opacity:0;pointer-events:none;transition:.2s;z-index:80;max-width:calc(100% - 32px)}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.toast.bad{background:#b91c1c}
+.busy{position:fixed;top:0;left:0;right:0;height:3px;z-index:90;background:linear-gradient(90deg,transparent,var(--gold),transparent);background-size:50% 100%;animation:bz 1s linear infinite;display:none}
+.busy.on{display:block}
+@keyframes bz{from{background-position:-50% 0}to{background-position:150% 0}}
+/* ॲप पार्श्वभूमीत गेल्यावर स्क्रीन झाकणे (recent apps मध्ये माहिती दिसू नये) */
+.veil{position:fixed;inset:0;z-index:100;background:var(--navy);display:none;place-items:center;color:#fff;font-weight:700}
+body.hid .veil{display:grid}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl td:first-child{white-space:nowrap;color:var(--muted)}
+#printArea{display:none}
+@media print{
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block!important;color:#000;font:12px/1.4 var(--font)}
+  #printArea table{width:100%;border-collapse:collapse}
+  #printArea th,#printArea td{border:1px solid #444;padding:3px 5px;text-align:left;vertical-align:top}
+  #printArea .wm{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:42px;color:rgba(0,0,0,.07);transform:rotate(-30deg);pointer-events:none;text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="busy" id="busy"></div>
+<div class="veil">🔒 गोपनीय</div>
+
+<!-- लॉगिन -->
+<section class="lock" id="lockScr">
+  <div class="box">
+    <svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd966"/><stop offset=".5" stop-color="#f2a516"/><stop offset="1" stop-color="#c46a0a"/></linearGradient></defs><path d="M60 6L103 21V58C103 87 85 105 60 115C35 105 17 87 17 58V21Z" fill="#13306e" stroke="url(#sg)" stroke-width="5" stroke-linejoin="round"/><rect x="40" y="54" width="40" height="32" rx="6" fill="url(#sg)"/><path d="M47 54v-8a13 13 0 0 1 26 0v8" fill="none" stroke="url(#sg)" stroke-width="6"/><circle cx="60" cy="68" r="4.5" fill="#13306e"/><path d="M60 70v8" stroke="#13306e" stroke-width="4" stroke-linecap="round"/></svg>
+    <h1>गोपनीय नोंदवही</h1>
+    <p class="s">फरार / पाहिजे आरोपी • निगराणी बदमाश • हद्दपार</p>
+    <form id="loginF" autocomplete="off">
+      <div id="urlBox" hidden>
+        <label for="lUrl">सर्व्हर लिंक (Apps Script /exec)</label>
+        <input id="lUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" spellcheck="false">
+      </div>
+      <label for="lId">यूजर आयडी</label>
+      <input id="lId" autocapitalize="characters" autocomplete="username" spellcheck="false" required>
+      <label for="lPw">पासवर्ड</label>
+      <input id="lPw" type="password" autocomplete="current-password" required>
+      <button class="btn" id="lBtn" type="submit">उघडा</button>
+      <div class="err" id="lErr" hidden></div>
+    </form>
+    <button class="lnk" id="lUrlBtn" type="button">सर्व्हर लिंक बदला</button>
+    <p class="warn">फक्त अधिकृत पोलीस वापरासाठी. प्रत्येक लॉगिन, शोध व माहिती पाहणे नोंदवले जाते.<br>5 मिनिटे वापर न केल्यास ॲप आपोआप बंद होते.</p>
+  </div>
+</section>
+
+<!-- पहिल्या लॉगिनला पासवर्ड बदल -->
+<section class="lock" id="pwScr" hidden>
+  <div class="box">
+    <h1>नवीन पासवर्ड ठेवा</h1>
+    <p class="s">पहिल्यांदा लॉगिन केले आहे. मिळालेला पासवर्ड बदलून स्वतःचा ठेवा (किमान 8 अक्षरे).</p>
+    <form id="pwF" autocomplete="off">
+      <label for="pOld">आत्ताचा (मिळालेला) पासवर्ड</label><input id="pOld" type="password" autocomplete="current-password" required>
+      <label for="pNew">नवीन पासवर्ड</label><input id="pNew" type="password" autocomplete="new-password" minlength="8" required>
+      <label for="pNew2">नवीन पासवर्ड पुन्हा</label><input id="pNew2" type="password" autocomplete="new-password" minlength="8" required>
+      <button class="btn" type="submit">जतन करा</button>
+      <div class="err" id="pErr" hidden></div>
+    </form>
+  </div>
+</section>
+
+<!-- ॲप -->
+<div class="wrap" id="appScr" hidden>
+  <header class="top">
+    <div class="t"><b id="hTitle">गोपनीय नोंदवही</b><small id="hWho"></small></div>
+    <button class="ib" id="lockBtn" title="आत्ताच लॉक करा" aria-label="लॉक करा"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
+  </header>
+  <main>
+    <div class="tab on" id="t-home">
+      <h2>चालू नोंदी</h2>
+      <div class="grid" id="catGrid"></div>
+      <h2>तपासणी बाकी (आज किंवा आधीची तारीख)</h2>
+      <div class="card list" id="dueList"></div>
+      <div id="endBox" hidden><h2>हद्दपार कालावधी 15 दिवसांत संपतो</h2><div class="card list" id="endList"></div></div>
+    </div>
+    <div class="tab" id="t-list">
+      <form class="search" id="sF"><input class="f" id="sQ" type="search" placeholder="नाव, उपनाव, गाव, अप.क्र., HS क्र." autocomplete="off" spellcheck="false"><button class="btn" type="submit">शोधा</button></form>
+      <div class="chips" id="catChips"></div>
+      <div class="row2"><select class="f" id="sPs"></select><label class="tog"><input type="checkbox" id="sOpen" checked> फक्त चालू</label></div>
+      <div class="card list" id="resList"><div class="empty">प्रकार निवडा किंवा शोधा.</div></div>
+    </div>
+    <div class="tab" id="t-more">
+      <div class="card" id="moreBox"></div>
+      <p class="hint" style="margin:14px 4px" id="ver"></p>
+    </div>
+  </main>
+  <nav class="bot"><div>
+    <button data-t="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>मुख्य</button>
+    <button data-t="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>यादी / शोध</button>
+    <button data-t="new" class="add" id="newBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>नवीन नोंद</button>
+    <button data-t="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>अधिक</button>
+  </div></nav>
+</div>
+
+<!-- नोंद पाहणे -->
+<section class="page" id="recPg"><div class="inner">
+  <header class="top"><button class="ib" data-close="recPg" aria-label="मागे"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="t"><b>नोंद</b><small id="rSub"></small></div></header>
+  <div id="recBody"></div>
+</div></section>
+
+<!-- नवीन / बदल -->
+<section class="page" id="formPg"><div class="inner">
+  <header class="top"><button class="ib" data-close="formPg" aria-label="मागे"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="t"><b id="fTitle">नवीन नोंद</b><small>* असलेले भरणे आवश्यक</small></div></header>
+  <form id="recF" autocomplete="off"><div class="card sec fbox" id="fBody"></div>
+    <div class="acts"><button class="btn gold wide" type="submit" id="fSave">जतन करा</button></div></form>
+</div></section>
+
+<!-- इतर पाने (यूजर, लॉग) -->
+<section class="page" id="miscPg"><div class="inner">
+  <header class="top"><button class="ib" data-close="miscPg" aria-label="मागे"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="t"><b id="mTitle"></b><small id="mSub"></small></div></header>
+  <div id="mBody"></div>
+</div></section>
+
+<div class="dlg" id="dlg"><div class="bx" id="dlgBx"></div></div>
+<div class="toast" id="toast"></div>
+<div id="printArea"></div>
+
+<script>
+(function () {
+  'use strict';
+  var IDLE_MIN = 5, HIDDEN_SEC = 60, SENS_HIDE_SEC = 120;
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function dmy(s) { return /^\d{4}-\d{2}-\d{2}/.test(s || '') ? s.slice(8, 10) + '/' + s.slice(5, 7) + '/' + s.slice(0, 4) + (s.length > 10 ? ' ' + s.slice(11, 16) : '') : (s || ''); }
+  var COLORS = { FARAR: '#b91c1c', PAHIJE: '#c2410c', HS: '#1d4ed8', HADPAR: '#7c3aed' };
+  var LETTER = { FARAR: 'फ', PAHIJE: 'पा', HS: 'नि', HADPAR: 'ह' };
+
+  // ---------- साठवण: फक्त सर्व्हर लिंक व थीम. नोंदी किंवा टोकन कधीच नाही. ----------
+  var LS = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  function apiUrl() { return LS.get('nv-api') || window.NV_API || ''; }
+
+  // ---------- स्थिती (फक्त मेमरीत) ----------
+  var S = { token: '', boot: null, list: [], cat: '', rec: null, sensTimer: 0 };
+
+  var busyN = 0;
+  function busy(on) { busyN += on ? 1 : -1; $('busy').classList.toggle('on', busyN > 0); }
+  function post(body) {
+    var url = apiUrl();
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url)) return Promise.reject(new Error('सर्व्हर लिंक बरोबर नाही. "सर्व्हर लिंक बदला" दाबा.'));
+    busy(true);
+    return fetch(url, { method: 'POST', redirect: 'follow', cache: 'no-store', credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.text(); }, function () { throw new Error('सर्व्हरशी संपर्क होत नाही. इंटरनेट तपासा.'); })
+      .then(function (t) {
+        busy(false);
+        var j; try { j = JSON.parse(t); } catch (e) { throw new Error('सर्व्हरचे उत्तर समजले नाही. सर्व्हर लिंक व Deploy (Anyone) तपासा.'); }
+        if (j.ok) return j.d;
+        throw new Error(j.e || 'काहीतरी चुकले');
+      }, function (e) { busy(false); throw e; });
+  }
+  function call(fn, p) {
+    return post({ fn: 'call', args: [S.token, fn, p || {}] }).catch(function (e) {
+      if (/^LOGIN:/.test(e.message)) { lock('सत्र संपले. पुन्हा लॉगिन करा.'); throw new Error('पुन्हा लॉगिन करा'); }
+      throw e;
+    });
+  }
+
+  var tt;
+  function toast(m, bad) { var t = $('toast'); t.textContent = m; t.className = 'toast on' + (bad ? ' bad' : ''); clearTimeout(tt); tt = setTimeout(function () { t.className = 'toast'; }, 3500); }
+  function fail(e) { toast(e && e.message || String(e), true); }
+
+  // ---------- लॉगिन / लॉक ----------
+  function showUrlBox(on) { $('urlBox').hidden = !on; $('lUrlBtn').hidden = on; if (on) $('lUrl').value = apiUrl(); }
+  showUrlBox(!apiUrl());
+  $('lUrlBtn').onclick = function () { showUrlBox(true); $('lUrl').focus(); };
+  $('loginF').onsubmit = function (ev) {
+    ev.preventDefault();
+    $('lErr').hidden = true;
+    if (!$('urlBox').hidden) {
+      var u = $('lUrl').value.trim();
+      if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u)) { $('lErr').textContent = 'सर्व्हर लिंक https://script.google.com/macros/s/…/exec अशी हवी'; $('lErr').hidden = false; return; }
+      LS.set('nv-api', u);
+    }
+    $('lBtn').disabled = true;
+    post({ fn: 'login', args: [$('lId').value, $('lPw').value] }).then(function (d) {
+      $('lBtn').disabled = false; S.token = d.token;
+      if (d.init) { $('pOld').value = $('lPw').value; $('lPw').value = ''; $('lockScr').hidden = true; $('pwScr').hidden = false; $('pNew').focus(); return; }
+      $('lPw').value = ''; boot();
+    }).catch(function (e) { $('lBtn').disabled = false; $('lErr').textContent = e.message; $('lErr').hidden = false; });
+  };
+  $('pwF').onsubmit = function (ev) {
+    ev.preventDefault();
+    $('pErr').hidden = true;
+    if ($('pNew').value !== $('pNew2').value) { $('pErr').textContent = 'दोन्ही नवीन पासवर्ड सारखे नाहीत'; $('pErr').hidden = false; return; }
+    call('mypw', { old: $('pOld').value, pw: $('pNew').value }).then(function (d) {
+      S.token = d.token; ['pOld', 'pNew', 'pNew2'].forEach(function (i) { $(i).value = ''; });
+      $('pwScr').hidden = true; toast('पासवर्ड बदलला ✓'); boot();
+    }).catch(function (e) { $('pErr').textContent = e.message; $('pErr').hidden = false; });
+  };
+  /** सर्व माहिती मेमरी व स्क्रीनवरून पुसून लॉगिन पान */
+  function lock(msg) {
+    S.token = ''; S.boot = null; S.list = []; S.rec = null; clearTimeout(S.sensTimer);
+    ['recBody', 'fBody', 'mBody', 'catGrid', 'dueList', 'endList', 'moreBox', 'printArea', 'dlgBx'].forEach(function (i) { $(i).innerHTML = ''; });
+    $('resList').innerHTML = '<div class="empty">प्रकार निवडा किंवा शोधा.</div>'; $('sQ').value = '';
+    document.querySelectorAll('.page.on,.dlg.on').forEach(function (x) { x.classList.remove('on'); });
+    $('appScr').hidden = true; $('pwScr').hidden = true; $('lockScr').hidden = false;
+    $('lPw').value = ''; showUrlBox(!apiUrl());
+    if (msg) { $('lErr').textContent = msg; $('lErr').hidden = false; } else $('lErr').hidden = true;
+  }
+  $('lockBtn').onclick = function () { var t = S.token; lock(); if (t) post({ fn: 'call', args: [t, 'logout', {}] }).catch(function () {}); };
+
+  // आपोआप लॉक: 5 मिनिटे काही न केल्यास, किंवा ॲप 1 मिनिटापेक्षा जास्त पार्श्वभूमीत राहिल्यास
+  var lastAct = Date.now(), hiddenAt = 0;
+  ['pointerdown', 'keydown', 'touchstart', 'scroll', 'input'].forEach(function (ev) { document.addEventListener(ev, function () { lastAct = Date.now(); }, { passive: true, capture: true }); });
+  setInterval(function () { if (S.token && Date.now() - lastAct > IDLE_MIN * 6e4) lock('वापर नसल्याने ॲप लॉक झाले.'); }, 15000);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { hiddenAt = Date.now(); document.body.classList.add('hid'); return; }
+    document.body.classList.remove('hid');
+    if (S.token && hiddenAt && Date.now() - hiddenAt > HIDDEN_SEC * 1000) lock('ॲप पार्श्वभूमीत गेल्याने लॉक झाले.');
+    hiddenAt = 0; lastAct = Date.now();
+  });
+  window.addEventListener('pagehide', function () { if (S.token) lock(); });
+
+  // ---------- सुरुवात ----------
+  function boot() {
+    return call('init').then(function (b) {
+      S.boot = b;
+      $('lockScr').hidden = true; $('appScr').hidden = false;
+      $('hWho').textContent = b.me.name + ' • ' + (b.me.ps ? psName(b.me.ps) : 'सर्व पो.स्टे.');
+      $('newBtn').hidden = !b.me.w;
+      $('ver').textContent = 'आवृत्ती ' + b.v + ' • माहिती फक्त तुमच्या Google Sheet मध्ये.';
+      renderHome(); renderListCtl(); renderMore();
+    }).catch(function (e) { if (S.token) lock(e.message); });
+  }
+  function psName(c) { var p = (S.boot.ps || []).filter(function (x) { return x[0] === c; })[0]; return p ? p[1] : c; }
+  function catL(c) { return S.boot.cats[c] ? S.boot.cats[c].l : c; }
+  function isOpen(r) { var c = S.boot.cats[r.cat]; return c && c.open.indexOf(r.status) >= 0; }
+  function stPill(r) {
+    var cls = isOpen(r) ? (r.status === 'उल्लंघन' ? 'bad' : 'warn') : /अटक|हजर/.test(r.status) ? 'ok' : 'gray';
+    return '<span class="pill ' + cls + '">' + esc(r.status) + '</span>';
+  }
+  function item(r, extra) {
+    return '<button class="it" data-rec="' + esc(r.id) + '"><div class="av" style="background:' + (COLORS[r.cat] || '#334155') + '">' + (LETTER[r.cat] || '•') + '</div><div class="m"><b>' + esc(r.name) +
+      (r.alias ? ' <small style="font-weight:400;color:var(--muted)">उर्फ ' + esc(r.alias) + '</small>' : '') + '</b><span>' + esc(catL(r.cat)) + ' • ' + esc(psName(r.ps)) + (r.village ? ' • ' + esc(r.village) : '') +
+      '</span><span>' + (extra || esc((r.crimes || '').split('\n')[0])) + '</span></div>' + stPill(r) + '</button>';
+  }
+  function bindItems(el) { el.querySelectorAll('[data-rec]').forEach(function (b) { b.onclick = function () { openRec(b.getAttribute('data-rec')); }; }); }
+
+  function renderHome() {
+    var b = S.boot;
+    $('catGrid').innerHTML = Object.keys(b.cats).map(function (k) {
+      return '<button class="cat" data-cat="' + k + '"><i style="background:' + COLORS[k] + '"></i><b>' + b.cnt[k].open + '</b><span>' + esc(b.cats[k].l) + '</span><small>एकूण ' + b.cnt[k].all + ' नोंदी</small></button>';
+    }).join('');
+    $('catGrid').querySelectorAll('[data-cat]').forEach(function (x) { x.onclick = function () { S.cat = x.getAttribute('data-cat'); go('list'); search(); }; });
+    $('dueList').innerHTML = b.due.length ? b.due.map(function (r) { return item(r, 'तपासणी: ' + dmy(r.nextCheck) + (r.lastCheck ? ' • मागील ' + dmy(r.lastCheck) : ' • अजून एकही नाही')); }).join('') : '<div class="empty">सध्या कोणतीही तपासणी बाकी नाही ✓</div>';
+    bindItems($('dueList'));
+    $('endBox').hidden = !b.ending.length;
+    $('endList').innerHTML = b.ending.map(function (r) { return item(r, 'हद्दपार ' + dmy(r.toDate) + ' पर्यंत'); }).join('');
+    bindItems($('endList'));
+  }
+  function renderListCtl() {
+    var b = S.boot;
+    $('catChips').innerHTML = '<button data-c="">सर्व</button>' + Object.keys(b.cats).map(function (k) { return '<button data-c="' + k + '">' + esc(b.cats[k].l) + '</button>'; }).join('');
+    $('catChips').querySelectorAll('button').forEach(function (x) { x.onclick = function () { S.cat = x.getAttribute('data-c'); search(); }; });
+    $('sPs').innerHTML = (b.me.all ? '<option value="">सर्व पो.स्टे.</option>' : '') + b.ps.map(function (p) { return '<option value="' + esc(p[0]) + '">' + esc(p[1]) + '</option>'; }).join('');
+    $('sPs').hidden = !b.me.all;
+    markChips();
+  }
+  function markChips() { $('catChips').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-c') === S.cat); }); }
+  function search() {
+    markChips();
+    call('list', { q: $('sQ').value, cat: S.cat, ps: $('sPs').value, open: $('sOpen').checked }).then(function (rows) {
+      S.list = rows;
+      $('resList').innerHTML = rows.length ? rows.map(function (r) { return item(r); }).join('') + (rows.length >= 500 ? '<div class="empty">पहिल्या 500 नोंदी. शोध नेमका करा.</div>' : '') : '<div class="empty">नोंद सापडली नाही.</div>';
+      bindItems($('resList'));
+    }).catch(fail);
+  }
+  $('sF').onsubmit = function (e) { e.preventDefault(); search(); };
+  $('sPs').onchange = search; $('sOpen').onchange = search;
+
+  function go(t) {
+    if (t === 'new') { openForm(null); return; }
+    document.querySelectorAll('nav.bot button').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-t') === t); });
+    document.querySelectorAll('.tab').forEach(function (x) { x.classList.toggle('on', x.id === 't-' + t); });
+    window.scrollTo(0, 0);
+    if (t === 'home') call('init').then(function (b) { S.boot = b; renderHome(); }).catch(fail);
+  }
+  document.querySelectorAll('nav.bot button').forEach(function (x) { x.onclick = function () { go(x.getAttribute('data-t')); }; });
+  function openPg(id) { $(id).classList.add('on'); $(id).scrollTop = 0; }
+  function closePg(id) { $(id).classList.remove('on'); if (id === 'recPg') { clearTimeout(S.sensTimer); $('recBody').innerHTML = ''; S.rec = null; } if (id === 'formPg') $('fBody').innerHTML = ''; if (id === 'miscPg') $('mBody').innerHTML = ''; }
+  document.querySelectorAll('[data-close]').forEach(function (b) { b.onclick = function () { closePg(b.getAttribute('data-close')); }; });
+
+  // ---------- खिडकी ----------
+  function dlg(html, onOk) {
+    $('dlgBx').innerHTML = html + '<div class="acts"><button class="btn ghost" data-x>रद्द</button><button class="btn pri" data-ok>पुढे</button></div>';
+    $('dlg').classList.add('on');
+    var close = function () { $('dlg').classList.remove('on'); $('dlgBx').innerHTML = ''; };
+    $('dlgBx').querySelector('[data-x]').onclick = close;
+    $('dlgBx').querySelector('[data-ok]').onclick = function () { var r = onOk($('dlgBx')); if (r !== false) close(); };
+    var f = $('dlgBx').querySelector('input,select,textarea'); if (f) f.focus();
+  }
+  $('dlg').onclick = function (e) { if (e.target === $('dlg')) { $('dlg').classList.remove('on'); $('dlgBx').innerHTML = ''; } };
+
+  // ---------- नोंद ----------
+  function kv(rows) {
+    rows = rows.filter(function (r) { return r[1]; });
+    return rows.length ? '<dl class="kv">' + rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>' : '';
+  }
+  function openRec(id, full, why) {
+    return call('view', { id: id, full: !!full, why: why || '' }).then(function (r) {
+      S.rec = r; renderRec(); openPg('recPg');
+      if (full) { clearTimeout(S.sensTimer); S.sensTimer = setTimeout(function () { if (S.rec && S.rec.sens) { delete S.rec.sens; renderRec(); toast('संवेदनशील माहिती पुन्हा लपवली'); } }, SENS_HIDE_SEC * 1000); }
+    }).catch(fail);
+  }
+  function renderRec() {
+    var r = S.rec, me = S.boot.me, L = S.boot.sensL;
+    $('rSub').textContent = catL(r.cat) + ' • ' + psName(r.ps);
+    var h = '<div class="card sec"><div class="hero"><div class="av" style="background:' + COLORS[r.cat] + '">' + LETTER[r.cat] + '</div><div><b>' + esc(r.name) + '</b>' +
+      (r.alias ? '<div style="color:var(--muted)">उर्फ ' + esc(r.alias) + '</div>' : '') + '<div style="margin-top:4px">' + stPill(r) + ' <span class="pill gray">' + esc(dmy(r.statusDate)) + '</span></div></div></div>' +
+      kv([['वडील / पती', r.father], ['लिंग / वय', [r.sex, r.age ? r.age + ' वर्षे' : ''].filter(Boolean).join(', ')], ['गाव / वस्ती', r.village], ['वर्णन / खुणा', r.desc],
+        ['गुन्हे', r.crimes], ['तपास / बीट अधिकारी', r.io], ['स्थिती शेरा', r.statusNote],
+        ['वॉरंट / जाहीरनामा', r.warrant], ['HS क्र.', r.hsNo], ['HS उघडली', dmy(r.hsDate)],
+        ['हद्दपार आदेश', [r.ordNo, dmy(r.ordDate)].filter(Boolean).join(' दि. ')], ['कालावधी', r.fromDate || r.toDate ? dmy(r.fromDate) + ' ते ' + dmy(r.toDate) : ''], ['हद्दपार क्षेत्र', r.area],
+        ['तपासणी दर', r.every ? 'दर ' + r.every + ' दिवसांनी' : ''], ['पुढची तपासणी', dmy(r.nextCheck)],
+        ['नोंद', dmy(r.created) + ' (' + r.cBy + ')'], ['शेवटचा बदल', dmy(r.updated) + ' (' + r.uBy + ')']]) + '</div>';
+    // संवेदनशील भाग
+    if (me.full) {
+      h += '<div class="card sec sens"><div class="hd"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>संवेदनशील माहिती</span>';
+      if (r.sens) h += '<button class="btn ghost" id="sHide" style="padding:6px 12px">लपवा</button></div>' + (kv(Object.keys(L).map(function (k) { return [L[k], r.sens[k]]; })) || '<div class="empty">काही भरलेले नाही.</div>');
+      else h += '</div><div style="padding:0 14px 14px">' + (r.hasSens ? '<p class="hint" style="margin:0 0 10px">पत्ता, मोबाईल, नातेवाईक, गुप्त शेरा इ. उघडल्यास तुमचे नाव, वेळ व कारण लॉगमध्ये जाते. 2 मिनिटांनी आपोआप लपते.</p><button class="btn gold wide" id="sShow">पाहा (कारण द्या)</button>' : '<p class="hint" style="margin:0">संवेदनशील माहिती भरलेली नाही.</p>') + '</div>';
+      h += '</div>';
+    }
+    if (me.w) h += '<div class="acts"><button class="btn pri" id="aStatus">स्थिती बदला</button><button class="btn" id="aCheck">तपासणी नोंद</button><button class="btn ghost" id="aEdit">माहिती बदला</button></div>';
+    h += '<h2 class="sec" style="margin-bottom:8px">तपासण्या (' + r.checks.length + ')</h2><div class="card sec list">' + (r.checks.length ? r.checks.map(function (c) {
+      return '<div class="chk"><b>' + dmy(c.date) + ' • ' + esc(c.found) + '</b>' + (c.place ? ' • ' + esc(c.place) : '') + (c.remark ? '<div>' + esc(c.remark) + '</div>' : '') + '<div class="hint">' + esc(c.by) + '</div></div>';
+    }).join('') : '<div class="empty">अजून तपासणी नोंद नाही.</div>') + '</div>';
+    if (me.admin) h += '<div class="acts"><button class="btn danger" id="aDel">ही नोंद काढा</button></div>';
+    $('recBody').innerHTML = h;
+    var on = function (id, f) { var el = $(id); if (el) el.onclick = f; };
+    on('sShow', askSens); on('sHide', function () { clearTimeout(S.sensTimer); delete S.rec.sens; renderRec(); });
+    on('aStatus', statusDlg); on('aCheck', checkDlg); on('aDel', delDlg);
+    on('aEdit', function () {
+      if (S.rec.hasSens && me.full && !S.rec.sens) {
+        call('view', { id: S.rec.id, full: true, why: 'नोंद दुरुस्ती' }).then(function (x) { S.rec.sens = x.sens; openForm(S.rec); }).catch(fail);
+      } else openForm(S.rec);
+    });
+  }
+  var WHY = ['तपास / शोध मोहीम', 'वॉरंट / समन्स बजावणी', 'निगराणी तपासणी', 'वरिष्ठांना माहिती', 'नोंद दुरुस्ती', 'इतर'];
+  function askSens() {
+    dlg('<h3>संवेदनशील माहिती का पाहायची?</h3><p class="hint">हे कारण तुमच्या नावासह लॉगमध्ये नोंदवले जाते.</p><select class="f" id="dWhy">' + WHY.map(function (w) { return '<option>' + w + '</option>'; }).join('') + '</select>' +
+      '<input class="f" id="dWhy2" placeholder="तपशील (ऐच्छिक, उदा. अप.क्र.)" style="margin-top:8px" autocomplete="off">', function (b) {
+      var w = b.querySelector('#dWhy').value + (b.querySelector('#dWhy2').value.trim() ? ': ' + b.querySelector('#dWhy2').value.trim() : '');
+      openRec(S.rec.id, true, w);
+    });
+  }
+  function today() { return S.boot.today; }
+  function statusDlg() {
+    var r = S.rec, st = S.boot.cats[r.cat].st;
+    dlg('<h3>स्थिती बदला</h3><label class="fl">नवीन स्थिती</label><select class="f" id="dSt">' + st.map(function (s) { return '<option' + (s === r.status ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select>' +
+      '<label class="fl">तारीख</label><input class="f" type="date" id="dDt" value="' + today() + '" max="' + today() + '"><label class="fl">शेरा (उदा. अटक करणारे अधिकारी, कोर्ट)</label><input class="f" id="dNote" autocomplete="off">', function (b) {
+      call('setStatus', { id: r.id, status: b.querySelector('#dSt').value, date: b.querySelector('#dDt').value, note: b.querySelector('#dNote').value })
+        .then(function () { toast('स्थिती बदलली ✓'); openRec(r.id); }).catch(fail);
+    });
+  }
+  function checkDlg() {
+    var r = S.rec;
+    dlg('<h3>तपासणी नोंद</h3><p class="hint">' + esc(r.name) + '</p><label class="fl">तारीख</label><input class="f" type="date" id="dDt" value="' + today() + '" max="' + today() + '">' +
+      '<label class="fl">काय आढळले</label><select class="f" id="dF">' + S.boot.found.map(function (f) { return '<option>' + esc(f) + '</option>'; }).join('') + '</select>' +
+      '<label class="fl">ठिकाण</label><input class="f" id="dPl" autocomplete="off"><label class="fl">शेरा</label><textarea class="f" id="dRm"></textarea>', function (b) {
+      call('addCheck', { id: r.id, date: b.querySelector('#dDt').value, found: b.querySelector('#dF').value, place: b.querySelector('#dPl').value, remark: b.querySelector('#dRm').value })
+        .then(function () { toast('तपासणी नोंदवली ✓'); openRec(r.id); }).catch(fail);
+    });
+  }
+  function delDlg() {
+    var r = S.rec;
+    dlg('<h3>नोंद काढायची?</h3><p class="hint">नोंद ॲपमधून दिसणे बंद होईल, पण Sheet मध्ये पुराव्यासाठी राहील. कारण लॉगमध्ये जाते.</p><label class="fl">कारण</label><input class="f" id="dWhy" autocomplete="off">', function (b) {
+      var w = b.querySelector('#dWhy').value.trim(); if (!w) { toast('कारण लिहा', true); return false; }
+      call('remove', { id: r.id, why: w }).then(function () { toast('नोंद काढली'); closePg('recPg'); search(); }).catch(fail);
+    });
+  }
+
+  // ---------- फॉर्म ----------
+  var F = [
+    ['h', 'मूलभूत माहिती'],
+    ['cat', 'प्रकार', 'sel', 1], ['ps', 'पोलीस ठाणे', 'sel', 1],
+    ['name', 'पूर्ण नाव', 'text', 1], ['alias', 'उपनाव / उर्फ'], ['father', 'वडील / पतीचे नाव'],
+    ['two', [['sex', 'लिंग', 'sel'], ['age', 'वय (वर्षे)', 'num']]],
+    ['village', 'गाव / वस्ती (शोधासाठी)'], ['desc', 'वर्णन व ओळख खुणा (उंची, बांधा, रंग, व्रण)', 'area'],
+    ['crimes', 'गुन्हे (एका ओळीत एक: पो.स्टे. अप.क्र./सन, कलम)', 'area'], ['io', 'तपास / बीट अधिकारी'],
+    ['statusRow', ''],
+    ['h', 'प्रकारानुसार माहिती', 'catBox'],
+    ['warrant', 'वॉरंट / जाहीरनामा / BNSS 84 माहिती', 'area', 0, 'FARAR PAHIJE'],
+    ['two', [['hsNo', 'HS क्र.'], ['hsDate', 'HS उघडल्याची तारीख', 'date']], 'HS'],
+    ['two', [['ordNo', 'हद्दपार आदेश क्र.'], ['ordDate', 'आदेश तारीख', 'date']], 'HADPAR'],
+    ['two', [['fromDate', 'पासून', 'date'], ['toDate', 'पर्यंत', 'date']], 'HADPAR'],
+    ['area', 'हद्दपार क्षेत्र (जिल्हे / तालुके)', 'text', 0, 'HADPAR'],
+    ['every', 'तपासणी दर (दर किती दिवसांनी; रिकामे = तपासणी नाही)', 'num']
+  ];
+  var SENS_F = [['addr', 'पत्ता (कायम / सध्याचा)', 'area'], ['mob', 'मोबाईल क्रमांक', 'text'], ['rel', 'नातेवाईक / संपर्क (नाव, नाते, पत्ता, मोबाईल)', 'area'],
+    ['aad4', 'आधार: फक्त शेवटचे 4 अंक', 'num4'], ['veh', 'वाहन', 'text'], ['haunts', 'वावराची / लपण्याची संभाव्य ठिकाणे', 'area'], ['note', 'गुप्त शेरा', 'area']];
+  function fld(k, l, t, req, only) {
+    var id = 'f_' + k, lab = '<label class="fl" for="' + id + '">' + esc(l) + (req ? ' <em>*</em>' : '') + '</label>', h;
+    if (t === 'sel') h = '<select class="f" id="' + id + '"></select>';
+    else if (t === 'area') h = '<textarea class="f" id="' + id + '" spellcheck="false"></textarea>';
+    else if (t === 'date') h = '<input class="f" type="date" id="' + id + '">';
+    else if (t === 'num') h = '<input class="f" id="' + id + '" inputmode="numeric" maxlength="3">';
+    else if (t === 'num4') h = '<input class="f" id="' + id + '" inputmode="numeric" maxlength="4" pattern="\\d{0,4}"><div class="hint">पूर्ण आधार क्रमांक कधीही टाकू नका.</div>';
+    else h = '<input class="f" id="' + id + '" autocomplete="off" spellcheck="false">';
+    return '<div' + (only ? ' data-only="' + only + '"' : '') + '>' + lab + h + '</div>';
+  }
+  function openForm(r) {
+    var b = S.boot, me = b.me, h = '';
+    F.forEach(function (x) {
+      if (x[0] === 'h') h += '<h3>' + esc(x[1]) + '</h3>';
+      else if (x[0] === 'two') h += '<div class="two"' + (x[2] ? ' data-only="' + x[2] + '"' : '') + '>' + x[1].map(function (y) { return fld(y[0], y[1], y[2]); }).join('') + '</div>';
+      else if (x[0] === 'statusRow') h += r ? '' : '<div class="two">' + fld('status', 'सध्याची स्थिती', 'sel') + fld('statusDate', 'स्थिती तारीख (उदा. फरार झाल्याची)', 'date') + '</div>';
+      else h += fld(x[0], x[1], x[2], x[3], x[4]);
+    });
+    if (me.full) h += '<h3>🔒 संवेदनशील माहिती (Sheet मध्ये कुलूपबंद)</h3>' + SENS_F.map(function (x) { return fld('s_' + x[0], x[1], x[2]); }).join('');
+    else if (r) h += '<p class="hint">संवेदनशील माहिती तुम्हाला दिसत नाही; ती बदलली जाणार नाही.</p>';
+    $('fBody').innerHTML = h;
+    $('fTitle').textContent = r ? 'माहिती बदला' : 'नवीन नोंद';
+    var cat = $('f_cat'), ps = $('f_ps');
+    cat.innerHTML = Object.keys(b.cats).map(function (k) { return '<option value="' + k + '">' + esc(b.cats[k].l) + '</option>'; }).join('');
+    ps.innerHTML = b.ps.map(function (p) { return '<option value="' + esc(p[0]) + '">' + esc(p[1]) + '</option>'; }).join('');
+    ps.disabled = !me.all;
+    $('f_sex').innerHTML = '<option value="">—</option><option>पुरुष</option><option>स्त्री</option><option>इतर</option>';
+    var setSt = function () { if ($('f_status')) $('f_status').innerHTML = b.cats[cat.value].st.map(function (s) { return '<option>' + esc(s) + '</option>'; }).join(''); };
+    var showOnly = function () {
+      $('fBody').querySelectorAll('[data-only]').forEach(function (el) { el.hidden = el.getAttribute('data-only').split(' ').indexOf(cat.value) < 0; });
+      setSt();
+    };
+    cat.onchange = function () {
+      showOnly();
+      if (!r && !$('f_every').value) $('f_every').value = cat.value === 'HADPAR' ? '15' : '30';
+    };
+    if (r) {
+      ['cat', 'ps', 'name', 'alias', 'father', 'sex', 'age', 'village', 'desc', 'crimes', 'io', 'warrant', 'hsNo', 'hsDate', 'ordNo', 'ordDate', 'fromDate', 'toDate', 'area', 'every'].forEach(function (k) { if ($('f_' + k)) $('f_' + k).value = r[k] || ''; });
+      if (r.sens) SENS_F.forEach(function (x) { if ($('f_s_' + x[0])) $('f_s_' + x[0]).value = r.sens[x[0]] || ''; });
+      showOnly();
+    } else {
+      cat.value = S.cat || 'FARAR'; if (S.boot.me.ps) ps.value = S.boot.me.ps;
+      cat.onchange();
+      $('f_statusDate').value = today(); $('f_statusDate').max = today();
+    }
+    S.editing = r;
+    openPg('formPg');
+  }
+  $('recF').onsubmit = function (ev) {
+    ev.preventDefault(); save(false);
+  };
+  function save(force) {
+    var r = S.editing, me = S.boot.me, p = { force: force };
+    if (r) p.id = r.id;
+    ['cat', 'ps', 'name', 'alias', 'father', 'sex', 'age', 'village', 'desc', 'crimes', 'io', 'warrant', 'hsNo', 'hsDate', 'ordNo', 'ordDate', 'fromDate', 'toDate', 'area', 'every', 'status', 'statusDate'].forEach(function (k) { var el = $('f_' + k); if (el && !el.closest('[hidden]')) p[k] = el.value; });
+    p.status = p.status || (r ? r.status : '');
+    if (me.full) { p.sens = {}; SENS_F.forEach(function (x) { p.sens[x[0]] = $('f_s_' + x[0]).value; }); }
+    if (!p.name || !p.name.trim()) { toast('नाव भरा', true); $('f_name').focus(); return; }
+    if (p.sens && /\d{12}/.test(String(p.sens.aad4 || '') + String(p.sens.note || '').replace(/\s/g, ''))) { toast('पूर्ण आधार क्रमांक टाकू नका; फक्त शेवटचे 4 अंक', true); return; }
+    $('fSave').disabled = true;
+    call('save', p).then(function (d) {
+      $('fSave').disabled = false;
+      if (d.dup) {
+        dlg('<h3>अशीच नोंद आधीच आहे</h3><p class="hint">याच नावाची' + (d.dupOther ? ' (दुसऱ्या पो.स्टे. मध्येही)' : '') + ' नोंद आहे. तीच असल्यास नवीन बनवू नका, जुनीच बदला.</p><div class="card list">' + d.dup.map(function (x) { return item(x); }).join('') + '</div><p class="hint">तरीही नवीन नोंद बनवायची असल्यास "पुढे" दाबा.</p>', function () { save(true); });
+        return;
+      }
+      toast('जतन केले ✓'); closePg('formPg'); S.editing = null;
+      openRec(d.id);
+      if (S.list.length) search();
+    }).catch(function (e) { $('fSave').disabled = false; fail(e); });
+  }
+
+  // ---------- अधिक ----------
+  function renderMore() {
+    var me = S.boot.me, h = '<div class="mi" style="cursor:default"><div><b>' + esc(me.name) + ' (' + esc(me.id) + ')</b><small>' + esc(me.rl) + (me.ps ? ' • ' + esc(psName(me.ps)) : '') + '</small></div></div>';
+    h += '<button class="mi" data-m="pw">पासवर्ड बदला<small></small></button>';
+    if (me.admin) {
+      h += '<button class="mi" data-m="users">यूजर व अधिकार<small>नवीन यूजर, पासवर्ड रीसेट, बंद/चालू</small></button>';
+      h += '<button class="mi" data-m="log">लॉग (कोणी काय पाहिले / बदलले)<small>शेवटच्या 1500 नोंदी</small></button>';
+      h += '<button class="mi" data-m="exp">यादी छापा / Excel (CSV)<small>फक्त साधी माहिती; संवेदनशील भाग कधीच नाही</small></button>';
+    }
+    h += '<button class="mi" data-m="priv">गोपनीयता कशी राखली जाते<small></small></button>';
+    h += '<button class="mi" data-m="theme">गडद / उजळ रंग<small></small></button>';
+    h += '<button class="mi" data-m="out" style="color:var(--bad)">लॉगआउट (सर्व फोनवरून)<small>या आयडीचे इतर उघडे सत्रही बंद होतात</small></button>';
+    $('moreBox').innerHTML = h;
+    $('moreBox').querySelectorAll('[data-m]').forEach(function (b) { b.onclick = function () { MORE[b.getAttribute('data-m')](); }; });
+  }
+  var MORE = {
+    pw: function () {
+      dlg('<h3>पासवर्ड बदला</h3><label class="fl">जुना पासवर्ड</label><input class="f" type="password" id="dO" autocomplete="current-password"><label class="fl">नवीन (किमान 8 अक्षरे)</label><input class="f" type="password" id="dN" autocomplete="new-password"><label class="fl">नवीन पुन्हा</label><input class="f" type="password" id="dN2" autocomplete="new-password">', function (b) {
+        if (b.querySelector('#dN').value !== b.querySelector('#dN2').value) { toast('दोन्ही नवीन पासवर्ड सारखे नाहीत', true); return false; }
+        call('mypw', { old: b.querySelector('#dO').value, pw: b.querySelector('#dN').value }).then(function (d) { S.token = d.token; toast('पासवर्ड बदलला ✓'); }).catch(fail);
+      });
+    },
+    users: function () { call('users').then(showUsers).catch(fail); },
+    log: function () { showLog(''); },
+    exp: expDlg,
+    priv: function () {
+      $('mTitle').textContent = 'गोपनीयता'; $('mSub').textContent = '';
+      $('mBody').innerHTML = '<div class="card sec" style="padding:4px 16px 12px;font-size:15px"><ul style="padding-left:18px">' + [
+        'सर्व माहिती फक्त तुमच्या Google Drive मधील Sheet मध्ये. दुसरा कोणताही सर्व्हर / कंपनी नाही.',
+        'पत्ता, मोबाईल, नातेवाईक, आधारचे 4 अंक, वाहन, वावराची ठिकाणे व गुप्त शेरा Sheet मध्ये कुलूपबंद (encrypted) आहेत. Sheet उघडली किंवा डाउनलोड झाली तरी वाचता येत नाहीत.',
+        'प्रत्येक पो.स्टे. ला फक्त स्वतःच्या नोंदी दिसतात. "फक्त पाहणे" यूजरला संवेदनशील माहिती दिसत नाही.',
+        'लॉगिन, शोध, नोंद उघडणे, संवेदनशील माहिती पाहणे (कारणासह), बदल, निर्यात सर्व LOG मध्ये.',
+        'फोनमध्ये कोणतीही नोंद साठवली जात नाही. 5 मिनिटे वापर नसल्यास किंवा ॲप 1 मिनिट पार्श्वभूमीत राहिल्यास लॉक. संवेदनशील माहिती 2 मिनिटांनी आपोआप लपते.',
+        '6 वेळा चुकीचा पासवर्ड दिल्यास तो आयडी 15 मिनिटे बंद.',
+        'फोटो व पूर्ण आधार क्रमांक ठेवले जात नाहीत.',
+        'छपाई / CSV फक्त मुख्य प्रशासकाला, कारणासह; प्रत्येक पानावर नाव व वेळ छापली जाते.'
+      ].map(function (x) { return '<li style="margin:8px 0">' + x + '</li>'; }).join('') + '</ul></div>';
+      openPg('miscPg');
+    },
+    theme: function () {
+      var r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+      r.dataset.theme = dark ? 'light' : 'dark'; LS.set('nv-theme', r.dataset.theme);
+    },
+    out: function () { $('lockBtn').onclick(); }
+  };
+  try { var th = localStorage.getItem('nv-theme'); if (th) document.documentElement.dataset.theme = th; } catch (e) {}
+
+  function showUsers(list) {
+    var R = S.boot.roles;
+    $('mTitle').textContent = 'यूजर व अधिकार'; $('mSub').textContent = list.length + ' यूजर';
+    $('mBody').innerHTML = '<div class="acts"><button class="btn gold" id="uNew">+ नवीन यूजर</button></div><div class="card sec list">' + list.map(function (u) {
+      return '<div class="it" style="cursor:default"><div class="m"><b>' + esc(u.name) + ' (' + esc(u.id) + ')</b><span>' + esc(R[u.role] ? R[u.role].l : u.role) + (u.ps ? ' • ' + esc(psName(u.ps)) : '') + '</span><span>' +
+        (u.on ? (u.init ? 'पहिले लॉगिन बाकी' : 'शेवटचे लॉगिन: ' + (dmy(u.last) || '—')) : 'बंद') + '</span><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap"><button class="btn ghost" style="padding:5px 10px" data-ue="' + esc(u.id) + '">बदला</button><button class="btn ghost" style="padding:5px 10px" data-ur="' + esc(u.id) + '">पासवर्ड रीसेट</button>' +
+        (u.id !== S.boot.me.id ? '<button class="btn ' + (u.on ? 'danger' : 'pri') + '" style="padding:5px 10px" data-ut="' + esc(u.id) + '">' + (u.on ? 'बंद करा' : 'चालू करा') + '</button>' : '') + '</div></div>' +
+        '<span class="pill ' + (u.on ? 'ok' : 'gray') + '">' + (u.on ? 'चालू' : 'बंद') + '</span></div>';
+    }).join('') + '</div><p class="hint sec">भूमिका: ' + Object.keys(R).map(function (k) { return R[k].l; }).join(' • ') + '</p>';
+    openPg('miscPg');
+    var act = function (p) { call('userAct', p).then(function (d) { if (d.pw) pwShow(p.id, d.pw); showUsers(d.users); }).catch(fail); };
+    $('uNew').onclick = function () { userDlg(null, act); };
+    $('mBody').querySelectorAll('[data-ue]').forEach(function (b) { b.onclick = function () { userDlg(list.filter(function (u) { return u.id === b.getAttribute('data-ue'); })[0], act); }; });
+    $('mBody').querySelectorAll('[data-ur]').forEach(function (b) { b.onclick = function () { confirmBox('यूजर ' + b.getAttribute('data-ur') + ' चा पासवर्ड रीसेट करायचा?', function () { act({ act: 'reset', id: b.getAttribute('data-ur') }); }); }; });
+    $('mBody').querySelectorAll('[data-ut]').forEach(function (b) { b.onclick = function () { act({ act: 'toggle', id: b.getAttribute('data-ut') }); }; });
+  }
+  function confirmBox(msg, f) { dlg('<h3>' + esc(msg) + '</h3>', function () { f(); }); }
+  function pwShow(id, pw) {
+    setTimeout(function () {
+      dlg('<h3>तात्पुरता पासवर्ड</h3><p>यूजर <b>' + esc(id) + '</b> : <b style="font-size:22px;letter-spacing:2px">' + esc(pw) + '</b></p><p class="hint">हा पासवर्ड संबंधितांना प्रत्यक्ष / फोनवर सांगा (WhatsApp वर पाठवू नका). पहिल्या लॉगिनला त्यांना नवीन पासवर्ड ठेवावा लागेल. ही खिडकी बंद केल्यावर पुन्हा दिसणार नाही.</p>', function () {});
+    }, 50);
+  }
+  function userDlg(u, act) {
+    var R = S.boot.roles, b = S.boot;
+    dlg('<h3>' + (u ? 'यूजर बदला' : 'नवीन यूजर') + '</h3><label class="fl">यूजर आयडी (इंग्रजी, उदा. BORI-PI)</label><input class="f" id="dId" value="' + esc(u ? u.id : '') + '"' + (u ? ' disabled' : '') + ' autocapitalize="characters" autocomplete="off">' +
+      '<label class="fl">नाव / पद</label><input class="f" id="dNm" value="' + esc(u ? u.name : '') + '" autocomplete="off"><label class="fl">भूमिका</label><select class="f" id="dRl">' +
+      Object.keys(R).map(function (k) { return '<option value="' + k + '"' + (u && u.role === k ? ' selected' : '') + '>' + esc(R[k].l) + '</option>'; }).join('') + '</select>' +
+      '<label class="fl">पोलीस ठाणे (पो.स्टे. भूमिकेसाठी)</label><select class="f" id="dPs"><option value="">—</option>' + b.ps.map(function (p) { return '<option value="' + esc(p[0]) + '"' + (u && u.ps === p[0] ? ' selected' : '') + '>' + esc(p[1]) + '</option>'; }).join('') + '</select>', function (x) {
+      act({ act: 'save', id: x.querySelector('#dId').value, name: x.querySelector('#dNm').value, role: x.querySelector('#dRl').value, ps: x.querySelector('#dPs').value });
+    });
+  }
+  function showLog(q) {
+    call('log', { q: q }).then(function (rows) {
+      $('mTitle').textContent = 'लॉग'; $('mSub').textContent = rows.length + ' नोंदी (नवीन आधी)';
+      $('mBody').innerHTML = '<form class="search sec" id="lgF"><input class="f" id="lgQ" placeholder="यूजर, क्रिया, नाव शोधा" value="' + esc(q) + '" autocomplete="off"><button class="btn">शोधा</button></form><div class="card sec list">' + (rows.length ? rows.map(function (r) {
+        var bad = /चुकीचा|काढली|निर्यात|रीसेट/.test(r[3]);
+        return '<div class="chk"><b' + (bad ? ' style="color:var(--bad)"' : '') + '>' + esc(r[3]) + '</b> • ' + esc(dmy(r[0])) + '<div>' + esc(r[1]) + ' • ' + esc(r[2]) + '</div>' + (r[5] ? '<div class="hint">' + esc(r[5]) + '</div>' : '') + '</div>';
+      }).join('') : '<div class="empty">काही नाही.</div>') + '</div>';
+      $('lgF').onsubmit = function (e) { e.preventDefault(); showLog($('lgQ').value); };
+      openPg('miscPg');
+    }).catch(fail);
+  }
+  function expDlg() {
+    var b = S.boot;
+    dlg('<h3>यादी छापा / CSV</h3><p class="hint">फक्त साधी माहिती (नाव, गाव, गुन्हे, स्थिती). पत्ता, मोबाईल इ. कधीच नाही. कारण लॉगमध्ये जाते.</p>' +
+      '<label class="fl">प्रकार</label><select class="f" id="dC"><option value="">सर्व</option>' + Object.keys(b.cats).map(function (k) { return '<option value="' + k + '">' + esc(b.cats[k].l) + '</option>'; }).join('') + '</select>' +
+      '<label class="fl">पो.स्टे.</label><select class="f" id="dP"><option value="">सर्व</option>' + b.ps.map(function (p) { return '<option value="' + esc(p[0]) + '">' + esc(p[1]) + '</option>'; }).join('') + '</select>' +
+      '<label class="tog" style="margin-top:10px"><input type="checkbox" id="dO" checked> फक्त चालू नोंदी</label><label class="fl">कारण</label><input class="f" id="dW" placeholder="उदा. नाकाबंदी, मासिक बैठक" autocomplete="off">' +
+      '<label class="fl">स्वरूप</label><select class="f" id="dF"><option value="print">छपाई (PDF)</option><option value="csv">Excel (CSV)</option></select>', function (x) {
+      var w = x.querySelector('#dW').value.trim(); if (!w) { toast('कारण लिहा', true); return false; }
+      var fmt = x.querySelector('#dF').value, cat = x.querySelector('#dC').value;
+      call('exportRows', { cat: cat, ps: x.querySelector('#dP').value, open: x.querySelector('#dO').checked, why: w }).then(function (d) { (fmt === 'csv' ? toCsv : toPrint)(d, cat); }).catch(fail);
+    });
+  }
+  var EXP = [['cat', 'प्रकार'], ['ps', 'पो.स्टे.'], ['name', 'नाव'], ['alias', 'उर्फ'], ['father', 'वडील/पती'], ['age', 'वय'], ['village', 'गाव'], ['crimes', 'गुन्हे'], ['status', 'स्थिती'], ['statusDate', 'स्थिती तारीख'], ['hsNo', 'HS क्र.'], ['toDate', 'हद्दपार पर्यंत'], ['lastCheck', 'मागील तपासणी'], ['io', 'अधिकारी']];
+  function val(r, k) { return k === 'cat' ? catL(r.cat) : k === 'ps' ? psName(r.ps) : /Date|Check/.test(k) ? dmy(r[k]) : r[k] || ''; }
+  function toCsv(d) {
+    var q = function (s) { s = String(s).replace(/"/g, '""'); return '"' + (/^[=+\-@]/.test(s) ? "'" + s : s) + '"'; };
+    var lines = [q('गोपनीय • ' + d.by + ' • ' + dmy(d.at))].concat([EXP.map(function (e) { return q(e[1]); }).join(',')]).concat(d.rows.map(function (r) { return EXP.map(function (e) { return q(val(r, e[0])); }).join(','); }));
+    var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'गोपनीय_यादी_' + d.at.slice(0, 10) + '.csv'; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    toast('CSV डाउनलोड झाली. काम झाल्यावर फाईल हटवा.');
+  }
+  function toPrint(d, cat) {
+    var wm = 'गोपनीय • ' + esc(d.by) + ' • ' + esc(dmy(d.at));
+    $('printArea').innerHTML = '<div class="wm">' + wm + '</div><h3 style="margin:0">गोपनीय • ' + esc(cat ? catL(cat) : 'सर्व नोंदी') + ' (' + d.rows.length + ')</h3><p style="margin:2px 0 8px">' + wm + '</p><table><thead><tr><th>#</th>' +
+      EXP.map(function (e) { return '<th>' + esc(e[1]) + '</th>'; }).join('') + '</tr></thead><tbody>' + d.rows.map(function (r, i) { return '<tr><td>' + (i + 1) + '</td>' + EXP.map(function (e) { return '<td>' + esc(val(r, e[0])).replace(/\n/g, '<br>') + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
+    setTimeout(function () { window.print(); setTimeout(function () { $('printArea').innerHTML = ''; }, 500); }, 100);
+  }
+
+  if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+})();
+</script>
+</body>
+</html>
