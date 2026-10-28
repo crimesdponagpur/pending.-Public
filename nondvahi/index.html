@@ -153,21 +153,108 @@ body.hid .veil{display:grid}
 .tbl td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 .tbl td:first-child{white-space:nowrap;color:var(--muted)}
 #printArea{display:none}
+@page{size:A4 landscape;margin:10mm}
 @media print{
   body>*:not(#printArea){display:none!important}
   #printArea{display:block!important;color:#000;font:12px/1.4 var(--font)}
   #printArea table{width:100%;border-collapse:collapse}
   #printArea th,#printArea td{border:1px solid #444;padding:3px 5px;text-align:left;vertical-align:top}
+  #printArea .pf{font-size:10px;color:#555;margin:4px 0 0}
+  #printArea .pb{page-break-after:always}
+  #printArea .pb:last-child{page-break-after:auto}
   #printArea .wm{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:42px;color:rgba(0,0,0,.07);transform:rotate(-30deg);pointer-events:none;text-align:center}
 }
+
+.hlogo{width:36px;height:36px;border-radius:10px;flex:none}
+.pane,.brand{display:none}
+.lock .box{background:transparent}
+@media(min-width:900px){
+  body{background:#eceff5}
+  /* लॉगिन: दोन भाग */
+  .lock{flex-direction:row;align-items:center;justify-content:center;gap:96px;padding:48px}
+  .lock .pane{display:block;max-width:400px}
+  .lock .pane .plogo{width:150px;height:150px;border-radius:34px;box-shadow:0 18px 50px rgba(0,0,0,.4)}
+  .lock .pane h2{color:#fff;font-size:44px;margin:22px 0 6px;letter-spacing:.5px}
+  .lock .pane p{font-size:17px;opacity:.85;margin:0 0 26px;line-height:1.6}
+  .lock .pane ul{list-style:none;padding:0;margin:0}
+  .lock .pane li{padding:9px 0 9px 30px;position:relative;font-size:15px;opacity:.9;border-top:1px solid rgba(255,255,255,.12)}
+  .lock .pane li:before{content:"✓";position:absolute;left:4px;color:var(--gold);font-weight:700}
+  .lock .box{max-width:400px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:34px 30px;margin:0;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+  .lock .box .seal{display:none}
+  .lock .box h1{margin-top:0}
+  /* मुख्य ॲप: डावीकडे मेनू */
+  .wrap{max-width:none;margin:0;padding-left:260px}
+  header.top{padding:16px 36px}
+  header.top .hlogo{display:none}
+  header.top b{font-size:20px}
+  main{max-width:1120px;margin:0 auto;padding:28px 36px 70px}
+  nav.bot{left:0;top:0;bottom:0;right:auto;width:260px;flex-direction:column;border-top:0;border-right:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,#0b1f4b,#0e2a63);justify-content:flex-start;padding:0}
+  nav.bot>div{flex-direction:column;max-width:none;padding:18px 14px;gap:4px}
+  nav.bot .brand{display:flex;align-items:center;gap:12px;padding:6px 8px 20px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.1)}
+  nav.bot .brand>div{display:block;width:auto;max-width:none}
+  nav.bot .brand img{width:46px;height:46px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+  nav.bot .brand b{display:block;color:#fff;font-size:21px;line-height:1.2}
+  nav.bot .brand small{color:#9fb0d6;font-size:12.5px}
+  nav.bot button{flex:none;flex-direction:row;gap:14px;padding:13px 14px;font-size:15.5px;color:#c9d3ea;border-radius:12px;justify-content:flex-start}
+  nav.bot button svg{width:22px;height:22px}
+  nav.bot button:hover{background:rgba(255,255,255,.07)}
+  nav.bot button.on{background:rgba(255,255,255,.14);color:#fff}
+  nav.bot button.add{color:#ffd966;margin-top:12px;border:1px dashed rgba(255,217,102,.45)}
+  .grid{grid-template-columns:repeat(3,1fr);gap:16px}
+  .cat{padding:20px}.cat b{font-size:38px}
+  #resList{display:grid;grid-template-columns:1fr 1fr}
+  #resList .it:nth-child(odd){border-right:1px solid var(--line)}
+  #resList .empty{grid-column:1/-1}
+  .search input{font-size:17px}
+  .page{left:260px}
+  .page .inner{max-width:900px;padding-bottom:80px}
+  .toast{bottom:28px}
+  .dlg .bx{max-width:520px}
+}
+
+/* सुरुवातीचे लोगो ॲनिमेशन */
+#splash{position:fixed;inset:0;z-index:200;background:radial-gradient(circle at 50% 38%,#1b3f8f 0,#0b1f4b 55%,#071536 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;transition:opacity .5s ease,visibility .5s}
+#splash.off{opacity:0;visibility:hidden}
+#splash svg{width:150px;height:150px;overflow:visible;filter:drop-shadow(0 10px 30px rgba(0,0,0,.45))}
+#splash .sh{fill:rgba(19,48,110,0);stroke:#f2a516;stroke-width:5;stroke-linejoin:round;stroke-dasharray:330;stroke-dashoffset:330;animation:draw 1s ease forwards,fill .5s ease .9s forwards}
+#splash .ey{fill:none;stroke:#f2a516;stroke-width:5;stroke-linejoin:round;stroke-dasharray:140;stroke-dashoffset:140;transform-origin:60px 60px;animation:draw .7s ease .8s forwards,blink .5s ease 1.7s}
+#splash .pu{fill:#f2a516;transform-origin:60px 60px;transform:scale(0);animation:pop .45s cubic-bezier(.3,1.6,.5,1) 1.3s forwards}
+#splash .pi{fill:#13306e;transform-origin:60px 60px;transform:scale(0);animation:pop .3s ease 1.55s forwards}
+#splash .scan{stroke:#ffd966;stroke-width:2;opacity:0;animation:scan 1s ease 1.3s}
+#splash h1{font-size:40px;margin:22px 0 4px;letter-spacing:1px;opacity:0;transform:translateY(10px);animation:up .6s ease 1.5s forwards}
+#splash p{margin:0;font-size:14px;opacity:0;letter-spacing:.5px;animation:up2 .6s ease 1.8s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fill{to{fill:rgba(19,48,110,.95)}}
+@keyframes pop{to{transform:scale(1)}}
+@keyframes blink{50%{transform:scaleY(.1)}}
+@keyframes up{to{opacity:1;transform:none}}
+@keyframes up2{to{opacity:.8}}
+@keyframes scan{0%{opacity:.9;transform:translateY(-34px)}100%{opacity:0;transform:translateY(34px)}}
+@media(prefers-reduced-motion:reduce){#splash *{animation-duration:.01s!important;animation-delay:0s!important}}
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <svg viewBox="0 0 120 120"><path class="sh" d="M60 6L103 21V58C103 87 85 105 60 115C35 105 17 87 17 58V21Z"/><path class="ey" d="M28 60C40 42 80 42 92 60C80 78 40 78 28 60Z"/><circle class="pu" cx="60" cy="60" r="11"/><circle class="pi" cx="60" cy="60" r="4.5"/><line class="scan" x1="30" y1="60" x2="90" y2="60"/></svg>
+  <h1>सतर्क</h1>
+  <p>गोपनीय नोंदवही</p>
+</div>
 <div class="busy" id="busy"></div>
 <div class="veil">🔒 गोपनीय</div>
 
 <!-- लॉगिन -->
 <section class="lock" id="lockScr">
+  <div class="pane">
+    <img src="icon-512.png" alt="" class="plogo">
+    <h2>सतर्क</h2>
+    <p>फरार • पाहिजे आरोपी • निगराणी बदमाश<br>गोपनीय नोंदवही</p>
+    <ul>
+      <li>माहिती फक्त तुमच्या स्वतःच्या Google Sheet मध्ये</li>
+      <li>संवेदनशील माहिती कुलूपबंद (encrypted)</li>
+      <li>प्रत्येक पाहणी व बदलाची नोंद (audit log)</li>
+      <li>पो.स्टे. निहाय प्रवेश, आपोआप लॉक</li>
+    </ul>
+  </div>
   <div class="box">
     <svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd966"/><stop offset=".5" stop-color="#f2a516"/><stop offset="1" stop-color="#c46a0a"/></linearGradient></defs><path d="M60 6L103 21V58C103 87 85 105 60 115C35 105 17 87 17 58V21Z" fill="#13306e" stroke="url(#sg)" stroke-width="5" stroke-linejoin="round"/><path d="M28 60C40 42 80 42 92 60C80 78 40 78 28 60Z" fill="none" stroke="url(#sg)" stroke-width="5" stroke-linejoin="round"/><circle cx="60" cy="60" r="11" fill="url(#sg)"/><circle cx="60" cy="60" r="4.5" fill="#13306e"/></svg>
     <h1>सतर्क</h1>
@@ -207,6 +294,7 @@ body.hid .veil{display:grid}
 <!-- ॲप -->
 <div class="wrap" id="appScr" hidden>
   <header class="top">
+    <img class="hlogo" src="icon-192.png" alt="">
     <div class="t"><b id="hTitle">सतर्क</b><small id="hWho"></small></div>
     <button class="ib" id="lockBtn" title="आत्ताच लॉक करा" aria-label="लॉक करा"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
   </header>
@@ -230,6 +318,7 @@ body.hid .veil{display:grid}
     </div>
   </main>
   <nav class="bot"><div>
+    <div class="brand"><img src="icon-192.png" alt=""><div><b>सतर्क</b><small>गोपनीय नोंदवही</small></div></div>
     <button data-t="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>मुख्य</button>
     <button data-t="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>यादी / शोध</button>
     <button data-t="new" class="add" id="newBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>नवीन नोंद</button>
@@ -611,10 +700,10 @@ body.hid .veil{display:grid}
   function renderMore() {
     var me = S.boot.me, h = '<div class="mi" style="cursor:default"><div><b>' + esc(me.name) + ' (' + esc(me.id) + ')</b><small>' + esc(me.rl) + (me.ps ? ' • ' + esc(psName(me.ps)) : '') + '</small></div></div>';
     h += '<button class="mi" data-m="pw">पासवर्ड बदला<small></small></button>';
+    if (me.full) h += '<button class="mi" data-m="exp">यादी काढा (Word / PDF)<small>अधिकृत यादीच्या स्वरूपात; कारण लॉगमध्ये जाते</small></button>';
     if (me.admin) {
       h += '<button class="mi" data-m="users">यूजर व अधिकार<small>नवीन यूजर, पासवर्ड रीसेट, बंद/चालू</small></button>';
       h += '<button class="mi" data-m="log">लॉग (कोणी काय पाहिले / बदलले)<small>शेवटच्या 1500 नोंदी</small></button>';
-      h += '<button class="mi" data-m="exp">यादी छापा / Excel (CSV)<small>फक्त साधी माहिती; संवेदनशील भाग कधीच नाही</small></button>';
     }
     h += '<button class="mi" data-m="priv">गोपनीयता कशी राखली जाते<small></small></button>';
     h += '<button class="mi" data-m="theme">गडद / उजळ रंग<small></small></button>';
@@ -642,7 +731,7 @@ body.hid .veil{display:grid}
         'फोनमध्ये कोणतीही नोंद साठवली जात नाही. 5 मिनिटे वापर नसल्यास किंवा ॲप 1 मिनिट पार्श्वभूमीत राहिल्यास लॉक. संवेदनशील माहिती 2 मिनिटांनी आपोआप लपते.',
         '6 वेळा चुकीचा पासवर्ड दिल्यास तो आयडी 15 मिनिटे बंद.',
         'फोटो व पूर्ण आधार क्रमांक ठेवले जात नाहीत.',
-        'छपाई / CSV फक्त मुख्य प्रशासकाला, कारणासह; प्रत्येक पानावर नाव व वेळ छापली जाते.'
+        'Word / PDF यादी फक्त संवेदनशील माहितीचा अधिकार असलेल्यांना, स्वतःच्या पो.स्टे. पुरती, कारणासह; मोबाईल / नातेवाईक / गुप्त शेरा कधीच येत नाही; प्रत्येक पानावर नाव व वेळ छापली जाते.'
       ].map(function (x) { return '<li style="margin:8px 0">' + x + '</li>'; }).join('') + '</ul></div>';
       openPg('miscPg');
     },
@@ -698,33 +787,93 @@ body.hid .veil{display:grid}
   }
   function expDlg() {
     var b = S.boot;
-    dlg('<h3>यादी छापा / CSV</h3><p class="hint">फक्त साधी माहिती (नाव, गाव, गुन्हे, स्थिती). पत्ता, मोबाईल इ. कधीच नाही. कारण लॉगमध्ये जाते.</p>' +
+    dlg('<h3>यादी काढा (Word / PDF)</h3><p class="hint">अधिकृत यादीच्या स्वरूपात. मोबाईल, नातेवाईक व गुप्त शेरा कधीच येत नाही. कारण व तुमचे नाव लॉगमध्ये जाते आणि पानावर छापले जाते.</p>' +
       '<label class="fl">प्रकार</label><select class="f" id="dC"><option value="">सर्व</option>' + Object.keys(b.cats).map(function (k) { return '<option value="' + k + '">' + esc(b.cats[k].l) + '</option>'; }).join('') + '</select>' +
-      '<label class="fl">पो.स्टे.</label><select class="f" id="dP"><option value="">सर्व</option>' + b.ps.map(function (p) { return '<option value="' + esc(p[0]) + '">' + esc(p[1]) + '</option>'; }).join('') + '</select>' +
-      '<label class="tog" style="margin-top:10px"><input type="checkbox" id="dO" checked> फक्त चालू नोंदी</label><label class="fl">कारण</label><input class="f" id="dW" placeholder="उदा. नाकाबंदी, मासिक बैठक" autocomplete="off">' +
-      '<label class="fl">स्वरूप</label><select class="f" id="dF"><option value="print">छपाई (PDF)</option><option value="csv">Excel (CSV)</option></select>', function (x) {
+      (b.me.all ? '<label class="fl">पो.स्टे.</label><select class="f" id="dP"><option value="">सर्व</option>' + b.ps.map(function (p) { return '<option value="' + esc(p[0]) + '">' + esc(p[1]) + '</option>'; }).join('') + '</select>' : '') +
+      '<label class="tog" style="margin-top:10px"><input type="checkbox" id="dO" checked> फक्त चालू नोंदी</label>' +
+      '<label class="tog" style="margin-top:6px"><input type="checkbox" id="dA" checked> आरोपीचा पत्ता (नाव व पत्ता स्तंभात) समाविष्ट करा</label>' +
+      '<label class="fl">कारण</label><input class="f" id="dW" placeholder="उदा. मासिक बैठक, तपास आढावा" autocomplete="off">' +
+      '<label class="fl">स्वरूप</label><select class="f" id="dF"><option value="docx">Word (.docx)</option><option value="print">PDF (छपाई → PDF म्हणून जतन)</option></select>', function (x) {
       var w = x.querySelector('#dW').value.trim(); if (!w) { toast('कारण लिहा', true); return false; }
-      var fmt = x.querySelector('#dF').value, cat = x.querySelector('#dC').value;
-      call('exportRows', { cat: cat, ps: x.querySelector('#dP').value, open: x.querySelector('#dO').checked, why: w }).then(function (d) { (fmt === 'csv' ? toCsv : toPrint)(d, cat); }).catch(fail);
+      var fmt = x.querySelector('#dF').value, cat = x.querySelector('#dC').value, pe = x.querySelector('#dP');
+      call('exportRows', { cat: cat, ps: pe ? pe.value : '', open: x.querySelector('#dO').checked, addr: x.querySelector('#dA').checked, why: w })
+        .then(function (d) { var secs = sections(d, cat); if (!secs.length) { toast('या निवडीत नोंद नाही', true); return; } (fmt === 'docx' ? toDocx : toPrint)(secs, d); }).catch(fail);
     });
   }
-  var EXP = [['cat', 'प्रकार'], ['ps', 'पो.स्टे.'], ['name', 'नाव'], ['alias', 'उर्फ'], ['father', 'वडील/पती'], ['age', 'वय'], ['village', 'गाव'], ['crimes', 'गुन्हे'], ['status', 'स्थिती'], ['statusDate', 'स्थिती तारीख'], ['hsNo', 'HS क्र.'], ['toDate', 'हद्दपार पर्यंत'], ['lastCheck', 'मागील तपासणी'], ['io', 'अधिकारी']];
-  function val(r, k) { return k === 'cat' ? catL(r.cat) : k === 'ps' ? psName(r.ps) : /Date|Check/.test(k) ? dmy(r[k]) : r[k] || ''; }
-  function toCsv(d) {
-    var q = function (s) { s = String(s).replace(/"/g, '""'); return '"' + (/^[=+\-@]/.test(s) ? "'" + s : s) + '"'; };
-    var lines = [q('गोपनीय • ' + d.by + ' • ' + dmy(d.at))].concat([EXP.map(function (e) { return q(e[1]); }).join(',')]).concat(d.rows.map(function (r) { return EXP.map(function (e) { return q(val(r, e[0])); }).join(','); }));
-    var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'गोपनीय_यादी_' + d.at.slice(0, 10) + '.csv'; document.body.appendChild(a); a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-    toast('CSV डाउनलोड झाली. काम झाल्यावर फाईल हटवा.');
+  /* सारणी: प्रकार + पो.स्टे. नुसार वेगळे भाग, तुमच्या अधिकृत याद्यांच्या स्तंभांप्रमाणे */
+  function sections(d, cat) {
+    var by = {}, order = [];
+    d.rows.forEach(function (r) { var k = r.cat + '|' + r.ps; if (!by[k]) { by[k] = []; order.push(k); } by[k].push(r); });
+    return order.map(function (k) {
+      var rs = by[k], c = rs[0].cat, ps = rs[0].ps, hs = c === 'HS';
+      var who = function (r) { return r.name + (r.age ? ' वय ' + r.age + ' वर्ष' : '') + (r.addr ? ' रा. ' + r.addr : ''); };
+      var head = hs ? ['अ.क्र.', 'पोलीस स्टेशन', 'निगराणी बदमाशाचे नाव / वय / पत्ता', 'निगराणी उघडल्याचे आदेश क्रमांक व दिनांक', 'सद्यस्थिती']
+        : ['अ.क्र.', 'पोस्टे', 'अप.क्र. व कलम', 'आरोपीचे नाव व पत्ता', 'दोषारोपपत्र क्र.', 'केस क्रमांक', 'सद्यस्थिती'];
+      var body = rs.map(function (r, i) {
+        if (hs) return [String(i + 1), psName(r.ps), who(r), [r.hsNo, r.hsDate ? 'दि. ' + dmy(r.hsDate) : ''].filter(Boolean).join(' '), r.status + (r.statusNote ? ' (' + r.statusNote + ')' : '')];
+        var dos = '', cs = '', rest = [];
+        String(r.warrant || '').split(' | ').forEach(function (t) { var m = /^दोषारोपपत्र:\s*(.*)$/.exec(t), n = /^केस क्र\.:\s*(.*)$/.exec(t); if (m) dos = m[1]; else if (n) cs = n[1]; else if (t) rest.push(t); });
+        var crime = String(r.crimes || '').replace(/^पो\.स्टे\.\s*\S+\s*/, '');
+        return [String(i + 1), psName(r.ps), crime, who(r), dos || rest.join(' '), cs, r.statusNote || r.status];
+      });
+      var title = hs ? 'पोलीस स्टेशन ' + psName(ps) + ' निगराणी बदमाशांची यादी' : 'पोलीस स्टेशन ' + psName(ps) + ' ' + (c === 'FARAR' ? 'फरार' : 'पाहिजे') + ' आरोपींची यादी';
+      return { title: title, head: head, body: body, w: hs ? [5, 11, 36, 30, 18] : [5, 9, 20, 30, 12, 12, 12] };
+    });
   }
-  function toPrint(d, cat) {
-    var wm = 'गोपनीय • ' + esc(d.by) + ' • ' + esc(dmy(d.at));
-    $('printArea').innerHTML = '<div class="wm">' + wm + '</div><h3 style="margin:0">गोपनीय • ' + esc(cat ? catL(cat) : 'सर्व नोंदी') + ' (' + d.rows.length + ')</h3><p style="margin:2px 0 8px">' + wm + '</p><table><thead><tr><th>#</th>' +
-      EXP.map(function (e) { return '<th>' + esc(e[1]) + '</th>'; }).join('') + '</tr></thead><tbody>' + d.rows.map(function (r, i) { return '<tr><td>' + (i + 1) + '</td>' + EXP.map(function (e) { return '<td>' + esc(val(r, e[0])).replace(/\n/g, '<br>') + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
-    setTimeout(function () { window.print(); setTimeout(function () { $('printArea').innerHTML = ''; }, 500); }, 100);
+  var foot = function (d) { return 'गोपनीय • ' + d.by + ' • ' + dmy(d.at); };
+  function toPrint(secs, d) {
+    $('printArea').innerHTML = '<div class="wm">' + esc(foot(d)) + '</div>' + secs.map(function (s) {
+      return '<h3 style="text-align:center;margin:10px 0 6px">' + esc(s.title) + '</h3><table><thead><tr>' + s.head.map(function (x, i) { return '<th style="width:' + s.w[i] + '%">' + esc(x) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        s.body.map(function (r) { return '<tr>' + r.map(function (x) { return '<td>' + esc(x) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table><p class="pf">' + esc(foot(d)) + '</p><div class="pb"></div>';
+    }).join('');
+    setTimeout(function () { window.print(); setTimeout(function () { $('printArea').innerHTML = ''; }, 800); }, 150);
+  }
+  /* Word (.docx): ब्राउझरमध्येच तयार होते, कुठेही पाठवले जात नाही. JSZip फक्त लायब्ररी म्हणून मागवली जाते. */
+  function loadZip() {
+    if (window.JSZip) return Promise.resolve();
+    return new Promise(function (res, rej) {
+      var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+      s.onload = res; s.onerror = function () { rej(new Error('Word तयार करण्यासाठी इंटरनेट लागते. PDF पर्याय वापरा.')); }; document.head.appendChild(s);
+    });
+  }
+  function x(s) { return String(s == null ? '' : s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+  function toDocx(secs, d) {
+    loadZip().then(function () {
+      var F = '<w:rFonts w:ascii="Mangal" w:hAnsi="Mangal" w:cs="Mangal" w:eastAsia="Mangal"/>';
+      var run = function (t, o) { o = o || {}; return '<w:r><w:rPr>' + F + (o.b ? '<w:b/><w:bCs/>' : '') + '<w:sz w:val="' + (o.sz || 20) + '"/><w:szCs w:val="' + (o.sz || 20) + '"/>' + (o.col ? '<w:color w:val="' + o.col + '"/>' : '') + '</w:rPr><w:t xml:space="preserve">' + x(t) + '</w:t></w:r>'; };
+      var para = function (t, o) { o = o || {}; return '<w:p><w:pPr><w:jc w:val="' + (o.jc || 'left') + '"/><w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after || 60) + '"/></w:pPr>' + run(t, o) + '</w:p>'; };
+      var total = 15200, body = '';
+      secs.forEach(function (s, si) {
+        body += para(s.title, { b: 1, sz: 28, jc: 'center', after: 80 });
+        var tw = s.w.map(function (p) { return Math.round(total * p / 100); });
+        var cell = function (t, w, hd) {
+          var lines = String(t).split('\n').map(function (l) { return '<w:p><w:pPr><w:spacing w:after="20"/></w:pPr>' + run(l, { b: hd, sz: hd ? 20 : 19 }) + '</w:p>'; }).join('');
+          return '<w:tc><w:tcPr><w:tcW w:w="' + w + '" w:type="dxa"/>' + (hd ? '<w:shd w:val="clear" w:color="auto" w:fill="DCE4F2"/>' : '') + '</w:tcPr>' + lines + '</w:tc>';
+        };
+        var bd = ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(function (e) { return '<w:' + e + ' w:val="single" w:sz="4" w:space="0" w:color="444444"/>'; }).join('');
+        body += '<w:tbl><w:tblPr><w:tblW w:w="' + total + '" w:type="dxa"/><w:tblBorders>' + bd + '</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="70" w:type="dxa"/><w:right w:w="70" w:type="dxa"/></w:tblCellMar></w:tblPr>' +
+          '<w:tblGrid>' + tw.map(function (w) { return '<w:gridCol w:w="' + w + '"/>'; }).join('') + '</w:tblGrid>' +
+          '<w:tr><w:trPr><w:tblHeader/></w:trPr>' + s.head.map(function (h, i) { return cell(h, tw[i], 1); }).join('') + '</w:tr>' +
+          s.body.map(function (r) { return '<w:tr><w:trPr><w:cantSplit/></w:trPr>' + r.map(function (c, i) { return cell(c, tw[i], 0); }).join('') + '</w:tr>'; }).join('') + '</w:tbl>';
+        body += para(foot(d), { sz: 16, col: '888888', before: 80 });
+        if (si < secs.length - 1) body += '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+      });
+      var doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' + body +
+        '<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="900" w:right="800" w:bottom="800" w:left="800" w:header="400" w:footer="400" w:gutter="0"/></w:sectPr></w:body></w:document>';
+      var z = new JSZip();
+      z.file('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+      z.file('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+      z.file('word/document.xml', doc);
+      return z.generateAsync({ type: 'blob', compression: 'DEFLATE', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    }).then(function (blob) {
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'सतर्क_यादी_' + d.at.slice(0, 10) + '.docx'; document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+      toast('Word फाईल डाउनलोड झाली. काम झाल्यावर ती हटवा.');
+    }).catch(fail);
   }
 
+  // सुरुवातीचे ॲनिमेशन: सुमारे 2.6 सेकंद, स्पर्श केल्यास लगेच बंद
+  (function () { var sp = $('splash'), done = function () { sp.classList.add('off'); setTimeout(function () { sp.remove(); }, 700); }; sp.onclick = done; setTimeout(done, 2600); })();
   if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
 })();
 </script>
