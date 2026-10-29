@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex, nofollow">
-<title>पत्रदीप</title>
+<title>झटपट</title>
 <meta name="theme-color" content="#0b1f4b">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -13,12 +13,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="पत्रदीप">
+<meta name="apple-mobile-web-app-title" content="झटपट">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&display=swap">
 <script src="config.js"></script>
 <style>
-/* पत्रदीप: फोनमध्येच स्कॅन, कडा ओळखणे, फिल्टर, PDF / Word / Excel. OCR, भाषांतर व AI तुमच्या Apps Script सर्व्हरवर. */
+/* झटपट: फोनमध्येच स्कॅन, कडा ओळखणे, फिल्टर, PDF / Word / Excel. OCR, भाषांतर व AI तुमच्या Apps Script सर्व्हरवर. */
 :root{
   --bg:#f3f5f9;--card:#fff;--ink:#0f172a;--ink2:#334155;--muted:#64748b;--line:#e2e8f0;
   --navy:#0b1f4b;--navy2:#13306e;--pri:#1d4ed8;--pri-l:#eaf0ff;--gold:#c8961a;--gold-l:#fdf6e3;
@@ -230,7 +230,7 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
 <body>
 <div id="splash" aria-hidden="true">
  <svg viewBox="0 0 120 120"><path class="pg" d="M36 22h30l20 20v56H36z"/><path class="fold" d="M66 22v20h20z"/><path class="ln" d="M45 62h32"/><path class="ln ln2" d="M45 74h32"/><path class="ln ln3" d="M45 86h20"/><rect class="beam" x="30" y="26" width="60" height="4" rx="2"/><path class="st" d="M92 14l3.2 9.3 9.3 3.2-9.3 3.2L92 39l-3.2-9.3-9.3-3.2 9.3-3.2z"/></svg>
- <h1>पत्रदीप</h1><p>कागदावर प्रकाश, डिजिटल रूप</p>
+ <h1>झटपट</h1><p>क्षणात कागद डिजिटल</p>
 </div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
  <defs>
@@ -275,7 +275,7 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
 <section class="view on" id="v-home">
  <header class="top">
   <svg class="logo" viewBox="0 0 120 120" aria-hidden="true"><rect width="120" height="120" rx="30" fill="#13306e"/><path d="M36 22h30l20 20v56H36z" fill="#fff"/><path d="M66 22v20h20" fill="#dbe4f5"/><path d="M45 62h32M45 74h32M45 86h20" stroke="#13306e" stroke-width="5" stroke-linecap="round"/><rect x="30" y="52" width="60" height="4" rx="2" fill="#f2a516"/><path d="M92 14l3.2 9.3 9.3 3.2-9.3 3.2L92 39l-3.2-9.3-9.3-3.2 9.3-3.2z" fill="#f2a516"/></svg>
-  <div class="t"><b>पत्रदीप</b><small>स्कॅन • PDF • Word • Excel • भाषांतर</small></div>
+  <div class="t"><b>झटपट</b><small>स्कॅन • PDF • Word • Excel • भाषांतर</small></div>
   <button class="ib" id="b-set" aria-label="सेटिंग्ज"><svg class="i"><use href="#i-set"/></svg></button>
  </header>
  <main class="wrap">
@@ -913,7 +913,7 @@ function uni2kruti(s){
     return zip([
       { name: '[Content_Types].xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>' },
       { name: '_rels/.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>' },
-      { name: 'docProps/core.xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>' + xesc(title || '') + '</dc:title><dc:creator>पत्रदीप</dc:creator></cp:coreProperties>' },
+      { name: 'docProps/core.xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>' + xesc(title || '') + '</dc:title><dc:creator>झटपट</dc:creator></cp:coreProperties>' },
       { name: 'word/document.xml', data: docXml }
     ], MIME.docx);
   }
@@ -1471,7 +1471,7 @@ function uni2kruti(s){
       .then(function (b64) { return api('save', { name: safeName(CUR.name) + '.pdf', mime: MIME.pdf, b64: b64 }); })
       .then(function (r) {
         done(); CUR.drive = r.url; DB.put(CUR);
-        openDlg('<h3>Drive मध्ये जतन झाले</h3><p class="s">"पत्रदीप" फोल्डरमध्ये</p><div class="row"><a class="btn gold wide" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + ico('cloud') + 'Drive मध्ये उघडा</a></div>');
+        openDlg('<h3>Drive मध्ये जतन झाले</h3><p class="s">"झटपट" फोल्डरमध्ये</p><div class="row"><a class="btn gold wide" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + ico('cloud') + 'Drive मध्ये उघडा</a></div>');
       }).catch(fail);
   }
   function actDel() {
@@ -1688,7 +1688,7 @@ function uni2kruti(s){
       '<span class="fl">OCR भाषा</span>' + optGroup('ocr', [['mr', 'मराठी'], ['hi', 'हिंदी'], ['en', 'इंग्रजी']], LS.get('sm-ocr') || 'mr') +
       '<span class="fl">नवीन पानांचा फिल्टर</span>' + optGroup('flt', FILTERS, LS.get('sm-filter') || 'magic') +
       '<span class="fl">रूप</span>' + optGroup('th', [['', 'फोनप्रमाणे'], ['light', 'दिवस'], ['dark', 'रात्र']], LS.get('sm-theme') || '') +
-      '<div class="row"><button class="btn gold wide" id="s-ok">' + ico('check') + 'जतन</button></div><p class="hint" style="text-align:center">पत्रदीप v1.0</p>', function (bx) {
+      '<div class="row"><button class="btn gold wide" id="s-ok">' + ico('check') + 'जतन</button></div><p class="hint" style="text-align:center">झटपट v1.0</p>', function (bx) {
       bindOpts(bx);
       function store() {
         LS.set('sm-api', bx.querySelector('#s-u').value.trim()); LS.set('sm-key', bx.querySelector('#s-k').value.trim().toUpperCase());
