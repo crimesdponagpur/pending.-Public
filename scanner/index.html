@@ -616,7 +616,7 @@ html,button,a,input,label,.dc,.pg{touch-action:manipulation}
 <section class="view" id="v-edit">
  <header class="top">
   <button class="ib" data-back aria-label="मागे"><svg class="i"><use href="#i-back"/></svg></button>
-  <div class="t"><b id="e-title">पान</b><small>फिल्टर, फिरवणे, कापणे</small></div>
+  <div class="t"><b id="e-title">पान</b><small>फिल्टर, फिरवणे, कापणे • सरकवून पान बदला</small></div>
  </header>
  <main class="wrap">
   <div class="pv"><img id="e-img" alt=""></div>
@@ -2139,6 +2139,24 @@ function uni2kruti(s){
     var t = CUR.pages[EI]; CUR.pages[EI] = CUR.pages[j]; CUR.pages[j] = t; EI = j; CUR.text = null; CUR.updated = Date.now();
     DB.put(CUR).then(function () { renderEdit(false); toast('पान ' + (EI + 1) + ' क्रमांकावर'); });
   }
+  /* पान संपादन: डावीकडे / उजवीकडे सरकवून पुढचे-मागचे पान */
+  (function () {
+    var v = $('v-edit'), t0 = null;
+    function go1(d) {
+      var j = EI + d; if (!CUR || j < 0 || j >= CUR.pages.length) { if (navigator.vibrate) navigator.vibrate(10); return; }
+      EI = j; var im = $('e-img'); im.style.transition = 'none'; im.style.transform = 'translateX(' + (d > 0 ? 40 : -40) + 'px)'; im.style.opacity = '.3';
+      renderEdit(true); requestAnimationFrame(function () { requestAnimationFrame(function () { im.style.transition = 'transform .18s ease-out,opacity .18s'; im.style.transform = ''; im.style.opacity = ''; }); });
+    }
+    v.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1 || e.target.closest('#e-flt,input,.row,textarea')) { t0 = null; return; }
+      t0 = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() };
+    }, { passive: true });
+    v.addEventListener('touchend', function (e) {
+      if (!t0) return; var c = e.changedTouches[0], dx = c.clientX - t0.x, dy = c.clientY - t0.y, ok = Math.abs(dx) > 55 && Math.abs(dy) < Math.abs(dx) * 0.6 && Date.now() - t0.t < 700; t0 = null;
+      if (ok) go1(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    v.addEventListener('touchcancel', function () { t0 = null; }, { passive: true });
+  })();
   $('e-ml').addEventListener('click', function () { movePage(-1); });
   $('e-mr').addEventListener('click', function () { movePage(1); });
   $('e-del').addEventListener('click', function () {
