@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex, nofollow">
-<title>स्कॅनमित्र</title>
+<title>पत्रदीप</title>
 <meta name="theme-color" content="#0b1f4b">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -13,12 +13,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="स्कॅनमित्र">
+<meta name="apple-mobile-web-app-title" content="पत्रदीप">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&display=swap">
 <script src="config.js"></script>
 <style>
-/* स्कॅनमित्र: फोनमध्येच स्कॅन, कडा ओळखणे, फिल्टर, PDF / Word / Excel. OCR, भाषांतर व AI तुमच्या Apps Script सर्व्हरवर. */
+/* पत्रदीप: फोनमध्येच स्कॅन, कडा ओळखणे, फिल्टर, PDF / Word / Excel. OCR, भाषांतर व AI तुमच्या Apps Script सर्व्हरवर. */
 :root{
   --bg:#f3f5f9;--card:#fff;--ink:#0f172a;--ink2:#334155;--muted:#64748b;--line:#e2e8f0;
   --navy:#0b1f4b;--navy2:#13306e;--pri:#1d4ed8;--pri-l:#eaf0ff;--gold:#c8961a;--gold-l:#fdf6e3;
@@ -205,9 +205,33 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
 .busy b{display:block;font-size:15.5px}
 .busy small{color:var(--muted)}
 @media (min-width:700px){.docs{grid-template-columns:repeat(3,1fr)}.pages{grid-template-columns:repeat(4,1fr)}}
+/* उघडताना लोगो ॲनिमेशन */
+#splash{position:fixed;inset:0;z-index:200;background:radial-gradient(circle at 50% 38%,#1b3f8f 0,#0b1f4b 55%,#071536 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;transition:opacity .5s ease,visibility .5s}
+#splash.off{opacity:0;visibility:hidden}
+#splash svg{width:150px;height:150px;overflow:visible;filter:drop-shadow(0 10px 30px rgba(0,0,0,.45))}
+#splash .pg{fill:rgba(255,255,255,0);stroke:#f2a516;stroke-width:4;stroke-linejoin:round;stroke-dasharray:330;stroke-dashoffset:330;animation:draw 1s ease forwards,fillp .5s ease .9s forwards}
+#splash .ln{stroke:#13306e;stroke-width:5;stroke-linecap:round;stroke-dasharray:40;stroke-dashoffset:40;animation:draw .5s ease 1.3s forwards}
+#splash .ln2{animation-delay:1.45s}#splash .ln3{animation-delay:1.6s}
+#splash .fold{fill:#dbe4f5;opacity:0;animation:show .3s ease 1.1s forwards}
+#splash .beam{fill:#f2a516;opacity:0;animation:sweep 1.1s ease 1.2s;filter:drop-shadow(0 0 8px #ffd966)}
+#splash .st{fill:#f2a516;transform-origin:92px 26px;transform:scale(0) rotate(-90deg);animation:pop .55s cubic-bezier(.3,1.6,.5,1) 2.1s forwards}
+#splash h1{font-size:40px;margin:22px 0 4px;letter-spacing:1px;opacity:0;transform:translateY(10px);animation:up .6s ease 1.9s forwards}
+#splash p{margin:0;font-size:14px;opacity:0;letter-spacing:.5px;animation:up2 .6s ease 2.2s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fillp{to{fill:rgba(255,255,255,.97)}}
+@keyframes show{to{opacity:1}}
+@keyframes pop{to{transform:scale(1) rotate(0)}}
+@keyframes up{to{opacity:1;transform:none}}
+@keyframes up2{to{opacity:.8}}
+@keyframes sweep{0%{opacity:0;transform:translateY(-30px)}15%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translateY(54px)}}
+@media(prefers-reduced-motion:reduce){#splash *{animation-duration:.01s!important;animation-delay:0s!important}}
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+ <svg viewBox="0 0 120 120"><path class="pg" d="M36 22h30l20 20v56H36z"/><path class="fold" d="M66 22v20h20z"/><path class="ln" d="M45 62h32"/><path class="ln ln2" d="M45 74h32"/><path class="ln ln3" d="M45 86h20"/><rect class="beam" x="30" y="26" width="60" height="4" rx="2"/><path class="st" d="M92 14l3.2 9.3 9.3 3.2-9.3 3.2L92 39l-3.2-9.3-9.3-3.2 9.3-3.2z"/></svg>
+ <h1>पत्रदीप</h1><p>कागदावर प्रकाश, डिजिटल रूप</p>
+</div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
  <defs>
   <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></symbol>
@@ -250,8 +274,8 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
 <!-- मुख्य पान -->
 <section class="view on" id="v-home">
  <header class="top">
-  <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#13306e"/><path d="M15 13h13l6 6v16H15z" fill="#fff"/><path d="M28 13v6h6" fill="#dbe4f5"/><path d="M19 24h11M19 28h11M19 32h7" stroke="#13306e" stroke-width="2" stroke-linecap="round"/><path d="M9 16v-5h5M39 16v-5h-5M9 32v5h5M39 32v5h-5" stroke="#c8961a" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  <div class="t"><b>स्कॅनमित्र</b><small>स्कॅन • PDF • Word • Excel • भाषांतर</small></div>
+  <svg class="logo" viewBox="0 0 120 120" aria-hidden="true"><rect width="120" height="120" rx="30" fill="#13306e"/><path d="M36 22h30l20 20v56H36z" fill="#fff"/><path d="M66 22v20h20" fill="#dbe4f5"/><path d="M45 62h32M45 74h32M45 86h20" stroke="#13306e" stroke-width="5" stroke-linecap="round"/><rect x="30" y="52" width="60" height="4" rx="2" fill="#f2a516"/><path d="M92 14l3.2 9.3 9.3 3.2-9.3 3.2L92 39l-3.2-9.3-9.3-3.2 9.3-3.2z" fill="#f2a516"/></svg>
+  <div class="t"><b>पत्रदीप</b><small>स्कॅन • PDF • Word • Excel • भाषांतर</small></div>
   <button class="ib" id="b-set" aria-label="सेटिंग्ज"><svg class="i"><use href="#i-set"/></svg></button>
  </header>
  <main class="wrap">
@@ -889,7 +913,7 @@ function uni2kruti(s){
     return zip([
       { name: '[Content_Types].xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>' },
       { name: '_rels/.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>' },
-      { name: 'docProps/core.xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>' + xesc(title || '') + '</dc:title><dc:creator>स्कॅनमित्र</dc:creator></cp:coreProperties>' },
+      { name: 'docProps/core.xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>' + xesc(title || '') + '</dc:title><dc:creator>पत्रदीप</dc:creator></cp:coreProperties>' },
       { name: 'word/document.xml', data: docXml }
     ], MIME.docx);
   }
@@ -1447,7 +1471,7 @@ function uni2kruti(s){
       .then(function (b64) { return api('save', { name: safeName(CUR.name) + '.pdf', mime: MIME.pdf, b64: b64 }); })
       .then(function (r) {
         done(); CUR.drive = r.url; DB.put(CUR);
-        openDlg('<h3>Drive मध्ये जतन झाले</h3><p class="s">"स्कॅनमित्र" फोल्डरमध्ये</p><div class="row"><a class="btn gold wide" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + ico('cloud') + 'Drive मध्ये उघडा</a></div>');
+        openDlg('<h3>Drive मध्ये जतन झाले</h3><p class="s">"पत्रदीप" फोल्डरमध्ये</p><div class="row"><a class="btn gold wide" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + ico('cloud') + 'Drive मध्ये उघडा</a></div>');
       }).catch(fail);
   }
   function actDel() {
@@ -1664,7 +1688,7 @@ function uni2kruti(s){
       '<span class="fl">OCR भाषा</span>' + optGroup('ocr', [['mr', 'मराठी'], ['hi', 'हिंदी'], ['en', 'इंग्रजी']], LS.get('sm-ocr') || 'mr') +
       '<span class="fl">नवीन पानांचा फिल्टर</span>' + optGroup('flt', FILTERS, LS.get('sm-filter') || 'magic') +
       '<span class="fl">रूप</span>' + optGroup('th', [['', 'फोनप्रमाणे'], ['light', 'दिवस'], ['dark', 'रात्र']], LS.get('sm-theme') || '') +
-      '<div class="row"><button class="btn gold wide" id="s-ok">' + ico('check') + 'जतन</button></div><p class="hint" style="text-align:center">स्कॅनमित्र v1.0</p>', function (bx) {
+      '<div class="row"><button class="btn gold wide" id="s-ok">' + ico('check') + 'जतन</button></div><p class="hint" style="text-align:center">पत्रदीप v1.0</p>', function (bx) {
       bindOpts(bx);
       function store() {
         LS.set('sm-api', bx.querySelector('#s-u').value.trim()); LS.set('sm-key', bx.querySelector('#s-k').value.trim().toUpperCase());
@@ -1688,6 +1712,7 @@ function uni2kruti(s){
   $('b-idc').addEventListener('click', function () { openCam(null, 'id'); });
   $('b-kru').addEventListener('click', function () { showText('', 'कृतिदेव ↔ Unicode', 'रूपांतर', '<p class="meta">कृतिदेव मजकूर पेस्ट करा व "कृतिदेव→Unicode" दाबा, किंवा Unicode मराठी टाकून "Unicode→कृतिदेव".</p>', 'kruti'); });
 
+  (function () { var sp = $('splash'), end = function () { sp.classList.add('off'); setTimeout(function () { sp.remove(); }, 700); }; sp.onclick = end; setTimeout(end, 3000); })();
   renderHome();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
 })();
