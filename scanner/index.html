@@ -597,6 +597,7 @@ html,button,a,input,label,.dc,.pg{touch-action:manipulation}
    <button class="act" data-a="fields"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-list"/></svg></i>माहिती काढा</button>
    <button class="act" data-a="letter"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-send"/></svg></i>उत्तर तयार करा</button>
    <button class="act" data-a="redact"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-hide"/></svg></i>खाजगी माहिती लपवा</button>
+   <button class="act" data-a="photo"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-id"/></svg></i>पासपोर्ट फोटो शीट</button>
    <button class="act" data-a="hand"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-edit"/></svg></i>हस्तलिखित वाचा</button>
   </div>
   <h2><span>जतन व शेअर</span></h2>
@@ -3396,6 +3397,46 @@ function uni2kruti(s){
   }
   ACTS.redact = actRedact;
 
+  /** पासपोर्ट / व्हिसा फोटो शीट: चेहरा चौकटीत सरकवा, पांढरी पार्श्वभूमी (AI), 4x6 इंच शीटवर अनेक प्रती */
+  function actPhoto() {
+    if (CUR.kind === 'pdf') { toast('आधी पानांत रूपांतर करा'); return; }
+    var SZ = { '35x45': [35, 45], '51x51': [51, 51], '25x35': [25, 35] }, st = { z: 1, x: 0.5, y: 0.45, s: '35x45', img: null };
+    openDlg('<h3>पासपोर्ट फोटो शीट</h3><p class="s">दस्ताचे पहिले पान वापरले जाते (फोटो असलेले). चेहरा चौकटीत येईल असे सरकवा.</p>' +
+      '<canvas id="pf-c" width="300" height="386" style="width:100%;max-width:300px;display:block;margin:0 auto 10px;border-radius:12px;border:1px solid var(--line)"></canvas>' +
+      '<span class="fl">आकार (मिमी)</span>' + optGroup('pfs', [['35x45', '35×45'], ['51x51', '51×51'], ['25x35', '25×35']], '35x45') +
+      '<span class="fl">मोठे / लहान</span><input type="range" id="pf-z" min="100" max="400" value="100">' +
+      '<span class="fl">डावीकडे ↔ उजवीकडे</span><input type="range" id="pf-x" min="0" max="100" value="50">' +
+      '<span class="fl">वर ↕ खाली</span><input type="range" id="pf-y" min="0" max="100" value="45">' +
+      '<div class="row"><button class="btn ghost wide" id="pf-bg"><sup class="aib">AI</sup>' + ico('wand') + 'पार्श्वभूमी पांढरी करा</button></div>' +
+      '<div class="row"><button class="btn gold wide" id="pf-ok">' + ico('check') + 'शीट बनवा</button></div>', function (bx) {
+      var cv = bx.querySelector('#pf-c');
+      function box() { var a = SZ[st.s], im = st.img, cw = im.width, ch = im.height, r = a[0] / a[1], w = Math.min(cw, ch * r) / st.z, h = w / r; return { w: w, h: h, x: Math.max(0, Math.min(cw - w, st.x * cw - w / 2)), y: Math.max(0, Math.min(ch - h, st.y * ch - h / 2)) }; }
+      function draw() {
+        if (!st.img) return; var a = SZ[st.s]; cv.height = Math.round(cv.width * a[1] / a[0]); var b = box();
+        cv.getContext('2d').drawImage(st.img, b.x, b.y, b.w, b.h, 0, 0, cv.width, cv.height);
+      }
+      DB.getB(CUR.pages[0].id + ':p').then(function (b) { return blobToCanvas(b, 2000); }).then(function (c) { st.img = c; draw(); });
+      bindOpts(bx);
+      bx.querySelector('[data-g=pfs]').addEventListener('click', function () { st.s = optVal(bx, 'pfs'); draw(); });
+      ['z', 'x', 'y'].forEach(function (k) { bx.querySelector('#pf-' + k).addEventListener('input', function () { st[k] = k === 'z' ? this.value / 100 : this.value / 100; draw(); }); });
+      bx.querySelector('#pf-bg').onclick = function () {
+        needAI().then(function () { busy('पार्श्वभूमी बदलत आहे…', 'AI (Gemini)'); return toJpeg(fitCanvas(st.img, 1400), 0.9); }).then(blobToB64).then(function (b64) {
+          return api('image', { prompt: 'या व्यक्तीचा फोटो तसाच ठेवा (चेहरा, केस, कपडे अजिबात बदलू नका), फक्त पार्श्वभूमी एकसंध शुद्ध पांढरी करा. पासपोर्ट फोटोसारखा.', b64: b64, mime: 'image/jpeg' });
+        }).then(function (r) { return blobToCanvas(b64ToBlob(r.b64, r.mime || 'image/png'), 2000); }).then(function (c) { st.img = c; done(); draw(); toast('पार्श्वभूमी पांढरी झाली'); }).catch(fail);
+      };
+      bx.querySelector('#pf-ok').onclick = function () {
+        var a = SZ[st.s], b = box(), dpi = 300, pw = Math.round(a[0] / 25.4 * dpi), ph = Math.round(a[1] / 25.4 * dpi), gap = 24;
+        var one = canvas(pw, ph); one.getContext('2d').drawImage(st.img, b.x, b.y, b.w, b.h, 0, 0, pw, ph);
+        var S = canvas(1200, 1800), x = S.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 1200, 1800);
+        var cols = Math.max(1, Math.floor((1200 - gap) / (pw + gap))), rows = Math.max(1, Math.floor((1800 - gap) / (ph + gap))), ox = (1200 - (cols * (pw + gap) - gap)) / 2, oy = (1800 - (rows * (ph + gap) - gap)) / 2;
+        for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) { var px = ox + c * (pw + gap), py = oy + r * (ph + gap); x.drawImage(one, px, py); x.strokeStyle = '#cfd4dc'; x.lineWidth = 1; x.strokeRect(px, py, pw, ph); }
+        closeDlg(); busy('शीट बनत आहे…');
+        toJpeg(S, 0.95).then(function (jb) { return addPages([{ blob: jb, quad: fullQuad(), filter: 'orig' }], null, 'फोटो शीट', true); }).then(function () { toast(cols * rows + ' फोटो असलेली 4×6 शीट बनली', 3500); }).catch(fail);
+      };
+    });
+  }
+  ACTS.photo = actPhoto;
+
   /* ---------- मुख्य बटणे (v3) ---------- */
   $('b-psp').addEventListener('click', function () { openCam(null, 'pass'); });
   $('b-qr').addEventListener('click', openQr);
@@ -3426,7 +3467,7 @@ function uni2kruti(s){
   }
   var LK = { v: '' };
   function lkDots() { $('lk-d').querySelectorAll('i').forEach(function (d, i) { d.classList.toggle('f', i < LK.v.length); }); }
-  function lockShow() { if (!LS.get('sm-pin')) return; LK.v = ''; lkDots(); $('lock').classList.add('on'); }
+  function lockShow() { if (!LS.get('sm-pin')) return; LK.v = ''; lkDots(); $('lock').classList.add('on'); var bb = $('lk-bio'); if (bb) bb.style.display = LS.get('sm-bio') ? 'block' : 'none'; if (LS.get('sm-bio')) setTimeout(bioUnlock, 350); }
   (function () {
     $('lk-p').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(function (k) { return k === '' ? '<span></span>' : '<button data-k="' + k + '">' + k + '</button>'; }).join('');
     $('lk-p').addEventListener('click', function (e) {
@@ -3439,11 +3480,31 @@ function uni2kruti(s){
       });
     });
   })();
+  /* ---------- Face ID / फिंगरप्रिंट (WebAuthn; PIN कायम राहतो) ---------- */
+  function b2u(a) { return btoa(String.fromCharCode.apply(null, new Uint8Array(a))); }
+  function u2b(t) { var s = atob(t), u = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
+  function bioOk() { return !!(window.PublicKeyCredential && navigator.credentials && window.isSecureContext); }
+  function bioEnable() {
+    if (!bioOk()) { toast('या फोनवर Face ID / फिंगरप्रिंट उपलब्ध नाही'); return Promise.resolve(false); }
+    return navigator.credentials.create({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'ScanOS' }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'scanos', displayName: 'ScanOS' }, pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' }, timeout: 60000 } })
+      .then(function (c) { LS.set('sm-bio', b2u(c.rawId)); return true; }, function () { toast('Face ID / फिंगरप्रिंट चालू झाले नाही'); return false; });
+  }
+  function bioUnlock() {
+    var id = LS.get('sm-bio'); if (!id || !bioOk()) return;
+    navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: 'public-key', id: u2b(id) }], userVerification: 'required', timeout: 60000 } })
+      .then(function () { $('lock').classList.remove('on'); LK.v = ''; lkDots(); }, function () {});
+  }
+  (function () {
+    var b = document.createElement('button'); b.id = 'lk-bio'; b.textContent = 'Face ID / फिंगरप्रिंट वापरा'; b.style.cssText = 'margin-top:14px;background:none;border:0;color:#e0b44a;font-weight:700;font-size:15px;display:none';
+    $('lk-p').parentNode.appendChild(b); b.addEventListener('click', bioUnlock);
+  })();
+
   function pinDlg() {
     var has = !!LS.get('sm-pin');
     openDlg('<h3>PIN लॉक</h3><p class="s">ॲप उघडताना 4 अंकी PIN विचारला जाईल. PIN विसरलात तर ॲप डेटा पुसून नव्याने सुरू करावा लागतो (दस्त जातील), म्हणून लक्षात ठेवा.</p>' +
       '<span class="fl">नवा PIN (4 अंक)</span><input class="f" id="pn1" type="password" inputmode="numeric" maxlength="4" autocomplete="off">' +
       '<span class="fl">पुन्हा तोच PIN</span><input class="f" id="pn2" type="password" inputmode="numeric" maxlength="4" autocomplete="off">' +
+      (has && bioOk() ? '<div class="row"><button class="btn ghost wide" id="pn-bio">' + ico('lock') + (LS.get('sm-bio') ? 'Face ID / फिंगरप्रिंट बंद करा' : 'Face ID / फिंगरप्रिंटने उघडा') + '</button></div>' : '') +
       '<div class="row">' + (has ? '<button class="btn ghost" id="pn-rm">PIN काढा</button>' : '') + '<button class="btn gold" id="pn-ok">' + ico('check') + 'ठेवा</button></div>', function (bx) {
       bx.querySelector('#pn-ok').onclick = function () {
         var a = bx.querySelector('#pn1').value, b = bx.querySelector('#pn2').value;
@@ -3451,7 +3512,8 @@ function uni2kruti(s){
         if (a !== b) { toast('दोन्ही PIN सारखे नाहीत'); return; }
         pinHash(a).then(function (h) { LS.set('sm-pin', h); closeDlg(); toast('PIN ठेवला'); });
       };
-      var rm = bx.querySelector('#pn-rm'); if (rm) rm.onclick = function () { LS.set('sm-pin', ''); closeDlg(); toast('PIN काढला'); };
+      var bi = bx.querySelector('#pn-bio'); if (bi) bi.onclick = function () { if (LS.get('sm-bio')) { LS.set('sm-bio', ''); closeDlg(); toast('बंद केले'); } else bioEnable().then(function (ok) { if (ok) { closeDlg(); toast('चालू झाले. पुढच्या वेळी लॉकवर दिसेल'); } }); };
+      var rm = bx.querySelector('#pn-rm'); if (rm) rm.onclick = function () { LS.set('sm-pin', ''); LS.set('sm-bio', ''); closeDlg(); toast('PIN काढला'); };
     });
   }
 
