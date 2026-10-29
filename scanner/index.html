@@ -126,6 +126,11 @@ h2 span{flex:1}
 #v-mark canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #v-mark .tl{display:flex;gap:6px;padding:8px 12px 4px;justify-content:center;flex-wrap:wrap}
 #v-mark .tl .pb.on{background:var(--gold);color:#0b1f4b}
+#v-mark .sz{display:flex;align-items:center;gap:10px;padding:2px 20px 6px;font-size:13px}
+#v-mark .sz span{min-width:72px;opacity:.85}
+#v-mark .sz input{flex:1;accent-color:#f2a516;height:28px}
+#v-mark .zm{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:8px;z-index:3}
+#v-mark .zm .cb{width:42px;padding:0;justify-content:center;font-size:20px;font-weight:700}
 #v-mark .tip{text-align:center;font-size:13px;opacity:.75;padding:0 16px calc(12px + env(safe-area-inset-bottom,0px))}
 /* दस्त */
 .pages{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -225,6 +230,73 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
 @keyframes up2{to{opacity:.8}}
 @keyframes sweep{0%{opacity:0;transform:translateY(-30px)}15%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translateY(54px)}}
 @media(prefers-reduced-motion:reduce){#splash *{animation-duration:.01s!important;animation-delay:0s!important}}
+/* v3: मार्कअप साधने, नवी पाने */
+#v-mark .tl{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}
+#v-mark .tl .pb{flex:none;padding:9px 12px;font-size:13.5px}
+#v-mark .clr{display:flex;gap:10px;justify-content:center;padding:2px 12px 6px}
+#v-mark .clr button{width:30px;height:30px;border-radius:50%;border:3px solid rgba(255,255,255,.35);padding:0}
+#v-mark .clr button.on{border-color:var(--gold);box-shadow:0 0 0 2px #fff inset}
+#v-mark .sub{display:flex;gap:6px;justify-content:center;padding:0 12px 6px}
+#v-mark .sub button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:16px;padding:4px 12px;font-weight:600;font-size:13.5px}
+#v-mark .sub button.on{background:var(--gold);color:#0b1f4b;border-color:var(--gold)}
+#v-mark .bar .pgn{display:flex;align-items:center;gap:2px}
+#v-mark .bar .pgn .cb{min-width:34px;padding:0;justify-content:center}
+.tools{grid-template-columns:repeat(4,1fr)}
+.tool{min-height:84px}
+.tool i{width:36px;height:36px}
+/* QR */
+#v-qr{position:fixed;inset:0;z-index:50;background:#000;color:#fff}
+#v-qr video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#v-qr .qbar{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;display:flex;gap:8px;align-items:center;background:linear-gradient(rgba(0,0,0,.55),transparent)}
+#v-qr .qbar .sp{flex:1}
+#v-qr .qbox{position:absolute;left:50%;top:42%;width:64vmin;height:64vmin;transform:translate(-50%,-50%);border-radius:18px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
+#v-qr .qbox:before,#v-qr .qbox:after{content:"";position:absolute;inset:0;border-radius:18px;border:4px solid var(--gold);-webkit-mask:linear-gradient(#000 0 0) top left/36px 36px no-repeat,linear-gradient(#000 0 0) top right/36px 36px no-repeat,linear-gradient(#000 0 0) bottom left/36px 36px no-repeat,linear-gradient(#000 0 0) bottom right/36px 36px no-repeat;mask:linear-gradient(#000 0 0) top left/36px 36px no-repeat,linear-gradient(#000 0 0) top right/36px 36px no-repeat,linear-gradient(#000 0 0) bottom left/36px 36px no-repeat,linear-gradient(#000 0 0) bottom right/36px 36px no-repeat}
+#v-qr .qbox:after{display:none}
+#v-qr .qh{position:absolute;left:0;right:0;bottom:calc(30px + env(safe-area-inset-bottom,0px));text-align:center;font-size:15px;text-shadow:0 1px 4px #000}
+#v-qr .qres{position:absolute;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));background:var(--card);color:var(--ink);border-radius:20px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#v-qr .qres pre{margin:6px 0 10px;white-space:pre-wrap;word-break:break-all;font:15px/1.45 var(--font);max-height:30vh;overflow:auto}
+/* मोजमाप / मोजणी */
+.mstage{position:relative;background:#0b0f1a;border-radius:16px;overflow:hidden;touch-action:none;margin-bottom:10px}
+.mstage img{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none;pointer-events:none}
+.mstage canvas{position:absolute;left:0;top:0;width:100%;height:100%}
+.big{font-size:34px;font-weight:800;line-height:1.1;color:var(--pri)}
+.rcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--sh)}
+.rcard small{color:var(--muted);display:block}
+/* AI */
+#v-ai main{padding-bottom:150px}
+.msg{margin:10px 0;display:flex;flex-direction:column}
+.msg .b{max-width:94%;padding:10px 13px;border-radius:16px;white-space:pre-wrap;word-break:break-word;line-height:1.55;font-size:15.5px}
+.msg.u{align-items:flex-end}.msg.u .b{background:var(--navy2);color:#fff;border-bottom-right-radius:4px}
+.msg.a .b{background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px;box-shadow:var(--sh)}
+.msg .mt{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.msg .mt button{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:3px 10px;font-size:13px;font-weight:600;color:var(--ink2);display:flex;align-items:center;gap:4px}
+.msg .mt svg{width:16px;height:16px}
+.msg img.th{max-width:140px;border-radius:10px;margin-bottom:6px}
+.prs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.prs button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:6px 13px;font-size:14px;font-weight:600;color:var(--ink2)}
+.prs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.aibar{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--card);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px))}
+.aibar .in{max-width:620px;margin:0 auto}
+.aibar .ctx{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:6px}
+.aibar .ctx b{color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}
+.aibar .row1{display:flex;gap:8px;align-items:flex-end}
+.aibar textarea{flex:1;min-height:44px;max-height:120px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--bg);font-size:16px;resize:none}
+.aibar .rb{width:44px;height:44px;border-radius:14px;border:0;display:grid;place-items:center;flex:none;background:var(--card);border:1px solid var(--line);color:var(--ink2)}
+.aibar .rb.go{background:var(--gold);color:#0b1f4b;border:0}
+.ckl{display:flex;flex-direction:column;gap:6px;max-height:42vh;overflow:auto;margin:6px 0 10px}
+.ckl label{display:flex;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:12px;font-weight:600}
+.ckl input{width:20px;height:20px;accent-color:var(--gold)}
+.ckl small{display:block;font-weight:400;color:var(--muted)}
+.thg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-height:46vh;overflow:auto;margin:6px 0 10px}
+.thg button{position:relative;border:2px solid var(--line);border-radius:10px;overflow:hidden;padding:0;aspect-ratio:3/4;background:#e9edf4}
+.thg button img{width:100%;height:100%;object-fit:cover;display:block}
+.thg button.on{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.thg button em{position:absolute;left:4px;top:4px;background:rgba(11,31,75,.85);color:#fff;font-style:normal;font-size:11px;font-weight:700;padding:0 6px;border-radius:8px}
+canvas.pad{width:100%;height:170px;border:1px dashed var(--line);border-radius:14px;background:#fff;touch-action:none;display:block}
+.pv2{width:100%;border:1px solid var(--line);border-radius:10px;display:block;margin:6px 0}
+#v-ai main{padding-bottom:170px}
+.ckl label span{flex:1}
+.ckl .mi{margin:0}
 </style>
 </head>
 <body>
@@ -268,6 +340,28 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
   <symbol id="i-swap" viewBox="0 0 24 24"><path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18zM2 2l7.6 7.6"/><circle cx="11" cy="11" r="2"/></symbol>
+  <symbol id="i-hl" viewBox="0 0 24 24"><path d="m9 11-6 6v3h9l3-3M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></symbol>
+  <symbol id="i-shape" viewBox="0 0 24 24"><rect x="3" y="3" width="10" height="10" rx="1"/><circle cx="16" cy="16" r="5"/></symbol>
+  <symbol id="i-sign" viewBox="0 0 24 24"><path d="M3 17c3-6 5-9 6-9s0 6 2 6 3-4 4-4 1 4 3 4M3 21h18"/></symbol>
+  <symbol id="i-hide" viewBox="0 0 24 24"><path d="M17.9 17.9A10 10 0 0 1 12 20C5 20 1 12 1 12a18 18 0 0 1 5.1-5.9M9.9 4.2A9 9 0 0 1 12 4c7 0 11 8 11 8a18 18 0 0 1-2.2 3.2M1 1l22 22"/></symbol>
+  <symbol id="i-blur" viewBox="0 0 24 24"><path d="M12 2.7S5 10 5 15a7 7 0 0 0 14 0c0-5-7-12.3-7-12.3z"/><path d="M8 16a4 4 0 0 0 4 4"/></symbol>
+  <symbol id="i-merge" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-split" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></symbol>
+  <symbol id="i-ppt" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4M8 12l3-3 2 2 3-4"/></symbol>
+  <symbol id="i-jpg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></symbol>
+  <symbol id="i-txt" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h3M20 17v4"/></symbol>
+  <symbol id="i-ruler" viewBox="0 0 24 24"><path d="M21.3 8.7 8.7 21.3a1 1 0 0 1-1.4 0L2.7 16.7a1 1 0 0 1 0-1.4L15.3 2.7a1 1 0 0 1 1.4 0l4.6 4.6a1 1 0 0 1 0 1.4zM7.5 10.5l2 2M10.5 7.5l2 2M13.5 4.5l2 2M4.5 13.5l2 2"/></symbol>
+  <symbol id="i-count" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/></symbol>
+  <symbol id="i-math" viewBox="0 0 24 24"><path d="M4 7h6M7 4v6M14 7h6M4 17h6M14 15l6 4M20 15l-6 4"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z"/></symbol>
+  <symbol id="i-wm" viewBox="0 0 24 24"><path d="M4 20 12 4l8 16M7 14h10"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></symbol>
+  <symbol id="i-blank" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 12v6M9 15h6"/></symbol>
+  <symbol id="i-cmp" viewBox="0 0 24 24"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-5.9-2.4L3.4 16a2 2 0 0 1 3.2-2.4L8 15"/></symbol>
  </defs>
 </svg>
 
@@ -285,10 +379,18 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
    <button class="go" id="b-scan"><svg class="i"><use href="#i-scan"/></svg> कागद स्कॅन करा</button>
   </div>
   <div class="tools">
-   <button class="tool" id="b-gal"><i><svg class="i"><use href="#i-img"/></svg></i>गॅलरीतून</button>
+   <button class="tool" id="b-gal"><i style="background:var(--pri-l);color:var(--pri)"><svg class="i"><use href="#i-img"/></svg></i>गॅलरीतून</button>
    <button class="tool" id="b-pdf"><i style="background:var(--bad-l);color:var(--pdf)"><svg class="i"><use href="#i-pdf"/></svg></i>PDF उघडा</button>
    <button class="tool" id="b-idc"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-id"/></svg></i>ओळखपत्र</button>
-   <button class="tool" id="b-kru"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-swap"/></svg></i>कृतिदेव ↔ Unicode</button>
+   <button class="tool" id="b-psp"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-file"/></svg></i>पासपोर्ट</button>
+   <button class="tool" id="b-qr"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-qr"/></svg></i>QR वाचा</button>
+   <button class="tool" id="b-meas"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-ruler"/></svg></i>मोजमाप</button>
+   <button class="tool" id="b-cnt"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-count"/></svg></i>मोजणी</button>
+   <button class="tool" id="b-mth"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-math"/></svg></i>गणित सोडवा</button>
+   <button class="tool" id="b-ai"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-chat"/></svg></i>AI विचारा</button>
+   <button class="tool" id="b-mrg"><i style="background:var(--pri-l);color:var(--pri)"><svg class="i"><use href="#i-merge"/></svg></i>एकत्र करा</button>
+   <button class="tool" id="b-blk"><i style="background:var(--pri-l);color:var(--pri)"><svg class="i"><use href="#i-blank"/></svg></i>रिकामे पान</button>
+   <button class="tool" id="b-kru"><i style="background:var(--pri-l);color:var(--pri)"><svg class="i"><use href="#i-swap"/></svg></i>कृतिदेव ↔ Unicode</button>
   </div>
   <h2><span>माझे दस्त</span><small id="h-count"></small></h2>
   <div class="search"><svg class="i"><use href="#i-search"/></svg><input id="q" type="search" placeholder="नावाने किंवा मजकुरातून शोधा" autocomplete="off"></div>
@@ -313,7 +415,7 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
  <div class="hint" id="c-hint">कागद चौकटीत धरा</div>
  <div class="bot">
   <div class="strip" id="c-strip"></div>
-  <div class="modes"><button data-m="doc" class="on">दस्त</button><button data-m="id">ओळखपत्र</button></div>
+  <div class="modes"><button data-m="doc" class="on">दस्त</button><button data-m="id">ओळखपत्र</button><button data-m="pass">पासपोर्ट</button></div>
   <div class="ctr">
    <div class="side"><button class="cb" id="c-gal" aria-label="गॅलरी"><svg class="i"><use href="#i-img"/></svg></button></div>
    <button class="shut" id="c-shut" aria-label="फोटो"><i></i></button>
@@ -338,20 +440,34 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
  </div>
 </section>
 
-<!-- पुसणे / नवीन मजकूर -->
+<!-- पुसणे / मार्कअप -->
 <section id="v-mark">
  <div class="bar">
   <button class="cb" id="m-cancel" aria-label="मागे"><svg class="i"><use href="#i-back"/></svg></button>
-  <b>पुसा / मजकूर लिहा</b>
+  <span class="pgn"><button class="cb" id="m-prev" aria-label="मागचे पान"><svg class="i"><use href="#i-left"/></svg></button><b id="m-title">पान</b><button class="cb" id="m-next" aria-label="पुढचे पान"><svg class="i"><use href="#i-right"/></svg></button></span>
+  <span style="flex:1"></span>
   <button class="cb" id="m-del" hidden><svg class="i"><use href="#i-del"/></svg></button>
   <button class="cb" id="m-undo" aria-label="मागे घ्या"><svg class="i"><use href="#i-rotl"/></svg></button>
   <button class="cb on" id="m-save"><svg class="i"><use href="#i-check"/></svg>जतन</button>
  </div>
- <div class="stage" id="m-stage"><img id="m-img" alt=""><canvas id="m-cv"></canvas></div>
+ <div class="stage" id="m-stage" style="overflow:hidden"><img id="m-img" alt="" style="transform-origin:0 0"><canvas id="m-cv"></canvas>
+  <div class="zm"><button class="cb" id="m-zin" aria-label="मोठे">+</button><button class="cb" id="m-zout" aria-label="लहान">−</button><button class="cb" id="m-z1" aria-label="पूर्ण पान" style="font-size:12px">1:1</button></div></div>
+ <div class="sub" id="m-sub" hidden></div>
+ <div class="clr" id="m-clr" hidden></div>
+ <div class="sz" id="m-szw"><span id="m-szl"></span><input type="range" id="m-sz" min="0" max="100" value="30"></div>
  <div class="tl" id="m-tools">
-  <button class="pb on" data-tool="erase"><svg class="i"><use href="#i-crop"/></svg>पुसा</button>
+  <button class="pb on" data-tool="brush"><svg class="i"><use href="#i-wand"/></svg>ब्रश</button>
+  <button class="pb" data-tool="erase"><svg class="i"><use href="#i-crop"/></svg>चौकट पुसा</button>
   <button class="pb" data-tool="rep"><svg class="i"><use href="#i-swap"/></svg>बदला</button>
   <button class="pb" data-tool="text"><svg class="i"><use href="#i-text"/></svg>मजकूर</button>
+  <button class="pb" data-tool="ink"><svg class="i"><use href="#i-pen"/></svg>पेन</button>
+  <button class="pb" data-tool="hl"><svg class="i"><use href="#i-hl"/></svg>हायलाइट</button>
+  <button class="pb" data-tool="shape"><svg class="i"><use href="#i-shape"/></svg>आकार</button>
+  <button class="pb" data-tool="img"><svg class="i"><use href="#i-jpg"/></svg>चित्र</button>
+  <button class="pb" data-tool="sign"><svg class="i"><use href="#i-sign"/></svg>सही</button>
+  <button class="pb" data-tool="hide"><svg class="i"><use href="#i-hide"/></svg>लपवा</button>
+  <button class="pb" data-tool="blur"><svg class="i"><use href="#i-blur"/></svg>अस्पष्ट</button>
+  <button class="pb" data-tool="move"><svg class="i"><use href="#i-hand"/></svg>हलवा</button>
  </div>
  <div class="tip" id="m-tip"></div>
 </section>
@@ -366,15 +482,37 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
  <main class="wrap">
   <div class="pages" id="d-pages"></div>
   <div id="d-pdfbox" hidden></div>
-  <h2><span>तयार करा</span></h2>
+  <h2><span>बदला (Convert)</span></h2>
   <div class="acts">
    <button class="act" data-a="pdf"><i class="c-pdf"><svg class="i"><use href="#i-pdf"/></svg></i>PDF</button>
    <button class="act" data-a="word"><i class="c-word"><svg class="i"><use href="#i-word"/></svg></i>Word</button>
    <button class="act" data-a="xls"><i class="c-xls"><svg class="i"><use href="#i-xls"/></svg></i>Excel</button>
-   <button class="act" data-a="ocr"><i class="c-pri"><svg class="i"><use href="#i-text"/></svg></i>मजकूर काढा</button>
+   <button class="act" data-a="pptx"><i class="c-pdf"><svg class="i"><use href="#i-ppt"/></svg></i>PPTX</button>
+   <button class="act" data-a="jpg"><i class="c-ok"><svg class="i"><use href="#i-jpg"/></svg></i>JPG</button>
+   <button class="act" data-a="txt"><i class="c-navy"><svg class="i"><use href="#i-txt"/></svg></i>TXT</button>
+   <button class="act" data-a="ocr"><i class="c-pri"><svg class="i"><use href="#i-text"/></svg></i>मजकूर ओळख</button>
+   <button class="act" data-a="cmp"><i class="c-ok"><svg class="i"><use href="#i-cmp"/></svg></i>संकुचित</button>
   </div>
-  <h2><span>खास सुविधा</span></h2>
+  <h2><span>सुधारा (Edit)</span></h2>
   <div class="acts">
+   <button class="act" data-a="sign"><i class="c-navy"><svg class="i"><use href="#i-sign"/></svg></i>सही</button>
+   <button class="act" data-a="text"><i class="c-navy"><svg class="i"><use href="#i-text"/></svg></i>मजकूर</button>
+   <button class="act" data-a="img"><i class="c-navy"><svg class="i"><use href="#i-jpg"/></svg></i>चित्र</button>
+   <button class="act" data-a="ink"><i class="c-navy"><svg class="i"><use href="#i-pen"/></svg></i>मार्कअप</button>
+   <button class="act" data-a="hide"><i class="c-navy"><svg class="i"><use href="#i-hide"/></svg></i>लपवा</button>
+   <button class="act" data-a="blur"><i class="c-navy"><svg class="i"><use href="#i-blur"/></svg></i>अस्पष्ट</button>
+   <button class="act" data-a="shape"><i class="c-navy"><svg class="i"><use href="#i-shape"/></svg></i>आकार</button>
+   <button class="act" data-a="edit"><i class="c-navy"><svg class="i"><use href="#i-crop"/></svg></i>पान संपादन</button>
+   <button class="act" data-a="wm"><i class="c-ok"><svg class="i"><use href="#i-wm"/></svg></i>वॉटरमार्क</button>
+   <button class="act" data-a="ft"><i class="c-ok"><svg class="i"><use href="#i-hash"/></svg></i>फूटर / क्रमांक</button>
+   <button class="act" data-a="merge"><i class="c-ok"><svg class="i"><use href="#i-merge"/></svg></i>एकत्र करा</button>
+   <button class="act" data-a="split"><i class="c-ok"><svg class="i"><use href="#i-split"/></svg></i>वेगळे करा</button>
+   <button class="act" data-a="add"><i class="c-pri"><svg class="i"><use href="#i-plus"/></svg></i>पाने जोडा</button>
+   <button class="act" data-a="blank"><i class="c-pri"><svg class="i"><use href="#i-blank"/></svg></i>रिकामे पान</button>
+  </div>
+  <h2><span>AI आणि भाषा</span></h2>
+  <div class="acts">
+   <button class="act" data-a="ai"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-chat"/></svg></i>AI विचारा</button>
    <button class="act" data-a="tr"><i class="c-navy"><svg class="i"><use href="#i-lang"/></svg></i>भाषांतर</button>
    <button class="act" data-a="sum"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-spark"/></svg></i>सारांश</button>
    <button class="act" data-a="fields"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-list"/></svg></i>माहिती काढा</button>
@@ -384,7 +522,6 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
   <div class="acts">
    <button class="act" data-a="share"><i class="c-ok"><svg class="i"><use href="#i-share"/></svg></i>PDF शेअर</button>
    <button class="act" data-a="drive"><i class="c-pri"><svg class="i"><use href="#i-cloud"/></svg></i>Drive मध्ये</button>
-   <button class="act" data-a="add"><i class="c-navy"><svg class="i"><use href="#i-plus"/></svg></i>पाने जोडा</button>
    <button class="act" data-a="del"><i class="c-bad"><svg class="i"><use href="#i-del"/></svg></i>हटवा</button>
   </div>
  </main>
@@ -404,7 +541,7 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
    <button class="btn ghost" id="e-rr"><svg class="i"><use href="#i-rotr"/></svg>उजवीकडे</button>
    <button class="btn ghost" id="e-crop"><svg class="i"><use href="#i-crop"/></svg>पुन्हा कापा</button>
   </div>
-  <div class="row"><button class="btn gold wide" id="e-mark"><svg class="i"><use href="#i-edit"/></svg>जुना मजकूर पुसा / नवीन मजकूर लिहा</button></div>
+  <div class="row"><button class="btn gold wide" id="e-mark"><svg class="i"><use href="#i-edit"/></svg>पुसा / मजकूर / सही / मार्कअप</button></div>
   <div class="row">
    <button class="btn ghost" id="e-ml"><svg class="i"><use href="#i-left"/></svg>आधी</button>
    <button class="btn ghost" id="e-mr">नंतर<svg class="i"><use href="#i-right"/></svg></button>
@@ -427,11 +564,80 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
  <div class="tbar"><div id="t-bar"></div></div>
 </section>
 
+<!-- QR -->
+<section class="view" id="v-qr">
+ <video id="q-vid" playsinline muted autoplay></video>
+ <div class="qbar"><button class="cb" id="q-close" aria-label="बंद"><svg class="i"><use href="#i-x"/></svg></button><span class="sp"></span><button class="cb" id="q-gal" aria-label="गॅलरी"><svg class="i"><use href="#i-img"/></svg></button></div>
+ <div class="qbox"></div>
+ <div class="qh" id="q-h">QR / बारकोड चौकटीत धरा</div>
+ <div class="qres" id="q-res" hidden></div>
+</section>
+
+<!-- मोजमाप -->
+<section class="view" id="v-meas">
+ <header class="top">
+  <button class="ib" data-back aria-label="मागे"><svg class="i"><use href="#i-back"/></svg></button>
+  <div class="t"><b>मोजमाप</b><small>लांबी व क्षेत्रफळ फोटोवरून</small></div>
+ </header>
+ <main class="wrap">
+  <div id="ms-start">
+   <div class="rcard"><b>कसे वापरायचे</b><small>1) मोजायच्या जागेवर एक माहीत आकाराची वस्तू ठेवा: A4 कागद किंवा एटीएम / आधार कार्ड. 2) सरळ वरून फोटो घ्या. 3) त्या वस्तूचे चार कोपरे जुळवा. 4) मोजायच्या जागेवर बिंदू टॅप करा.</small></div>
+   <div class="row"><button class="btn gold" id="ms-cam"><svg class="i"><use href="#i-cam"/></svg>कॅमेरा</button><button class="btn ghost" id="ms-gal"><svg class="i"><use href="#i-img"/></svg>गॅलरी</button></div>
+  </div>
+  <div id="ms-work" hidden>
+   <div class="mstage" id="ms-stage"><img id="ms-img" alt=""><canvas id="ms-cv"></canvas></div>
+   <div class="rcard" id="ms-ctl"></div>
+   <div class="rcard" id="ms-out" hidden></div>
+  </div>
+ </main>
+</section>
+
+<!-- मोजणी -->
+<section class="view" id="v-cnt">
+ <header class="top">
+  <button class="ib" data-back aria-label="मागे"><svg class="i"><use href="#i-back"/></svg></button>
+  <div class="t"><b>वस्तू मोजणी</b><small>गोळ्या, खिळे, पेट्या, लोक…</small></div>
+ </header>
+ <main class="wrap">
+  <div id="ct-start"><div class="rcard"><b>कसे वापरायचे</b><small>वस्तू एकाच रंगाच्या पार्श्वभूमीवर पसरवून वरून फोटो घ्या. ॲप आपोआप मोजतो. चुकलेला ठिपका टॅप करून काढा, राहिलेल्या जागी टॅप करून जोडा.</small></div>
+   <div class="row"><button class="btn gold" id="ct-cam"><svg class="i"><use href="#i-cam"/></svg>कॅमेरा</button><button class="btn ghost" id="ct-gal"><svg class="i"><use href="#i-img"/></svg>गॅलरी</button></div></div>
+  <div id="ct-work" hidden>
+   <div class="mstage" id="ct-stage"><img id="ct-img" alt=""><canvas id="ct-cv"></canvas></div>
+   <div class="rcard"><div class="big" id="ct-n">0</div><small>वस्तू</small>
+    <div class="opt" data-g="ctm" id="ct-mode"><button data-v="dark" class="on">गडद वस्तू</button><button data-v="light">उजळ वस्तू</button></div>
+    <span class="fl">संवेदनशीलता</span><input type="range" id="ct-th" min="5" max="60" value="22" style="width:100%;accent-color:var(--gold)">
+    <span class="fl">किमान आकार</span><input type="range" id="ct-min" min="1" max="40" value="6" style="width:100%;accent-color:var(--gold)">
+    <div class="row"><button class="btn ghost" id="ct-ai"><svg class="i"><use href="#i-spark"/></svg>AI ने मोजा</button><button class="btn ghost" id="ct-new"><svg class="i"><use href="#i-cam"/></svg>नवा फोटो</button></div>
+    <p class="hint" id="ct-aiout"></p></div>
+  </div>
+ </main>
+</section>
+
+<!-- AI -->
+<section class="view" id="v-ai">
+ <header class="top">
+  <button class="ib" data-back aria-label="मागे"><svg class="i"><use href="#i-back"/></svg></button>
+  <div class="t"><b>AI विचारा</b><small>Gemini • मराठी / हिंदी / इंग्रजी</small></div>
+  <button class="ib" id="ai-clr" aria-label="साफ करा"><svg class="i"><use href="#i-del"/></svg></button>
+ </header>
+ <main class="wrap">
+  <div class="prs" id="ai-prs"></div>
+  <div id="ai-msgs"></div>
+ </main>
+ <div class="aibar"><div class="in">
+  <div class="ctx"><svg class="i" style="width:16px;height:16px"><use href="#i-file"/></svg><b id="ai-ctx">कोणताही दस्त निवडलेला नाही</b><button class="prs-btn" id="ai-pick" style="border:0;background:none;color:var(--pri);font-weight:700;margin-left:auto">दस्त निवडा</button></div>
+  <div class="row1"><button class="rb" id="ai-img" aria-label="फोटो"><svg class="i"><use href="#i-cam"/></svg></button><textarea id="ai-in" rows="1" placeholder="काहीही विचारा किंवा वरील पर्याय निवडा"></textarea><button class="rb go" id="ai-go" aria-label="पाठवा"><svg class="i"><use href="#i-send"/></svg></button></div>
+ </div></div>
+</section>
+
+
 <div class="dlg" id="dlg"><div class="bx" id="dlg-bx"></div></div>
 <div class="toast" id="toast"></div>
 <div class="busy" id="busy"><div><div class="spin"></div><b id="busy-t">काम चालू आहे…</b><small id="busy-s"></small></div></div>
 <input type="file" id="f-img" accept="image/*" multiple hidden>
 <input type="file" id="f-cam" accept="image/*" capture="environment" hidden>
+<input type="file" id="f-one" accept="image/*" hidden>
+<input type="file" id="f-add" accept="image/*" hidden>
 <input type="file" id="f-pdf" accept="application/pdf,.pdf" hidden>
 
 <script>
@@ -769,39 +975,136 @@ function uni2kruti(s){
     return c;
   }
 
-  /** पान: मूळ फोटो → कापणे → फिरवणे → फिल्टर → JPEG + लहान चित्र */
+  /** पान: मूळ फोटो → कापणे → फिरवणे → फिल्टर → बदल (marks) → JPEG + लहान चित्र */
   function renderPage(pg, maxOut, noMarks) {
     return DB.getB(pg.id + ':o').then(function (b) {
       if (!b) throw new Error('पानाचा मूळ फोटो सापडला नाही');
       return blobToCanvas(b, MAX_SRC);
     }).then(function (c) {
       var o = applyFilter(rotate(warp(c, pg.quad || fullQuad(), maxOut || MAX_OUT), pg.rot || 0), pg.filter);
-      if (!noMarks && pg.marks && pg.marks.length) drawMarks(o.getContext('2d'), o.width, o.height, pg.marks);
-      return o;
+      if (noMarks || !pg.marks || !pg.marks.length) return o;
+      return preloadMarks(pg.marks).then(function () {
+        var src = null;
+        if (pg.marks.some(function (m) { return m.t === 'blur'; })) { src = canvas(o.width, o.height); src.getContext('2d').drawImage(o, 0, 0); }
+        drawMarks(o.getContext('2d'), o.width, o.height, pg.marks, src);
+        return o;
+      });
     });
   }
-  /* पानावरील बदल: पुसणे (rect), बदलणे (rep = पुसणे + बसवलेला मजकूर), मजकूर (text). सर्व अंतरे पानाच्या रुंदी/उंचीच्या प्रमाणात. */
+  /* पानावरील बदल. सर्व अंतरे पानाच्या रुंदी / उंचीच्या प्रमाणात (0 ते 1).
+     brush = कागदाचा रंग घेऊन पुसणे, rect = चौकट भरणे (पुसा / लपवा), rep = पुसून नवा मजकूर, text, ink = पेन / हायलाइट,
+     shape = आकार, img = चित्र / सही, blur = अस्पष्ट (pixelate) */
   var MFONT = '"Mukta","Noto Sans Devanagari","Mangal",sans-serif';
-  function drawMarks(x, W, H, marks) {
+  var IMGC = {};
+  function imgOf(src, cb) {
+    var e = IMGC[src];
+    if (e && e.im && e.ok) return e.im;
+    if (!e) {
+      e = IMGC[src] = { im: new Image(), ok: false, cbs: [] };
+      e.im.onload = function () { e.ok = true; e.cbs.splice(0).forEach(function (f) { f(); }); };
+      e.im.onerror = function () { e.cbs.splice(0).forEach(function (f) { f(); }); };
+      e.im.src = src;
+    }
+    if (cb) e.cbs.push(cb);
+    return null;
+  }
+  function preloadMarks(marks) {
+    return Promise.all(marks.filter(function (m) { return m.t === 'img'; }).map(function (m) { return new Promise(function (res) { if (imgOf(m.src)) res(); else imgOf(m.src, res); }); }));
+  }
+  function pixelate(x, src, m, W, H) {
+    var sx = m.x * src.width, sy = m.y * src.height, sw = m.w * src.width, sh = m.h * src.height;
+    if (sw < 2 || sh < 2) return;
+    var blk = Math.max(6, Math.round(Math.min(sw, sh) / 4)), cw = Math.max(1, Math.round(sw / blk)), ch = Math.max(1, Math.round(sh / blk)), t = canvas(cw, ch);
+    t.getContext('2d').drawImage(src, sx, sy, sw, sh, 0, 0, cw, ch);
+    x.imageSmoothingEnabled = false; x.drawImage(t, 0, 0, cw, ch, m.x * W, m.y * H, m.w * W, m.h * H); x.imageSmoothingEnabled = true;
+  }
+  function drawMarks(x, W, H, marks, src, onImg) {
     marks.forEach(function (m) {
       x.save();
-      if (m.t === 'rect' || m.t === 'rep') { x.fillStyle = m.bg || '#fff'; x.fillRect(m.x * W, m.y * H, m.w * W, m.h * H); }
-      if ((m.t === 'rep' || m.t === 'text') && m.text) {
-        var lines = String(m.text).split('\n'), fs, lh, i, mw = 0;
-        x.fillStyle = m.c || '#111'; x.textBaseline = 'top';
-        if (m.t === 'rep') {
-          fs = Math.max(6, m.h * H / lines.length * 0.78);
-          for (var k = 0; k < 30; k++) { x.font = '500 ' + fs + 'px ' + MFONT; mw = Math.max.apply(null, lines.map(function (l) { return x.measureText(l).width; })); if (mw <= m.w * W * 0.97) break; fs *= 0.92; }
-          lh = fs * 1.22;
-          var y0 = m.y * H + (m.h * H - lh * lines.length) / 2 + fs * 0.08;
-          for (i = 0; i < lines.length; i++) x.fillText(lines[i], m.x * W + m.w * W * 0.015, y0 + i * lh);
-        } else {
-          fs = m.s * W; x.font = '500 ' + fs + 'px ' + MFONT; lh = fs * 1.25;
-          for (i = 0; i < lines.length; i++) { x.fillText(lines[i], m.x * W, m.y * H + i * lh); mw = Math.max(mw, x.measureText(lines[i]).width); }
-          m._bb = [m.x, m.y, mw / W, lh * lines.length / H];
+      var t = m.t, i;
+      if (t === 'brush') {
+        var bp = m.pts || [];
+        x.lineCap = 'round'; x.lineJoin = 'round'; x.lineWidth = Math.max(1, m.r * W * 2);
+        for (i = 0; i < bp.length; i++) {
+          x.strokeStyle = bp[i][2]; x.beginPath();
+          if (i) { x.moveTo(bp[i - 1][0] * W, bp[i - 1][1] * H); x.lineTo(bp[i][0] * W, bp[i][1] * H); }
+          else { x.moveTo(bp[0][0] * W, bp[0][1] * H); x.lineTo(bp[0][0] * W + 0.01, bp[0][1] * H); }
+          x.stroke();
+        }
+      } else if (t === 'ink') {
+        var ip = m.pts || [];
+        if (ip.length) {
+          x.lineCap = 'round'; x.lineJoin = 'round'; x.lineWidth = Math.max(1, m.w * W); x.strokeStyle = m.c || '#c01818'; if (m.hl) x.globalAlpha = 0.4;
+          x.beginPath(); x.moveTo(ip[0][0] * W, ip[0][1] * H);
+          if (ip.length === 1) x.lineTo(ip[0][0] * W + 0.01, ip[0][1] * H);
+          for (i = 1; i < ip.length - 1; i++) x.quadraticCurveTo(ip[i][0] * W, ip[i][1] * H, (ip[i][0] + ip[i + 1][0]) / 2 * W, (ip[i][1] + ip[i + 1][1]) / 2 * H);
+          if (ip.length > 1) x.lineTo(ip[ip.length - 1][0] * W, ip[ip.length - 1][1] * H);
+          x.stroke();
+        }
+      } else if (t === 'shape') {
+        var x1 = m.x1 * W, y1 = m.y1 * H, x2 = m.x2 * W, y2 = m.y2 * H;
+        x.lineWidth = Math.max(1, m.w * W); x.strokeStyle = m.c || '#c01818'; x.lineCap = 'round'; x.lineJoin = 'round';
+        if (m.k === 'rect') x.strokeRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
+        else if (m.k === 'ell') { x.beginPath(); x.ellipse((x1 + x2) / 2, (y1 + y2) / 2, Math.abs(x2 - x1) / 2, Math.abs(y2 - y1) / 2, 0, 0, 7); x.stroke(); }
+        else {
+          x.beginPath(); x.moveTo(x1, y1); x.lineTo(x2, y2); x.stroke();
+          if (m.k === 'arrow') {
+            var ang = Math.atan2(y2 - y1, x2 - x1), hl = Math.max(x.lineWidth * 4, W * 0.025);
+            x.beginPath(); x.moveTo(x2, y2); x.lineTo(x2 - hl * Math.cos(ang - 0.5), y2 - hl * Math.sin(ang - 0.5)); x.moveTo(x2, y2); x.lineTo(x2 - hl * Math.cos(ang + 0.5), y2 - hl * Math.sin(ang + 0.5)); x.stroke();
+          }
+        }
+      } else if (t === 'img') {
+        var im = imgOf(m.src, onImg);
+        if (im) x.drawImage(im, m.x * W, m.y * H, m.w * W, m.w * W * (m.ar || 1));
+      } else if (t === 'blur') {
+        if (src) pixelate(x, src, m, W, H); else { x.fillStyle = 'rgba(120,120,120,.55)'; x.fillRect(m.x * W, m.y * H, m.w * W, m.h * H); }
+      } else {
+        if (t === 'rect' || t === 'rep') { x.fillStyle = m.bg || '#fff'; x.fillRect(m.x * W, m.y * H, m.w * W, m.h * H); }
+        if ((t === 'rep' || t === 'text') && m.text) {
+          var lines = String(m.text).split('\n'), fs, lh, mw = 0;
+          x.fillStyle = m.c || '#111'; x.textBaseline = 'top';
+          if (t === 'rep') {
+            fs = Math.max(6, m.h * H / lines.length * 0.78);
+            for (var k = 0; k < 30; k++) { x.font = '500 ' + fs + 'px ' + MFONT; mw = Math.max.apply(null, lines.map(function (l) { return x.measureText(l).width; })); if (mw <= m.w * W * 0.97) break; fs *= 0.92; }
+            lh = fs * 1.22;
+            var y0 = m.y * H + (m.h * H - lh * lines.length) / 2 + fs * 0.08;
+            for (i = 0; i < lines.length; i++) x.fillText(lines[i], m.x * W + m.w * W * 0.015, y0 + i * lh);
+          } else {
+            fs = m.s * W; x.font = '500 ' + fs + 'px ' + MFONT; lh = fs * 1.25;
+            for (i = 0; i < lines.length; i++) { x.fillText(lines[i], m.x * W, m.y * H + i * lh); mw = Math.max(mw, x.measureText(lines[i]).width); }
+            m._bb = [m.x, m.y, mw / W, lh * lines.length / H];
+          }
         }
       }
       x.restore();
+    });
+  }
+  /* ---------- दस्तावरील ठसे: वॉटरमार्क, फूटर, पान क्रमांक (PDF / JPG / PPTX मध्ये) ---------- */
+  function hasOverlay(d) { return !!((d.wm && d.wm.text) || (d.ft && d.ft.text) || (d.num && d.num.pos)); }
+  function drawOverlays(x, W, H, d, i, n) {
+    if (d.wm && d.wm.text) {
+      x.save(); x.globalAlpha = d.wm.op || 0.18; x.fillStyle = d.wm.c || '#888'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.translate(W / 2, H / 2); x.rotate(-Math.PI / 6);
+      var fs = W * 0.11; x.font = '700 ' + fs + 'px ' + MFONT;
+      var tw = x.measureText(d.wm.text).width; if (tw > W * 0.95) { fs *= W * 0.95 / tw; x.font = '700 ' + fs + 'px ' + MFONT; }
+      x.fillText(d.wm.text, 0, 0); x.restore();
+    }
+    var fs2 = Math.max(10, W * 0.02), y = H - fs2 * 1.6;
+    x.save(); x.fillStyle = '#444'; x.textBaseline = 'alphabetic'; x.font = '500 ' + fs2 + 'px ' + MFONT;
+    if (d.ft && d.ft.text) { x.textAlign = 'left'; x.fillText(d.ft.text, W * 0.05, y); }
+    if (d.num && d.num.pos) {
+      var label = d.num.fmt === 'of' ? 'पान ' + (i + 1) + ' / ' + n : String(i + 1);
+      x.textAlign = d.num.pos === 'l' ? 'left' : d.num.pos === 'c' ? 'center' : 'right';
+      x.fillText(label, d.num.pos === 'l' ? W * 0.05 : d.num.pos === 'c' ? W / 2 : W * 0.95, y);
+    }
+    x.restore();
+  }
+  /** निर्यातासाठी पान (ठशांसह) */
+  function exportPageBlob(doc, i) {
+    var pg = doc.pages[i];
+    return DB.getB(pg.id + ':p').then(function (b) {
+      if (!hasOverlay(doc)) return b;
+      return blobToCanvas(b).then(function (c) { drawOverlays(c.getContext('2d'), c.width, c.height, doc, i, doc.pages.length); return toJpeg(c, 0.9); });
     });
   }
   function processPage(pg) {
@@ -841,7 +1144,7 @@ function uni2kruti(s){
       if (i >= doc.pages.length) return Promise.resolve(writePdf(out));
       var pg = doc.pages[i++];
       busy('PDF बनत आहे…', 'पान ' + i + ' / ' + doc.pages.length);
-      return DB.getB(pg.id + ':p').then(function (b) {
+      return exportPageBlob(doc, i - 1).then(function (b) {
         if (!opt.scale || (opt.scale >= 1 && !opt.q)) return loadImg(b).then(function (im) { return blobBytes(b).then(function (by) { return { bytes: by, w: im.naturalWidth, h: im.naturalHeight }; }); });
         return blobToCanvas(b).then(function (c) {
           var cc = fitCanvas(c, Math.max(c.width, c.height) * opt.scale);
@@ -1007,6 +1310,7 @@ function uni2kruti(s){
   /* ---------- खालची खिडकी ---------- */
   var dlgOpen = false;
   function openDlg(html, bind) {
+    var ob = $('dlg-bx'), nb = ob.cloneNode(false); ob.parentNode.replaceChild(nb, ob);   /* जुने श्रोते काढण्यासाठी */
     $('dlg-bx').innerHTML = '<div class="grab"></div>' + html;
     $('dlg').classList.add('on'); dlgOpen = true;
     if (bind) bind($('dlg-bx'));
@@ -1044,13 +1348,14 @@ function uni2kruti(s){
 
   /* ---------- कॅमेरा ---------- */
   var CAM = { stream: null, track: null, mode: 'doc', auto: LS.get('sm-auto') !== '0', shots: [], quad: null, stable: 0, lastQ: null, timer: 0, cool: 0, target: null };
-  function openCam(target, mode) {
-    CAM.target = target || null; CAM.mode = mode || 'doc'; CAM.shots = []; CAM.quad = null;
+  function openCam(target, mode, once, hint) {
+    CAM.target = target || null; CAM.mode = mode || 'doc'; CAM.shots = []; CAM.quad = null; CAM.once = once || null; CAM.hintT = hint || '';
+    document.querySelector('#v-cam .modes').hidden = !!once;
     $('c-strip').innerHTML = ''; $('c-done').hidden = true;
     document.querySelectorAll('#v-cam .modes button').forEach(function (b) { b.classList.toggle('on', b.dataset.m === CAM.mode); });
     $('c-auto').classList.toggle('on', CAM.auto);
     camHint();
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { $('f-cam').click(); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { if (once) pickOne(once); else { ID_PICK = mode === 'id' || mode === 'pass'; $('f-cam').click(); } return; }
     go('v-cam');
     navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 3840 }, height: { ideal: 2160 } } }).then(function (s) {
       CAM.stream = s; CAM.track = s.getVideoTracks()[0];
@@ -1060,9 +1365,9 @@ function uni2kruti(s){
       if (cap.focusMode && cap.focusMode.indexOf('continuous') >= 0) CAM.track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(function () {});
       clearInterval(CAM.timer); CAM.timer = setInterval(camLoop, 260);
     }).catch(function () {
-      back();
+      var oc = CAM.once; back();
       toast('कॅमेरा परवानगी मिळाली नाही. फोनचा कॅमेरा उघडत आहे.', 3000);
-      setTimeout(function () { $('f-cam').click(); }, 400);
+      var m0 = CAM.mode; setTimeout(function () { if (oc) pickOne(oc); else { ID_PICK = m0 === 'id' || m0 === 'pass'; $('f-cam').click(); } }, 400);
     });
   }
   function stopCam() {
@@ -1073,7 +1378,7 @@ function uni2kruti(s){
   }
   onLeave['v-cam'] = stopCam;
   function camHint() {
-    var t = CAM.mode === 'id' ? (CAM.shots.length ? 'आता मागची बाजू' : 'ओळखपत्राची पुढची बाजू') : (CAM.auto ? 'कागद स्थिर धरा, फोटो आपोआप' : 'कागद चौकटीत धरा');
+    var t = CAM.hintT ? CAM.hintT : CAM.mode === 'pass' ? (CAM.shots.length ? 'पत्त्याचे पान (नसेल तर "पूर्ण")' : 'पासपोर्टचे फोटो पान') : CAM.mode === 'id' ? (CAM.shots.length ? 'आता मागची बाजू' : 'ओळखपत्राची पुढची बाजू') : (CAM.auto ? 'कागद स्थिर धरा, फोटो आपोआप' : 'कागद चौकटीत धरा');
     $('c-hint').textContent = t;
   }
   /** व्हिडिओ (cover) मधील बिंदू → स्क्रीनवरील बिंदू */
@@ -1108,18 +1413,19 @@ function uni2kruti(s){
       var im = new Image(); im.src = URL.createObjectURL(b); $('c-strip').appendChild(im); $('c-strip').scrollLeft = 1e5;
       $('c-done').hidden = false; $('c-done').textContent = 'पूर्ण (' + CAM.shots.length + ')';
       camHint();
-      if (CAM.mode === 'id' && CAM.shots.length >= 2) camDone();
+      if (CAM.once || (CAM.mode === 'id' && CAM.shots.length >= 2) || (CAM.mode === 'pass' && CAM.shots.length >= 2)) camDone();
     });
   }
   function camDone() {
     if (!CAM.shots.length) return;
+    if (CAM.once) { var cb = CAM.once, bl = CAM.shots[0].blob; CAM.once = null; CAM.shots = []; stopCam(); cb(bl, true); return; }
     var shots = CAM.shots.slice(), mode = CAM.mode, target = CAM.target;
     CAM.shots = [];
     stack.pop(); stopCam();   /* कॅमेरा इतिहासातून काढून कापणे त्याच जागी */
     history.replaceState({ v: 'v-crop' }, ''); stack.push('v-crop'); setView('v-crop');
-    cropReview(shots).then(function (items) { return mode === 'id' ? makeIdPage(items) : items; }).then(function (items) {
+    cropReview(shots).then(function (items) { return mode === 'id' || mode === 'pass' ? makeIdPage(items, mode === 'pass' ? 1.46 : 1.25) : items; }).then(function (items) {
       stack.pop(); if (!stack.length) stack = ['v-home'];
-      return addPages(items, target, mode === 'id' ? 'ओळखपत्र' : 'स्कॅन', true);
+      return addPages(items, target, mode === 'id' ? 'ओळखपत्र' : mode === 'pass' ? 'पासपोर्ट' : 'स्कॅन', true);
     }).catch(fail);
   }
   $('c-shut').addEventListener('click', shoot);
@@ -1157,9 +1463,9 @@ function uni2kruti(s){
       if (!shots.length) return;
       if (inCam) { CAM.shots = CAM.shots.concat(shots); camDone(); return; }
       go('v-crop');
-      return cropReview(shots).then(function (items) { return mode === 'id' && ID_PICK ? makeIdPage(items) : items; }).then(function (items) {
-        ID_PICK = false; stack.pop(); history.replaceState({ v: stack[stack.length - 1] }, '');
-        return addPages(items, target, 'स्कॅन', true);
+      return cropReview(shots).then(function (items) { var idm = (mode === 'id' || mode === 'pass') && ID_PICK; return idm ? makeIdPage(items, mode === 'pass' ? 1.46 : 1.25) : items; }).then(function (items) {
+        var pre = ID_PICK ? (mode === 'pass' ? 'पासपोर्ट' : 'ओळखपत्र') : 'स्कॅन'; ID_PICK = false; stack.pop(); history.replaceState({ v: stack[stack.length - 1] }, '');
+        return addPages(items, target, pre, true);
       });
     }).catch(fail);
   }
@@ -1246,13 +1552,13 @@ function uni2kruti(s){
   $('k-cancel').addEventListener('click', function () { if (CROP) { var r = CROP.resolve, it = CROP.items; CROP = null; r(it); } });
 
   /** ओळखपत्र: दोन्ही बाजू एका A4 पानावर (खऱ्या आकारात, 200 dpi) */
-  function makeIdPage(items) {
+  function makeIdPage(items, wf) {
     busy('ओळखपत्र पान बनत आहे…');
     return Promise.all(items.slice(0, 2).map(function (it) {
       return blobToCanvas(it.blob, MAX_SRC).then(function (c) { return applyFilter(rotate(warp(c, it.quad, 1400), it.rot || 0), 'magic'); });
     })).then(function (cs) {
       var A = canvas(1654, 2339), x = A.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, A.width, A.height);
-      var cw = 674 * 1.25, top = 260;
+      var cw = 674 * (wf || 1.25), top = 260;
       cs.forEach(function (c) {
         var land = c.width >= c.height, w = land ? cw : cw * 0.63, h = w * c.height / c.width;
         x.drawImage(c, (A.width - w) / 2, top, w, h); x.strokeStyle = '#d0d5de'; x.lineWidth = 2; x.strokeRect((A.width - w) / 2, top, w, h);
@@ -1298,7 +1604,7 @@ function uni2kruti(s){
     var isPdf = d.kind === 'pdf';
     $('d-pages').hidden = isPdf; $('d-pdfbox').hidden = !isPdf;
     document.querySelector('[data-a="add"]').hidden = isPdf;
-    if (isPdf) { $('d-pdfbox').innerHTML = '<div class="pdfbox"><i>' + ico('pdf') + '</i><div><b>' + esc(d.name) + '</b><br><small style="color:var(--muted)">आयात केलेली PDF. मजकूर, Word, Excel, भाषांतर, शेअर करता येईल.</small></div></div>'; return; }
+    if (isPdf) { $('d-pdfbox').innerHTML = '<div class="pdfbox"><i>' + ico('pdf') + '</i><div><b>' + esc(d.name) + '</b><br><small style="color:var(--muted)">आयात केलेली PDF. मजकूर, Word, Excel, भाषांतर, शेअर करता येईल.</small></div></div><button class="btn gold wide" id="d-topg" style="margin-top:10px">' + ico('wand') + 'पानांत रूपांतर करा (संपादनासाठी)</button>'; return; }
     $('d-pages').innerHTML = d.pages.map(function (p, i) { return '<button class="pg" data-i="' + i + '"><img data-t="' + p.id + '" alt=""><em>' + (i + 1) + '</em></button>'; }).join('') +
       '<button class="pg add" data-add><div>' + ico('plus') + 'पान जोडा</div></button>';
     $('d-pages').querySelectorAll('img[data-t]').forEach(function (im) { DB.getB(im.dataset.t + ':t').then(function (b) { if (b) im.src = objUrl(b); }); });
@@ -1324,13 +1630,6 @@ function uni2kruti(s){
       bx.querySelector('#rn-ok').onclick = function () { var v = i.value.trim(); if (!v) return; CUR.name = v; CUR.updated = Date.now(); DB.put(CUR).then(function () { closeDlg(); renderDoc(); }); };
     });
   });
-  document.querySelector('#v-doc main').addEventListener('click', function (e) {
-    var b = e.target.closest('.act'); if (!b) return;
-    var a = b.dataset.a;
-    if (CUR.kind !== 'pdf' && !CUR.pages.length && a !== 'add' && a !== 'del') { toast('आधी पान जोडा'); return; }
-    ({ pdf: actPdf, word: actWord, xls: actXls, ocr: actOcr, tr: actTr, sum: actSum, fields: actFields, hand: actHand, share: actShare, drive: actDrive, add: addMore, del: actDel })[a]();
-  });
-
   /* ---------- निर्यात ---------- */
   var SIZES = [['0', 'मूळ गुणवत्ता'], ['2000', '2 MB'], ['1000', '1 MB'], ['500', '500 KB'], ['200', '200 KB'], ['100', '100 KB']];
   function getPdf(limitKB, page) {
@@ -1528,109 +1827,309 @@ function uni2kruti(s){
     Promise.all([pg.id + ':o', pg.id + ':p', pg.id + ':t'].map(DB.delB)).then(function () { return DB.put(CUR); }).then(function () { toast('पान काढले'); back(); });
   });
 
-  /* ---------- पुसा / बदला / नवीन मजकूर ---------- */
+  /* ---------- मार्कअप: पुसा / मजकूर / पेन / आकार / चित्र / सही / लपवा / अस्पष्ट ----------
+     दोन बोटांनी झूम व सरकवणे, एका बोटाने काम. ब्रश = बोटाखालच्या कागदाचा रंग घेऊन पुसतो. */
   var MK = null;
-  function openMark() {
-    var pg = CUR.pages[EI];
+  var SZR = { brush: [0.004, 0.06], text: [0.012, 0.1], ink: [0.002, 0.02], hl: [0.015, 0.06], shape: [0.002, 0.02], img: [0.06, 0.95] };
+  var SZV = { brush: 0.02, text: 0.03, ink: 0.006, hl: 0.03, shape: 0.006 };
+  var COLS = { text: '#111111', ink: '#c01818', hl: '#ffe14d', shape: '#c01818' };
+  var PAL = { def: ['#111111', '#1d3fb8', '#c01818', '#0a7a3d', '#f2a516', '#ffffff'], hl: ['#ffe14d', '#7ee081', '#ff9ec4', '#ffb454'] };
+  var SHAPEK = 'rect';
+  try { var sv = JSON.parse(LS.get('sm-szv') || '{}'); for (var k0 in sv) SZV[k0] = sv[k0]; var sc = JSON.parse(LS.get('sm-cols') || '{}'); for (var k1 in sc) COLS[k1] = sc[k1]; } catch (e) {}
+  function saveSz() { LS.set('sm-szv', JSON.stringify(SZV)); LS.set('sm-cols', JSON.stringify(COLS)); }
+  function szKind() {
+    if (!MK) return '';
+    if (MK.sel >= 0) { var t = MK.marks[MK.sel].t; if (t === 'img') return 'img'; if (t === 'text') return 'text'; }
+    return SZR[MK.tool] ? MK.tool : '';
+  }
+  function szToVal(v, kind) { var r = SZR[kind]; return r[0] + (r[1] - r[0]) * v / 100; }
+  function valToSz(x, kind) { var r = SZR[kind]; return Math.round((x - r[0]) / (r[1] - r[0]) * 100); }
+  function curVal(kind) { if (kind === 'img') return MK.sel >= 0 ? MK.marks[MK.sel].w : 0.3; if (kind === 'text' && MK.sel >= 0) return MK.marks[MK.sel].s; return SZV[kind]; }
+  var TIPS = {
+    brush: 'बोटाने फिरवून पुसा. दोन बोटांनी झूम करून बारीक जागा पुसा',
+    erase: 'नको असलेल्या मजकुरावर चौकट ओढा: तो भाग कागदाच्या रंगाने पुसला जातो',
+    rep: 'जुन्या मजकुरावर चौकट ओढा व नवीन मजकूर लिहा: तो त्याच जागी बसतो',
+    text: 'जिथे लिहायचे तिथे टॅप करा. मजकूर ओढून हलवता येतो, स्लायडरने आकार बदला',
+    ink: 'बोटाने लिहा किंवा चित्र काढा', hl: 'बोटाने अधोरेखित करा, मजकूर दिसत राहतो',
+    shape: 'ओढून आकार काढा (चौकोन, वर्तुळ, रेघ, बाण)', img: 'गॅलरीतून चित्र निवडा. नंतर ओढून हलवा, स्लायडरने मोठे-लहान करा',
+    sign: 'सही पान सजवण्यासाठी बसवली जाते. ओढून हलवा, स्लायडरने आकार बदला',
+    hide: 'लपवायच्या भागावर चौकट ओढा: तो काळा होतो (गोपनीय माहितीसाठी)',
+    blur: 'अस्पष्ट करायच्या भागावर चौकट ओढा: तो पुसट होतो', move: 'चित्र, सही किंवा मजकुरावर टॅप करून ओढा'
+  };
+  function cleanMarks(marks) { return marks.filter(function (m) { return (m.t !== 'brush' && m.t !== 'ink') || m.pts.length; }).map(function (m) { var o = {}; for (var k in m) if (k !== '_bb') o[k] = m[k]; return o; }); }
+  function openMark(tool, idx) {
+    MK = null; loadMarkPage(idx == null ? Math.min(EI, CUR.pages.length - 1) : idx, tool || 'brush', true);
+  }
+  function commitMarks() {
+    if (!MK) return;
+    var cm = cleanMarks(MK.marks), js = JSON.stringify(cm);
+    if (js !== MK.origJson) { MK.pg.marks = cm; MK.changed[MK.idx] = MK.pg; MK.origJson = js; }
+  }
+  function loadMarkPage(idx, tool, first) {
+    var pg = CUR.pages[idx];
     busy('पान उघडत आहे…');
-    Promise.all([renderPage(pg, MAX_OUT, true), document.fonts && document.fonts.load ? document.fonts.load('500 20px Mukta').catch(function () {}) : 0]).then(function (r) {
-      var base = r[0];
-      MK = { pg: pg, base: base, marks: JSON.parse(JSON.stringify(pg.marks || [])), tool: 'erase', sel: -1, cur: null };
-      return toJpeg(base, 0.9);
+    var keep = MK ? { changed: MK.changed } : { changed: {} };
+    Promise.all([renderPage(pg, MAX_OUT, true), document.fonts && document.fonts.load ? document.fonts.load('500 20px Mukta').catch(function () {}) : 0, preloadMarks(pg.marks || [])]).then(function (r) {
+      var marks = JSON.parse(JSON.stringify(pg.marks || []));
+      MK = { idx: idx, pg: pg, base: r[0], marks: marks, origJson: JSON.stringify(cleanMarks(marks)), changed: keep.changed, tool: tool || (MK && MK.tool) || 'brush', sel: -1, cur: null, tmp: null, z: 1, tx: 0, ty: 0, ring: null };
+      EI = idx;
+      return toJpeg(r[0], 0.9);
     }).then(function (b) {
       var im = $('m-img'); if (im.dataset.u) URL.revokeObjectURL(im.dataset.u); im.dataset.u = URL.createObjectURL(b);
-      im.onload = function () { done(); drawMk(); }; im.src = im.dataset.u;
-      setTool('erase'); go('v-mark');
+      im.onload = function () { done(); applyZoom(); drawMk(); }; im.src = im.dataset.u;
+      $('m-title').textContent = (idx + 1) + ' / ' + CUR.pages.length;
+      $('m-prev').style.visibility = CUR.pages.length > 1 && idx > 0 ? 'visible' : 'hidden'; $('m-next').style.visibility = CUR.pages.length > 1 && idx < CUR.pages.length - 1 ? 'visible' : 'hidden';
+      if (first) go('v-mark');
+      setTool(MK.tool, true);
     }).catch(fail);
   }
-  function setTool(t) {
-    MK.tool = t; MK.sel = -1;
+  function setTool(t, silent) {
+    if (t === 'sign') return doSign();
+    if (t === 'img') return doImg();
+    MK.tool = t; if (!silent) MK.sel = -1; MK.ring = null; MK.tmp = null;
     document.querySelectorAll('#m-tools .pb').forEach(function (b) { b.classList.toggle('on', b.dataset.tool === t); });
-    $('m-tip').textContent = { erase: 'नको असलेल्या मजकुरावर बोटाने चौकट ओढा: तो भाग कागदाच्या रंगाने पुसला जातो', rep: 'जुन्या मजकुरावर चौकट ओढा व नवीन मजकूर लिहा: तो त्याच जागी बसतो', text: 'जिथे लिहायचे तिथे टॅप करा. आधीचा मजकूर ओढून हलवता येतो' }[t];
-    drawMk();
+    refreshCtx(); drawMk();
   }
+  function refreshCtx() {
+    var t = MK.tool, kind = szKind(), sel = MK.sel >= 0 ? MK.marks[MK.sel] : null;
+    $('m-szw').style.visibility = kind ? 'visible' : 'hidden';
+    if (kind) { $('m-szl').textContent = { brush: 'ब्रशचा आकार', text: 'अक्षरांचा आकार', ink: 'पेनची जाडी', hl: 'जाडी', shape: 'रेषेची जाडी', img: 'चित्राचा आकार' }[kind]; $('m-sz').value = valToSz(curVal(kind), kind); }
+    var colorTool = t === 'text' || t === 'ink' || t === 'hl' || t === 'shape' ? t : (sel && sel.t === 'text' ? 'text' : '');
+    var clr = $('m-clr'); clr.hidden = !colorTool;
+    if (colorTool) { var pal = colorTool === 'hl' ? PAL.hl : PAL.def, cur = sel && sel.t === 'text' ? sel.c : COLS[colorTool]; clr.innerHTML = pal.map(function (c) { return '<button data-c="' + c + '" style="background:' + c + '" class="' + (c === cur ? 'on' : '') + '"></button>'; }).join(''); clr.dataset.k = colorTool; }
+    var sub = $('m-sub'); sub.hidden = t !== 'shape';
+    if (t === 'shape') sub.innerHTML = [['rect', '▭ चौकोन'], ['ell', '◯ वर्तुळ'], ['line', '╱ रेघ'], ['arrow', '➜ बाण']].map(function (o) { return '<button data-k="' + o[0] + '" class="' + (o[0] === SHAPEK ? 'on' : '') + '">' + o[1] + '</button>'; }).join('');
+    $('m-tip').textContent = TIPS[t] || '';
+  }
+  function applyZoom() { $('m-img').style.transform = 'translate(' + MK.tx + 'px,' + MK.ty + 'px) scale(' + MK.z + ')'; }
   function mkRect() {
     var st = $('m-stage'), W = st.clientWidth, H = st.clientHeight, b = MK.base, s = Math.min(W / b.width, H / b.height), w = b.width * s, h = b.height * s;
-    return { x: (W - w) / 2, y: (H - h) / 2, w: w, h: h, W: W, H: H };
+    return { x: (W - w) / 2 * MK.z + MK.tx, y: (H - h) / 2 * MK.z + MK.ty, w: w * MK.z, h: h * MK.z, W: W, H: H };
+  }
+  function zoomAt(nz, cx, cy, z0, tx0, ty0) {
+    nz = Math.max(1, Math.min(8, nz));
+    if (nz <= 1.001) { MK.z = 1; MK.tx = 0; MK.ty = 0; }
+    else { MK.tx = cx - (cx - tx0) * nz / z0; MK.ty = cy - (cy - ty0) * nz / z0; MK.z = nz; clampPan(); }
+    applyZoom(); drawMk();
+  }
+  function clampPan() {
+    var st = $('m-stage'), W = st.clientWidth, H = st.clientHeight, z = MK.z;
+    MK.tx = Math.min(W * 0.4, Math.max(W * (1 - z) - W * 0.4, MK.tx)); MK.ty = Math.min(H * 0.4, Math.max(H * (1 - z) - H * 0.4, MK.ty));
   }
   function drawMk() {
     if (!MK) return;
     var r = mkRect(), cv = $('m-cv'), dpr = window.devicePixelRatio || 1;
     cv.width = r.W * dpr; cv.height = r.H * dpr;
     var x = cv.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, r.W, r.H);
-    x.save(); x.translate(r.x, r.y); x.beginPath(); x.rect(0, 0, r.w, r.h); x.clip(); drawMarks(x, r.w, r.h, MK.marks); x.restore();
+    x.save(); x.beginPath(); x.rect(0, 0, r.W, r.H); x.clip(); x.translate(r.x, r.y);
+    drawMarks(x, r.w, r.h, MK.tmp ? MK.marks.concat([MK.tmp]) : MK.marks, MK.base, drawMk); x.restore();
     var sb = MK.sel >= 0 ? bbox(MK.marks[MK.sel]) : null;
     if (sb) { x.setLineDash([6, 4]); x.lineWidth = 2; x.strokeStyle = '#e0b44a'; x.strokeRect(r.x + sb[0] * r.w - 3, r.y + sb[1] * r.h - 3, sb[2] * r.w + 6, sb[3] * r.h + 6); x.setLineDash([]); }
     if (MK.cur) { var c = MK.cur; x.fillStyle = 'rgba(224,180,74,.25)'; x.strokeStyle = '#e0b44a'; x.lineWidth = 2; x.fillRect(r.x + c.x * r.w, r.y + c.y * r.h, c.w * r.w, c.h * r.h); x.strokeRect(r.x + c.x * r.w, r.y + c.y * r.h, c.w * r.w, c.h * r.h); }
+    if (MK.ring && MK.tool === 'brush') { x.beginPath(); x.arc(MK.ring[0], MK.ring[1], Math.max(3, SZV.brush * r.w), 0, 7); x.lineWidth = 2; x.strokeStyle = 'rgba(255,255,255,.9)'; x.stroke(); x.lineWidth = 1; x.strokeStyle = 'rgba(0,0,0,.6)'; x.stroke(); }
     $('m-del').hidden = MK.sel < 0;
   }
-  function bbox(m) { return m.t === 'text' ? (m._bb || [m.x, m.y, 0.1, m.s * 1.25 * MK.base.width / MK.base.height]) : [m.x, m.y, m.w, m.h]; }
-  /** चौकटीच्या कडेवरील उजळ रंग = कागदाचा रंग */
-  function sampleBg(m) {
-    var b = MK.base, W = b.width, H = b.height, x0 = Math.max(0, Math.floor(m.x * W) - 3), y0 = Math.max(0, Math.floor(m.y * H) - 3), x1 = Math.min(W - 1, Math.ceil((m.x + m.w) * W) + 3), y1 = Math.min(H - 1, Math.ceil((m.y + m.h) * H) + 3);
-    var d = b.getContext('2d').getImageData(x0, y0, x1 - x0 + 1, y1 - y0 + 1), w = d.width, h = d.height, px = [];
-    for (var i = 0; i < w; i += 2) { px.push(i, (h - 1) * w + i); }
-    for (var j = 0; j < h; j += 2) { px.push(j * w, j * w + w - 1); }
-    var cs = px.map(function (p) { var o = p * 4; return [d.data[o], d.data[o + 1], d.data[o + 2]]; }).sort(function (a, c) { return (c[0] + c[1] + c[2]) - (a[0] + a[1] + a[2]); });
-    var top = cs.slice(0, Math.max(1, Math.round(cs.length * 0.5))), s = [0, 0, 0];
-    top.forEach(function (c) { s[0] += c[0]; s[1] += c[1]; s[2] += c[2]; });
-    return 'rgb(' + s.map(function (v) { return Math.round(v / top.length); }).join(',') + ')';
+  function bbox(m) {
+    if (m.t === 'text') return m._bb || [m.x, m.y, 0.1, m.s * 1.25 * MK.base.width / MK.base.height];
+    if (m.t === 'img') return [m.x, m.y, m.w, m.w * (m.ar || 1) * MK.base.width / MK.base.height];
+    if (m.t === 'rep') return [m.x, m.y, m.w, m.h];
+    return null;
   }
+  function sampleRegion(x0, y0, x1, y1) {
+    var b = MK.base, W = b.width, H = b.height;
+    x0 = Math.max(0, Math.floor(x0)); y0 = Math.max(0, Math.floor(y0)); x1 = Math.min(W, Math.ceil(x1)); y1 = Math.min(H, Math.ceil(y1));
+    if (x1 - x0 < 2 || y1 - y0 < 2) return 'rgb(255,255,255)';
+    var d = b.getContext('2d').getImageData(x0, y0, x1 - x0, y1 - y0).data, n = d.length / 4, i, sum = 0, c = 0, r = 0, g = 0, bl = 0, m = 0;
+    for (i = 0; i < n; i += 3) { sum += d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]; c++; }
+    var mean = sum / Math.max(1, c);
+    for (i = 0; i < n; i += 3) { var o = i * 4; if (d[o] + d[o + 1] + d[o + 2] >= mean) { r += d[o]; g += d[o + 1]; bl += d[o + 2]; m++; } }
+    m = Math.max(1, m); return 'rgb(' + Math.round(r / m) + ',' + Math.round(g / m) + ',' + Math.round(bl / m) + ')';
+  }
+  function sampleBg(m) { var W = MK.base.width, H = MK.base.height; return sampleRegion(m.x * W - 3, m.y * H - 3, (m.x + m.w) * W + 3, (m.y + m.h) * H + 3); }
+  function sampleAt(nx, ny, rad) { var W = MK.base.width, H = MK.base.height, R = Math.max(6, rad * W * 1.6), cx = nx * W, cy = ny * H; return sampleRegion(cx - R, cy - R, cx + R, cy + R); }
   function textDlg(title, m, cb) {
     openDlg('<h3>' + title + '</h3><textarea class="f" id="mt" rows="3" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:17px">' + esc(m.text || '') + '</textarea>' +
-      '<span class="fl">रंग</span>' + optGroup('c', [['#111111', 'काळा'], ['#1d3fb8', 'निळा'], ['#c01818', 'लाल']], m.c || '#111111') +
-      (m.t === 'text' ? '<span class="fl">आकार</span>' + optGroup('s', [['0.022', 'लहान'], ['0.03', 'मध्यम'], ['0.042', 'मोठा'], ['0.06', 'खूप मोठा']], String(m.s || '0.03')) : '<p class="hint">मजकूर चौकटीत आपोआप बसवला जातो.</p>') +
+      '<span class="fl">रंग</span>' + optGroup('c', [['#111111', 'काळा'], ['#1d3fb8', 'निळा'], ['#c01818', 'लाल']], m.c || COLS.text) +
+      (m.t === 'rep' ? '<p class="hint">मजकूर चौकटीत आपोआप बसवला जातो.</p>' : '<p class="hint">आकार बदलायचा असेल तर खालच्या स्लायडरने बदला.</p>') +
       '<div class="row"><button class="btn gold wide" id="mt-ok">' + ico('check') + 'ठीक</button></div>', function (bx) {
       bindOpts(bx); var ta = bx.querySelector('#mt'); setTimeout(function () { ta.focus(); }, 120);
-      bx.querySelector('#mt-ok').onclick = function () { m.text = ta.value.replace(/\s+$/, ''); m.c = optVal(bx, 'c'); if (m.t === 'text') m.s = +optVal(bx, 's'); closeDlg(); cb(m); };
+      bx.querySelector('#mt-ok').onclick = function () { m.text = ta.value.replace(/\s+$/, ''); m.c = optVal(bx, 'c'); closeDlg(); cb(m); };
+    });
+  }
+  /** चित्र / सही पानावर बसवा */
+  function placeImg(src, w) {
+    return new Promise(function (res) {
+      var im = new Image(); im.onload = function () {
+        var m = { t: 'img', src: src, w: w, ar: im.naturalHeight / im.naturalWidth }; m.x = 0.5 - w / 2; m.y = Math.max(0.05, 0.5 - w * m.ar * MK.base.width / MK.base.height / 2);
+        IMGC[src] = { im: im, ok: true, cbs: [] };
+        MK.marks.push(m); MK.sel = MK.marks.length - 1; setTool('move', true); res();
+      }; im.src = src;
+    });
+  }
+  function doImg() { $('f-add').value = ''; $('f-add').click(); }
+  $('f-add').addEventListener('change', function () {
+    var f = this.files && this.files[0]; this.value = ''; if (!f || !MK) return;
+    var png = /png|gif|webp/.test(f.type);
+    blobToCanvas(f, 900).then(function (c) { return placeImg(c.toDataURL(png ? 'image/png' : 'image/jpeg', 0.86), 0.4); }).catch(fail);
+  });
+  function doSign() {
+    var saved = LS.get('sm-sign');
+    function pad() {
+      openDlg('<h3>सही काढा</h3><p class="s">बोटाने सही करा. ती फोनमध्ये जतन राहते व कोणत्याही दस्तावर बसवता येते.</p><canvas class="pad" id="sg"></canvas>' +
+        '<span class="fl">रंग</span>' + optGroup('sc', [['#111111', 'काळा'], ['#1d3fb8', 'निळा']], '#1d3fb8') +
+        '<div class="row"><button class="btn ghost" id="sg-c">' + ico('del') + 'पुसा</button><button class="btn gold" id="sg-ok">' + ico('check') + 'जतन करा</button></div>', function (bx) {
+        bindOpts(bx);
+        var cv = bx.querySelector('#sg'), dpr = 2; cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr;
+        var x = cv.getContext('2d'), down = false, last = null, ink = false; x.lineCap = 'round'; x.lineJoin = 'round'; x.lineWidth = 3.2 * dpr;
+        function pos(e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * dpr, (e.clientY - r.top) * dpr]; }
+        cv.addEventListener('pointerdown', function (e) { down = true; ink = true; last = pos(e); try { cv.setPointerCapture(e.pointerId); } catch (x2) {} x.strokeStyle = optVal(bx, 'sc'); x.beginPath(); x.moveTo(last[0], last[1]); x.lineTo(last[0] + 0.1, last[1]); x.stroke(); e.preventDefault(); });
+        cv.addEventListener('pointermove', function (e) { if (!down) return; var p = pos(e); x.strokeStyle = optVal(bx, 'sc'); x.beginPath(); x.moveTo(last[0], last[1]); x.lineTo(p[0], p[1]); x.stroke(); last = p; });
+        cv.addEventListener('pointerup', function () { down = false; }); cv.addEventListener('pointercancel', function () { down = false; });
+        bx.querySelector('#sg-c').onclick = function () { x.clearRect(0, 0, cv.width, cv.height); ink = false; };
+        bx.querySelector('#sg-ok').onclick = function () {
+          if (!ink) { toast('आधी सही करा'); return; }
+          var d = x.getImageData(0, 0, cv.width, cv.height), W = d.width, H = d.height, x0 = W, y0 = H, x1 = 0, y1 = 0, i, j;
+          for (j = 0; j < H; j++) for (i = 0; i < W; i++) if (d.data[(j * W + i) * 4 + 3] > 20) { if (i < x0) x0 = i; if (i > x1) x1 = i; if (j < y0) y0 = j; if (j > y1) y1 = j; }
+          if (x1 <= x0) { toast('आधी सही करा'); return; }
+          var o = canvas(x1 - x0 + 12, y1 - y0 + 12); o.getContext('2d').drawImage(cv, x0 - 6, y0 - 6, o.width, o.height, 0, 0, o.width, o.height);
+          var url = o.toDataURL('image/png'); LS.set('sm-sign', url); closeDlg(); placeImg(url, 0.3);
+        };
+      });
+    }
+    if (!saved) return pad();
+    openDlg('<h3>सही</h3><img class="pv2" src="' + saved + '" style="background:#fff;max-height:130px;object-fit:contain"><div class="row"><button class="btn ghost" id="sg-n">' + ico('edit') + 'नवी सही</button><button class="btn gold" id="sg-u">' + ico('check') + 'ही बसवा</button></div>', function (bx) {
+      bx.querySelector('#sg-n').onclick = function () { closeDlg(); setTimeout(pad, 80); };
+      bx.querySelector('#sg-u').onclick = function () { closeDlg(); placeImg(saved, 0.3); };
     });
   }
   (function () {
-    var st = $('m-stage'), mode = null, sx = 0, sy = 0, orig = null, moved = false;
-    function pt(e) { var r = mkRect(), bx = st.getBoundingClientRect(); return [Math.max(0, Math.min(1, (e.clientX - bx.left - r.x) / r.w)), Math.max(0, Math.min(1, (e.clientY - bx.top - r.y) / r.h))]; }
-    function hit(p) { for (var i = MK.marks.length - 1; i >= 0; i--) { var b = bbox(MK.marks[i]); if (p[0] >= b[0] - 0.01 && p[0] <= b[0] + b[2] + 0.01 && p[1] >= b[1] - 0.01 && p[1] <= b[1] + b[3] + 0.01) return i; } return -1; }
+    var st = $('m-stage'), ptrs = {}, mode = null, sx = 0, sy = 0, orig = null, moved = false, pinch = null, lastPt = null;
+    function sp(e) { var bx = st.getBoundingClientRect(); return [e.clientX - bx.left, e.clientY - bx.top]; }
+    function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+    function pt(e) { var r = mkRect(), p = sp(e); return [clamp01((p[0] - r.x) / r.w), clamp01((p[1] - r.y) / r.h)]; }
+    function count() { return Object.keys(ptrs).length; }
+    function hit(p) {
+      for (var i = MK.marks.length - 1; i >= 0; i--) {
+        var b = bbox(MK.marks[i]); if (!b) continue;
+        var tol = 0.015; if (p[0] >= b[0] - tol && p[0] <= b[0] + b[2] + tol && p[1] >= b[1] - tol && p[1] <= b[1] + b[3] + tol) return i;
+      }
+      return -1;
+    }
+    function addPt(stroke, p, sample) { stroke.pts.push(sample ? [p[0], p[1], sampleAt(p[0], p[1], SZV.brush)] : [p[0], p[1]]); lastPt = p; }
+    function abort() { if (mode === 'rect' || mode === 'shape') { MK.cur = null; MK.tmp = null; } MK.ring = null; mode = null; }
     st.addEventListener('pointerdown', function (e) {
-      if (!MK) return; var p = pt(e); sx = p[0]; sy = p[1]; moved = false;
-      var h = hit(p);
-      if (h >= 0 && (MK.tool === 'text' || MK.sel === h)) { MK.sel = h; mode = 'move'; orig = [MK.marks[h].x, MK.marks[h].y]; }
-      else if (MK.tool === 'text') { mode = 'tap'; MK.sel = -1; }
-      else { mode = 'rect'; MK.sel = -1; MK.cur = { x: sx, y: sy, w: 0, h: 0 }; }
-      st.setPointerCapture(e.pointerId); drawMk(); e.preventDefault();
-    });
-    st.addEventListener('pointermove', function (e) {
-      if (!mode) return; var p = pt(e); if (Math.abs(p[0] - sx) + Math.abs(p[1] - sy) > 0.01) moved = true;
-      if (mode === 'rect') MK.cur = { x: Math.min(sx, p[0]), y: Math.min(sy, p[1]), w: Math.abs(p[0] - sx), h: Math.abs(p[1] - sy) };
-      if (mode === 'move') { var m = MK.marks[MK.sel]; m.x = orig[0] + p[0] - sx; m.y = orig[1] + p[1] - sy; }
+      if (!MK || e.target.closest('.zm')) return; try { st.setPointerCapture(e.pointerId); } catch (x) {} ptrs[e.pointerId] = sp(e); e.preventDefault();
+      var n = count();
+      if (n === 2) {
+        abort(); var k = Object.keys(ptrs), a = ptrs[k[0]], b = ptrs[k[1]];
+        pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], z: MK.z, tx: MK.tx, ty: MK.ty }; drawMk(); return;
+      }
+      if (n > 2) return;
+      var p = pt(e), T = MK.tool; sx = p[0]; sy = p[1]; moved = false;
+      if (T === 'brush') {
+        mode = 'brush'; MK.sel = -1; var stroke = { t: 'brush', r: SZV.brush, pts: [] }; MK.marks.push(stroke); MK.stroke = stroke; addPt(stroke, p, true); MK.ring = sp(e);
+      } else if (T === 'ink' || T === 'hl') {
+        mode = 'ink'; MK.sel = -1; var ink = { t: 'ink', hl: T === 'hl' ? 1 : 0, c: COLS[T], w: SZV[T], pts: [] }; MK.marks.push(ink); MK.stroke = ink; addPt(ink, p, false);
+      } else if (T === 'shape') {
+        mode = 'shape'; MK.sel = -1; MK.tmp = { t: 'shape', k: SHAPEK, x1: p[0], y1: p[1], x2: p[0], y2: p[1], c: COLS.shape, w: SZV.shape };
+      } else if (T === 'erase' || T === 'rep' || T === 'hide' || T === 'blur') {
+        mode = 'rect'; MK.sel = -1; MK.cur = { x: sx, y: sy, w: 0, h: 0 };
+      } else {
+        var h = hit(p);
+        if (h >= 0) { MK.sel = h; mode = 'move'; orig = [MK.marks[h].x, MK.marks[h].y]; refreshCtx(); }
+        else if (T === 'text') { mode = 'tap'; MK.sel = -1; refreshCtx(); }
+        else { MK.sel = -1; mode = null; refreshCtx(); }
+      }
       drawMk();
     });
-    function end() {
+    st.addEventListener('pointermove', function (e) {
+      if (!ptrs[e.pointerId]) { if (MK && MK.tool === 'brush' && e.pointerType === 'mouse') { MK.ring = sp(e); drawMk(); } return; }
+      ptrs[e.pointerId] = sp(e);
+      if (pinch && count() >= 2) {
+        var k = Object.keys(ptrs), a = ptrs[k[0]], b = ptrs[k[1]], d = Math.hypot(a[0] - b[0], a[1] - b[1]), m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        zoomAt(pinch.z * d / pinch.d, pinch.m[0], pinch.m[1], pinch.z, pinch.tx, pinch.ty);
+        if (MK.z > 1) { MK.tx += m[0] - pinch.m[0]; MK.ty += m[1] - pinch.m[1]; clampPan(); applyZoom(); drawMk(); }
+        return;
+      }
+      if (!mode) return;
+      var p = pt(e); if (Math.abs(p[0] - sx) + Math.abs(p[1] - sy) > 0.01) moved = true;
+      if (mode === 'brush') { MK.ring = sp(e); if (Math.hypot((p[0] - lastPt[0]) * MK.base.width, (p[1] - lastPt[1]) * MK.base.width) > SZV.brush * MK.base.width * 0.35) addPt(MK.stroke, p, true); }
+      else if (mode === 'ink') { if (Math.hypot((p[0] - lastPt[0]) * MK.base.width, (p[1] - lastPt[1]) * MK.base.width) > 2) addPt(MK.stroke, p, false); }
+      else if (mode === 'shape') { MK.tmp.x2 = p[0]; MK.tmp.y2 = p[1]; }
+      else if (mode === 'rect') MK.cur = { x: Math.min(sx, p[0]), y: Math.min(sy, p[1]), w: Math.abs(p[0] - sx), h: Math.abs(p[1] - sy) };
+      else if (mode === 'move') { var m2 = MK.marks[MK.sel]; m2.x = orig[0] + p[0] - sx; m2.y = orig[1] + p[1] - sy; }
+      drawMk();
+    });
+    function end(e) {
+      var wasPinch = !!pinch; delete ptrs[e.pointerId];
+      if (wasPinch) { if (count() < 2) pinch = null; return; }
       var md = mode; mode = null; if (!md) return;
-      if (md === 'rect') {
+      var T = MK.tool;
+      if (md === 'brush' || md === 'ink') { MK.ring = null; MK.stroke = null; }
+      else if (md === 'shape') {
+        var t = MK.tmp; MK.tmp = null;
+        if (Math.abs(t.x2 - t.x1) + Math.abs(t.y2 - t.y1) > 0.012) MK.marks.push(t);
+      } else if (md === 'rect') {
         var c = MK.cur; MK.cur = null;
         if (c.w < 0.01 || c.h < 0.006) { drawMk(); return; }
-        var m = { t: MK.tool === 'rep' ? 'rep' : 'rect', x: c.x, y: c.y, w: c.w, h: c.h }; m.bg = sampleBg(m);
-        if (m.t === 'rep') textDlg('नवीन मजकूर', m, function (mm) { if (mm.text) { MK.marks.push(mm); MK.sel = MK.marks.length - 1; } drawMk(); });
-        else { MK.marks.push(m); drawMk(); }
+        if (T === 'blur') MK.marks.push({ t: 'blur', x: c.x, y: c.y, w: c.w, h: c.h });
+        else if (T === 'hide') MK.marks.push({ t: 'rect', x: c.x, y: c.y, w: c.w, h: c.h, bg: '#000' });
+        else {
+          var m = { t: T === 'rep' ? 'rep' : 'rect', x: c.x, y: c.y, w: c.w, h: c.h }; m.bg = sampleBg(m);
+          if (m.t === 'rep') textDlg('नवीन मजकूर', m, function (mm) { if (mm.text) { MK.marks.push(mm); MK.sel = MK.marks.length - 1; refreshCtx(); } drawMk(); });
+          else MK.marks.push(m);
+        }
       } else if (md === 'tap') {
-        textDlg('मजकूर लिहा', { t: 'text', x: sx, y: sy, s: 0.03 }, function (mm) { if (mm.text) { MK.marks.push(mm); MK.sel = MK.marks.length - 1; } drawMk(); });
+        textDlg('मजकूर लिहा', { t: 'text', x: sx, y: sy, s: SZV.text, c: COLS.text }, function (mm) { if (mm.text) { MK.marks.push(mm); MK.sel = MK.marks.length - 1; refreshCtx(); } drawMk(); });
       } else if (md === 'move' && !moved) {
         var mk = MK.marks[MK.sel];
-        if (mk.t !== 'rect') textDlg('मजकूर बदला', mk, function () { drawMk(); });
+        if (mk.t === 'text' || mk.t === 'rep') textDlg('मजकूर बदला', mk, function () { refreshCtx(); drawMk(); });
+        else refreshCtx();
       }
       drawMk();
     }
     st.addEventListener('pointerup', end); st.addEventListener('pointercancel', end);
+    st.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse' && MK) { MK.ring = null; drawMk(); } });
+    st.addEventListener('wheel', function (e) { if (!MK) return; e.preventDefault(); var p = sp(e); zoomAt(MK.z * (e.deltaY < 0 ? 1.2 : 1 / 1.2), p[0], p[1], MK.z, MK.tx, MK.ty); }, { passive: false });
   })();
   window.addEventListener('resize', function () { if ($('v-mark').classList.contains('on')) drawMk(); });
-  $('m-tools').addEventListener('click', function (e) { var b = e.target.closest('.pb'); if (b) setTool(b.dataset.tool); });
-  $('m-undo').addEventListener('click', function () { if (MK.marks.length) { MK.marks.pop(); MK.sel = -1; drawMk(); } else toast('मागे घेण्यासारखे काही नाही'); });
-  $('m-del').addEventListener('click', function () { if (MK.sel >= 0) { MK.marks.splice(MK.sel, 1); MK.sel = -1; drawMk(); } });
-  $('m-cancel').addEventListener('click', back);
-  $('m-save').addEventListener('click', function () {
-    var pg = MK.pg; pg.marks = MK.marks.map(function (m) { var o = {}; for (var k in m) if (k !== '_bb') o[k] = m[k]; return o; }); MK = null;
-    back(); setTimeout(function () { savePage(pg, 'बदल जतन होत आहेत…').then(function () { toast('बदल जतन झाले. PDF / Word मध्ये हेच पान येईल.'); }); }, 80);
+  function zoomBtn(f) { var st = $('m-stage'); zoomAt(MK.z * f, st.clientWidth / 2, st.clientHeight / 2, MK.z, MK.tx, MK.ty); }
+  $('m-zin').addEventListener('click', function () { zoomBtn(1.5); });
+  $('m-zout').addEventListener('click', function () { zoomBtn(1 / 1.5); });
+  $('m-z1').addEventListener('click', function () { zoomAt(1, 0, 0, MK.z, MK.tx, MK.ty); });
+  $('m-sz').addEventListener('input', function () {
+    var kind = szKind(); if (!kind) return; var v = szToVal(+this.value, kind);
+    if (kind === 'img') { var im = MK.marks[MK.sel]; var cx = im.x + im.w / 2, cy = im.y + im.w * im.ar * MK.base.width / MK.base.height / 2; im.w = v; im.x = cx - v / 2; im.y = cy - v * im.ar * MK.base.width / MK.base.height / 2; }
+    else if (kind === 'text' && MK.sel >= 0) { MK.marks[MK.sel].s = v; SZV.text = v; }
+    else { SZV[kind] = v; if (kind === 'brush') { var st = $('m-stage'); MK.ring = [st.clientWidth / 2, st.clientHeight / 2]; } }
+    saveSz(); drawMk();
   });
-  $('e-mark').addEventListener('click', openMark);
+  $('m-sz').addEventListener('change', function () { if (MK) { MK.ring = null; drawMk(); } });
+  $('m-clr').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return; var k = this.dataset.k, c = b.dataset.c;
+    if (MK.sel >= 0 && MK.marks[MK.sel].t === 'text') MK.marks[MK.sel].c = c; else COLS[k] = c;
+    saveSz(); refreshCtx(); drawMk();
+  });
+  $('m-sub').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; SHAPEK = b.dataset.k; refreshCtx(); });
+  $('m-tools').addEventListener('click', function (e) { var b = e.target.closest('.pb'); if (b) setTool(b.dataset.tool); });
+  $('m-undo').addEventListener('click', function () { if (MK.marks.length) { MK.marks.pop(); MK.sel = -1; refreshCtx(); drawMk(); } else toast('मागे घेण्यासारखे काही नाही'); });
+  $('m-del').addEventListener('click', function () { if (MK.sel >= 0) { MK.marks.splice(MK.sel, 1); MK.sel = -1; refreshCtx(); drawMk(); } });
+  $('m-cancel').addEventListener('click', back);
+  function markPage(d) { commitMarks(); loadMarkPage(MK.idx + d, MK.tool, false); }
+  $('m-prev').addEventListener('click', function () { markPage(-1); });
+  $('m-next').addEventListener('click', function () { markPage(1); });
+  $('m-save').addEventListener('click', function () {
+    commitMarks(); var changed = MK.changed; MK = null;
+    back();
+    var list = Object.keys(changed).map(function (k) { return changed[k]; });
+    if (!list.length) return;
+    setTimeout(function () {
+      var i = 0;
+      function next() { if (i >= list.length) return Promise.resolve(); busy('बदल जतन होत आहेत…', (i + 1) + ' / ' + list.length); return processPage(list[i++]).then(next); }
+      next().then(function () { CUR.text = null; CUR.updated = Date.now(); return DB.put(CUR); }).then(function () { done(); renderDoc(); toast('बदल जतन झाले. PDF / Word मध्ये हेच पान येईल.'); }).catch(fail);
+    }, 80);
+  });
+  $('e-mark').addEventListener('click', function () { openMark('brush', EI); });
 
   /* ---------- मजकूर स्क्रीन ---------- */
   var TXT = { name: '' };
@@ -1669,14 +2168,609 @@ function uni2kruti(s){
     }
   });
 
-  /* ---------- PDF आयात ---------- */
-  $('f-pdf').addEventListener('change', function () {
-    var f = this.files && this.files[0]; this.value = ''; if (!f) return;
-    if (f.size > 20 * 1048576) { toast('20 MB पेक्षा मोठी PDF सर्व्हरवर पाठवता येणार नाही', 4000); }
-    var d = { id: uid(), name: f.name.replace(/\.pdf$/i, '') || defName('PDF'), created: Date.now(), updated: Date.now(), pages: [], kind: 'pdf', size: f.size };
-    DB.putB(d.id + ':pdf', f).then(function () { return DB.put(d); }).then(function () { CUR = d; go('v-doc'); renderDoc(); }).catch(fail);
+  /* ---------- v3: मदतनीस ---------- */
+  /** सध्याच्या (कॅमेरा / गॅलरी) स्क्रीनच्या जागी नवी स्क्रीन */
+  function enter(id, fromCam) {
+    if (fromCam) { stack[stack.length - 1] = id; history.replaceState({ v: id, n: stack.length }, ''); setView(id); }
+    else if (stack[stack.length - 1] === id) setView(id);
+    else go(id);
+  }
+  var ONE_CB = null;
+  function pickOne(cb) { ONE_CB = cb; $('f-one').value = ''; $('f-one').click(); }
+  $('f-one').addEventListener('change', function () {
+    var f = this.files && this.files[0], cb = ONE_CB; ONE_CB = null; this.value = '';
+    if (!f || !cb) return;
+    blobToCanvas(f, MAX_SRC).then(function (c) { return toJpeg(c, 0.92); }).then(function (b) { cb(b, false); }).catch(fail);
+  });
+  function showDoc(doc) {
+    CUR = doc;
+    if (stack[stack.length - 1] === 'v-doc') { setView('v-doc'); renderDoc(); } else { go('v-doc'); renderDoc(); }
+  }
+  function clonePage(pg) {
+    var n = JSON.parse(JSON.stringify(pg)); n.id = uid();
+    return Promise.all([':o', ':p', ':t'].map(function (s) { return DB.getB(pg.id + s).then(function (b) { return b ? DB.putB(n.id + s, b) : 0; }); })).then(function () { return n; });
+  }
+  function clonePages(pgs) {
+    var out = [], i = 0;
+    function nx() { if (i >= pgs.length) return Promise.resolve(out); return clonePage(pgs[i++]).then(function (n) { out.push(n); return nx(); }); }
+    return nx();
+  }
+  function newDoc(name, pages) { return { id: uid(), name: name, created: Date.now(), updated: Date.now(), pages: pages, kind: 'scan' }; }
+
+  /* ---------- दस्त क्रिया ---------- */
+  var EDIT_TOOL = { sign: 1, text: 1, img: 1, ink: 1, hide: 1, blur: 1, shape: 1 };
+  var NEEDS_PAGES = { pptx: 1, jpg: 1, cmp: 1, edit: 1, wm: 1, ft: 1, split: 1, add: 1, blank: 1, sign: 1, text: 1, img: 1, ink: 1, hide: 1, blur: 1, shape: 1 };
+  var ACTS = {
+    pdf: actPdf, word: actWord, xls: actXls, ocr: actOcr, tr: actTr, sum: actSum, fields: actFields, hand: actHand, share: actShare, drive: actDrive, add: addMore, del: actDel,
+    pptx: actPptx, jpg: actJpg, txt: actTxt, cmp: actCmp, edit: function () { openEdit(0); }, wm: function () { overlayDlg('wm'); }, ft: function () { overlayDlg('ft'); },
+    merge: function () { mergeDlg(CUR.id); }, split: actSplit, blank: actBlank, ai: function () { openAi(CUR); }
+  };
+  document.querySelector('#v-doc main').addEventListener('click', function (e) {
+    var b = e.target.closest('.act'); if (!b) return;
+    var a = b.dataset.a;
+    if (CUR.kind === 'pdf' && NEEDS_PAGES[a]) { toast('आधी वर "पानांत रूपांतर करा" दाबा'); return; }
+    if (CUR.kind !== 'pdf' && !CUR.pages.length && !{ add: 1, del: 1, ai: 1, blank: 1, merge: 1 }[a]) { toast('आधी पान जोडा'); return; }
+    if (EDIT_TOOL[a]) { openMark(a, 0); return; }
+    ACTS[a]();
   });
 
+  /* ---------- JPG / TXT / संकुचित / PPTX ---------- */
+  function exportAll() {
+    var i = 0, out = [];
+    function nx() {
+      if (i >= CUR.pages.length) return Promise.resolve(out);
+      busy('पाने तयार होत आहेत…', (i + 1) + ' / ' + CUR.pages.length);
+      return exportPageBlob(CUR, i++).then(function (b) { out.push(b); return tick().then(nx); });
+    }
+    return nx().then(function (r) { done(); return r; });
+  }
+  function actJpg() {
+    var nm = safeName(CUR.name);
+    exportAll().then(function (bs) {
+      if (bs.length === 1) return deliver(bs[0], nm + '.jpg', true);
+      return Promise.all(bs.map(blobBytes)).then(function (arr) {
+        var z = zip(arr.map(function (by, i) { return { name: nm + '_' + (i + 1) + '.jpg', data: by }; }), 'application/zip');
+        return deliver(z, nm + '_JPG.zip', true);
+      });
+    }).catch(fail);
+  }
+  function actTxt() {
+    ocrDoc(false).then(function (r) { return deliver(new Blob(['﻿' + r.text], { type: 'text/plain;charset=utf-8' }), safeName(CUR.name) + '.txt', true); }).catch(fail);
+  }
+  function actCmp() {
+    openDlg('<h3>संकुचित करा (Compress)</h3><p class="s">PDF ची फाईल लहान करा: पोर्टल / ई-मेलसाठी</p>' +
+      '<span class="fl">आकार किती हवा?</span>' + optGroup('sz', SIZES.slice(1), LS.get('sm-cmp') || '500') +
+      '<div class="row"><button class="btn ghost" id="c-dl">' + ico('down') + 'डाउनलोड</button><button class="btn gold" id="c-sh">' + ico('share') + 'शेअर</button></div>', function (bx) {
+      bindOpts(bx);
+      function run(share) {
+        var sz = optVal(bx, 'sz'); LS.set('sm-cmp', sz); closeDlg();
+        getPdf(sz, 'a4').then(function (b) {
+          toast('नवा आकार: ' + kb(b.size) + (b.size > +sz * 1024 ? ' (शक्य तितकी लहान)' : ''), 4000);
+          return deliver(b, safeName(CUR.name) + '_लहान.pdf', share);
+        }).catch(fail);
+      }
+      bx.querySelector('#c-dl').onclick = function () { run(false); };
+      bx.querySelector('#c-sh').onclick = function () { run(true); };
+    });
+  }
+  function actBlank() {
+    var c = canvas(1654, 2339), x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+    toJpeg(c, 0.9).then(function (b) { return addPages([{ blob: b, quad: fullQuad(), filter: 'orig' }], CUR.id, 'पान', true); }).then(function () { toast('रिकामे पान जोडले: "मजकूर" दाबून लिहा', 3500); }).catch(fail);
+  }
+
+  var THEME = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="ScanOS"><a:themeElements><a:clrScheme name="ScanOS"><a:dk1><a:srgbClr val="000000"/></a:dk1><a:lt1><a:srgbClr val="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="0B1F4B"/></a:dk2><a:lt2><a:srgbClr val="EEF1F7"/></a:lt2><a:accent1><a:srgbClr val="C8961A"/></a:accent1><a:accent2><a:srgbClr val="1D3FB8"/></a:accent2><a:accent3><a:srgbClr val="0A7A3D"/></a:accent3><a:accent4><a:srgbClr val="C01818"/></a:accent4><a:accent5><a:srgbClr val="6B7A99"/></a:accent5><a:accent6><a:srgbClr val="F2A516"/></a:accent6><a:hlink><a:srgbClr val="1D3FB8"/></a:hlink><a:folHlink><a:srgbClr val="6B7A99"/></a:folHlink></a:clrScheme><a:fontScheme name="ScanOS"><a:majorFont><a:latin typeface="Arial"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont><a:minorFont><a:latin typeface="Arial"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont></a:fontScheme><a:fmtScheme name="ScanOS"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln w="12700"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln w="19050"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements></a:theme>';
+  function buildPptx(blobs, dims, title) {
+    var NS = 'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"';
+    var H = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>', REL = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/';
+    var RELS = function (items) { return H + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + items.map(function (t) { return '<Relationship Id="' + t[0] + '" Type="' + REL + t[1] + '" Target="' + t[2] + '"/>'; }).join('') + '</Relationships>'; };
+    var GRP = '<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/>';
+    var sw = 9144000, sh = Math.round(sw * dims[0].h / dims[0].w), n = blobs.length;
+    return Promise.all(blobs.map(blobBytes)).then(function (by) {
+      var f = [];
+      var ct = H + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/>' +
+        '<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/><Override PartName="/ppt/slideMasters/slideMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml"/><Override PartName="/ppt/slideLayouts/slideLayout1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml"/><Override PartName="/ppt/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>' +
+        by.map(function (_, i) { return '<Override PartName="/ppt/slides/slide' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>'; }).join('') + '</Types>';
+      f.push({ name: '[Content_Types].xml', data: ct });
+      f.push({ name: '_rels/.rels', data: RELS([['rId1', 'officeDocument', 'ppt/presentation.xml']]) });
+      f.push({ name: 'ppt/presentation.xml', data: H + '<p:presentation ' + NS + '><p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst><p:sldIdLst>' + by.map(function (_, i) { return '<p:sldId id="' + (256 + i) + '" r:id="rId' + (i + 2) + '"/>'; }).join('') + '</p:sldIdLst><p:sldSz cx="' + sw + '" cy="' + sh + '"/><p:notesSz cx="6858000" cy="9144000"/></p:presentation>' });
+      f.push({ name: 'ppt/_rels/presentation.xml.rels', data: RELS([['rId1', 'slideMaster', 'slideMasters/slideMaster1.xml']].concat(by.map(function (_, i) { return ['rId' + (i + 2), 'slide', 'slides/slide' + (i + 1) + '.xml']; }), [['rId' + (n + 2), 'theme', 'theme/theme1.xml']])) });
+      f.push({ name: 'ppt/slideMasters/slideMaster1.xml', data: H + '<p:sldMaster ' + NS + '><p:cSld><p:bg><p:bgRef idx="1001"><a:schemeClr val="bg1"/></p:bgRef></p:bg><p:spTree>' + GRP + '</p:spTree></p:cSld><p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/><p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="rId1"/></p:sldLayoutIdLst></p:sldMaster>' });
+      f.push({ name: 'ppt/slideMasters/_rels/slideMaster1.xml.rels', data: RELS([['rId1', 'slideLayout', '../slideLayouts/slideLayout1.xml'], ['rId2', 'theme', '../theme/theme1.xml']]) });
+      f.push({ name: 'ppt/slideLayouts/slideLayout1.xml', data: H + '<p:sldLayout ' + NS + ' type="blank" preserve="1"><p:cSld name="Blank"><p:spTree>' + GRP + '</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>' });
+      f.push({ name: 'ppt/slideLayouts/_rels/slideLayout1.xml.rels', data: RELS([['rId1', 'slideMaster', '../slideMasters/slideMaster1.xml']]) });
+      f.push({ name: 'ppt/theme/theme1.xml', data: THEME });
+      by.forEach(function (bytes, i) {
+        var d = dims[i], s = Math.min(sw / d.w, sh / d.h), w = Math.round(d.w * s), h = Math.round(d.h * s), x = Math.round((sw - w) / 2), y = Math.round((sh - h) / 2);
+        f.push({ name: 'ppt/slides/slide' + (i + 1) + '.xml', data: H + '<p:sld ' + NS + '><p:cSld><p:spTree>' + GRP + '<p:pic><p:nvPicPr><p:cNvPr id="2" name="Page ' + (i + 1) + '"/><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill><a:blip r:embed="rId2"/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr><a:xfrm><a:off x="' + x + '" y="' + y + '"/><a:ext cx="' + w + '" cy="' + h + '"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic></p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>' });
+        f.push({ name: 'ppt/slides/_rels/slide' + (i + 1) + '.xml.rels', data: RELS([['rId1', 'slideLayout', '../slideLayouts/slideLayout1.xml'], ['rId2', 'image', '../media/image' + (i + 1) + '.jpg']]) });
+        f.push({ name: 'ppt/media/image' + (i + 1) + '.jpg', data: bytes });
+      });
+      return zip(f, 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+    });
+  }
+  function actPptx() {
+    exportAll().then(function (bs) {
+      return Promise.all(bs.map(function (b) { return loadImg(b).then(function (im) { return { w: im.naturalWidth, h: im.naturalHeight }; }); })).then(function (dims) { return buildPptx(bs, dims, CUR.name); });
+    }).then(function (b) { return deliver(b, safeName(CUR.name) + '.pptx', true); }).catch(fail);
+  }
+
+  /* ---------- वॉटरमार्क / फूटर / पान क्रमांक ---------- */
+  function overlayDlg(kind) {
+    var d = CUR, wm = d.wm || {}, ft = d.ft || {}, nm = d.num || {};
+    var html = kind === 'wm'
+      ? '<h3>वॉटरमार्क</h3><p class="s">प्रत्येक पानावर तिरपा हलका शब्द</p><input class="f" id="o-wt" maxlength="30" placeholder="उदा. गोपनीय / प्रत / नमुना" value="' + esc(wm.text || '') + '">' +
+        '<span class="fl">गडदपणा</span>' + optGroup('op', [['0.1', 'हलका'], ['0.18', 'मध्यम'], ['0.32', 'गडद']], wm.op || 0.18) +
+        '<span class="fl">रंग</span>' + optGroup('c', [['#888888', 'राखाडी'], ['#c01818', 'लाल'], ['#1d3fb8', 'निळा']], wm.c || '#888888')
+      : '<h3>फूटर व पान क्रमांक</h3><p class="s">प्रत्येक पानाच्या खाली</p><input class="f" id="o-ft" maxlength="80" placeholder="फूटर मजकूर (ऐच्छिक)" value="' + esc(ft.text || '') + '">' +
+        '<span class="fl">पान क्रमांक कुठे?</span>' + optGroup('np', [['', 'नको'], ['l', 'डावीकडे'], ['c', 'मध्ये'], ['r', 'उजवीकडे']], nm.pos || '') +
+        '<span class="fl">प्रकार</span>' + optGroup('nf', [['n', '1, 2, 3'], ['of', 'पान 1 / 5']], nm.fmt === 'of' ? 'of' : 'n');
+    openDlg(html + '<canvas class="pv2" id="o-pv"></canvas><div class="row"><button class="btn ghost" id="o-rm">काढा</button><button class="btn gold" id="o-ok">' + ico('check') + 'लावा</button></div>', function (bx) {
+      bindOpts(bx);
+      var pv = bx.querySelector('#o-pv'), base = null;
+      function vals() {
+        var o = {};
+        if (kind === 'wm') { var t = bx.querySelector('#o-wt').value.trim(); o.wm = t ? { text: t, op: +optVal(bx, 'op'), c: optVal(bx, 'c') } : null; }
+        else { var f = bx.querySelector('#o-ft').value.trim(), p = optVal(bx, 'np'); o.ft = f ? { text: f } : null; o.num = p ? { pos: p, fmt: optVal(bx, 'nf') } : null; }
+        return o;
+      }
+      function draw() {
+        if (!base) return;
+        pv.width = base.width; pv.height = base.height; var x = pv.getContext('2d'); x.drawImage(base, 0, 0);
+        var o = vals(), tmp = { wm: kind === 'wm' ? o.wm : d.wm, ft: kind === 'ft' ? o.ft : d.ft, num: kind === 'ft' ? o.num : d.num };
+        drawOverlays(x, pv.width, pv.height, tmp, 0, d.pages.length);
+      }
+      DB.getB(d.pages[0].id + ':t').then(function (b) { return blobToCanvas(b, 360); }).then(function (c) { base = c; draw(); });
+      bx.addEventListener('input', draw); bx.addEventListener('click', function () { setTimeout(draw, 0); });
+      bx.querySelector('#o-ok').onclick = function () {
+        var o = vals(); if (kind === 'wm') d.wm = o.wm; else { d.ft = o.ft; d.num = o.num; }
+        d.updated = Date.now(); DB.put(d).then(function () { closeDlg(); toast('लावले: PDF / JPG / PPTX मध्ये येईल'); });
+      };
+      bx.querySelector('#o-rm').onclick = function () { if (kind === 'wm') d.wm = null; else { d.ft = null; d.num = null; } d.updated = Date.now(); DB.put(d).then(function () { closeDlg(); toast('काढले'); }); };
+    });
+  }
+
+  /* ---------- एकत्र / वेगळे ---------- */
+  function mergeDlg(pre) {
+    var cand = DOCS.filter(function (d) { return d.kind !== 'pdf' && d.pages.length; }), sel = pre ? [pre] : [];
+    if (cand.length < 1 || (cand.length < 2 && !pre)) { toast('एकत्र करायला किमान दोन दस्त हवेत'); return; }
+    function list() {
+      return cand.map(function (d) {
+        var k = sel.indexOf(d.id);
+        return '<label><input type="checkbox" data-id="' + d.id + '"' + (k >= 0 ? ' checked' : '') + '><span>' + (k >= 0 ? '<b>' + (k + 1) + '.</b> ' : '') + esc(d.name) + '<small>' + d.pages.length + ' पान</small></span></label>';
+      }).join('');
+    }
+    openDlg('<h3>दस्त एकत्र करा</h3><p class="s">निवडलेल्या क्रमाने एक नवा दस्त बनतो. मूळ दस्त तसेच राहतात.</p><div class="ckl" id="mg-l">' + list() + '</div>' +
+      '<input class="f" id="mg-n" value="' + esc(defName('एकत्र')) + '"><div class="row"><button class="btn gold wide" id="mg-ok">' + ico('merge') + 'एकत्र करा</button></div>', function (bx) {
+      var L = bx.querySelector('#mg-l');
+      L.addEventListener('change', function (e) {
+        var id = e.target.dataset.id, k = sel.indexOf(id); if (k >= 0) sel.splice(k, 1); else sel.push(id); L.innerHTML = list();
+      });
+      bx.querySelector('#mg-ok').onclick = function () {
+        if (sel.length < 2) { toast('किमान दोन दस्त निवडा'); return; }
+        var nm = bx.querySelector('#mg-n').value.trim() || defName('एकत्र'); closeDlg(); busy('एकत्र करत आहे…');
+        var pgs = [], i = 0;
+        function nx() {
+          if (i >= sel.length) return Promise.resolve();
+          var d = cand.filter(function (x) { return x.id === sel[i++]; })[0];
+          return clonePages(d.pages).then(function (p) { pgs = pgs.concat(p); return nx(); });
+        }
+        nx().then(function () { var nd = newDoc(nm, pgs); return DB.put(nd).then(function () { done(); showDoc(nd); }); }).catch(fail);
+      };
+    });
+  }
+  function actSplit() {
+    var d = CUR, sel = [];
+    if (d.pages.length < 2) { toast('वेगळे करायला किमान दोन पाने हवीत'); return; }
+    openDlg('<h3>वेगळे करा</h3><p class="s">हवी ती पाने निवडा</p><div class="thg" id="sp-g">' + d.pages.map(function (p, i) { return '<button data-i="' + i + '"><img data-t="' + p.id + '" alt=""><em>' + (i + 1) + '</em></button>'; }).join('') + '</div>' +
+      '<div class="row"><button class="btn ghost" id="sp-c">कॉपी करून नवा दस्त</button><button class="btn gold" id="sp-m">वेगळे करा (हलवा)</button></div>', function (bx) {
+      bx.querySelectorAll('img[data-t]').forEach(function (im) { DB.getB(im.dataset.t + ':t').then(function (b) { if (b) im.src = objUrl(b); }); });
+      bx.querySelector('#sp-g').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) b.classList.toggle('on'); });
+      function pick() { return Array.prototype.map.call(bx.querySelectorAll('#sp-g button.on'), function (b) { return +b.dataset.i; }); }
+      function run(move) {
+        var ix = pick(); if (!ix.length) { toast('पाने निवडा'); return; }
+        if (move && ix.length >= d.pages.length) { toast('सर्व पाने हलवता येणार नाहीत'); return; }
+        closeDlg(); busy('वेगळे करत आहे…');
+        var chosen = ix.map(function (i) { return d.pages[i]; });
+        (move ? Promise.resolve(chosen) : clonePages(chosen)).then(function (pgs) {
+          var nd = newDoc(d.name + ' (भाग)', pgs.map(function (p) { return p; }));
+          if (move) { d.pages = d.pages.filter(function (p) { return chosen.indexOf(p) < 0; }); d.updated = Date.now(); d.text = null; }
+          return DB.put(nd).then(function () { return move ? DB.put(d) : 0; }).then(function () { done(); toast(move ? 'पाने हलवली' : 'नवा दस्त बनला'); showDoc(nd); });
+        }).catch(fail);
+      }
+      bx.querySelector('#sp-c').onclick = function () { run(false); };
+      bx.querySelector('#sp-m').onclick = function () { run(true); };
+    });
+  }
+
+  /* ---------- PDF आयात (पानांत रूपांतर, pdf.js पहिल्यांदा इंटरनेटवरून) ---------- */
+  var PDFJS = '3.11.174', CDN = 'https://cdnjs.cloudflare.com/ajax/libs/';
+  function loadScript(src) {
+    return new Promise(function (res, rej) { var s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = function () { rej(new Error('इंटरनेटवरून घटक आला नाही')); }; document.head.appendChild(s); });
+  }
+  function loadPdfJs() {
+    if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions.workerSrc) return Promise.resolve(window.pdfjsLib);
+    return loadScript(CDN + 'pdf.js/' + PDFJS + '/pdf.min.js').then(function () { return fetch(CDN + 'pdf.js/' + PDFJS + '/pdf.worker.min.js'); })
+      .then(function (r) { return r.blob(); }).then(function (b) { window.pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(b); return window.pdfjsLib; });
+  }
+  function pdfToItems(file) {
+    return loadPdfJs().then(function (lib) { return file.arrayBuffer().then(function (buf) { return lib.getDocument({ data: new Uint8Array(buf) }).promise; }); }).then(function (pdf) {
+      var n = Math.min(pdf.numPages, 60), items = [], i = 1;
+      function nx() {
+        if (i > n) return Promise.resolve(items);
+        busy('PDF ची पाने तयार होत आहेत…', i + ' / ' + n);
+        return pdf.getPage(i++).then(function (pg) {
+          var v1 = pg.getViewport({ scale: 1 }), vp = pg.getViewport({ scale: Math.min(3, 1800 / Math.max(v1.width, v1.height)) });
+          var c = canvas(vp.width, vp.height), cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
+          return pg.render({ canvasContext: cx, viewport: vp }).promise.then(function () { return toJpeg(c, 0.9); }).then(function (b) { items.push({ blob: b, quad: fullQuad(), filter: 'orig' }); pg.cleanup(); return tick().then(nx); });
+        });
+      }
+      return nx();
+    });
+  }
+  function actPdfToPages() {
+    busy('PDF पानांत बदलत आहे…', 'पहिल्यांदा इंटरनेट लागेल');
+    DB.getB(CUR.id + ':pdf').then(pdfToItems).then(function (items) {
+      return addPages(items, CUR.id, 'PDF', false);
+    }).then(function () { CUR.kind = 'scan'; CUR.updated = Date.now(); return DB.put(CUR).then(function () { return DB.delB(CUR.id + ':pdf'); }); })
+      .then(function () { done(); renderDoc(); toast('आता सर्व संपादन सुविधा चालतील'); }).catch(function (e) { done(); toast('रूपांतर झाले नाही: इंटरनेट तपासा', 4000); });
+  }
+  $('d-pdfbox').addEventListener('click', function (e) { if (e.target.closest('#d-topg')) actPdfToPages(); });
+  $('f-pdf').addEventListener('change', function () {
+    var f = this.files && this.files[0]; this.value = ''; if (!f) return;
+    var nm = f.name.replace(/\.pdf$/i, '') || defName('PDF');
+    pdfToItems(f).then(function (items) {
+      if (!items.length) throw new Error('empty');
+      return addPages(items, null, 'PDF', false).then(function () { CUR.name = nm; return DB.put(CUR); }).then(function () { done(); showDoc(CUR); });
+    }).catch(function () {
+      done();
+      var d = { id: uid(), name: nm, created: Date.now(), updated: Date.now(), pages: [], kind: 'pdf', size: f.size };
+      toast('PDF जशीच्या तशी ठेवली (संपादनासाठी नंतर "पानांत रूपांतर")', 4000);
+      DB.putB(d.id + ':pdf', f).then(function () { return DB.put(d); }).then(function () { showDoc(d); }).catch(fail);
+    });
+  });
+  /* ---------- QR / बारकोड ---------- */
+  var QR = { stream: null, timer: 0, det: null, busy: false };
+  function qrDecodeCanvas(c) {
+    if (window.BarcodeDetector) {
+      try { QR.det = QR.det || new BarcodeDetector(); } catch (e) { QR.det = null; }
+    }
+    if (QR.det) return QR.det.detect(c).then(function (r) { return r[0] ? r[0].rawValue : ''; }).catch(function () { return ''; });
+    return (window.jsQR ? Promise.resolve() : loadScript(CDN + 'jsQR/1.4.0/jsQR.min.js')).then(function () {
+      var s = fitCanvas(c, 720), d = s.getContext('2d').getImageData(0, 0, s.width, s.height), r = window.jsQR(d.data, s.width, s.height);
+      return r ? r.data : '';
+    }).catch(function () { return ''; });
+  }
+  function openQr() {
+    go('v-qr'); $('q-res').hidden = true; $('q-h').hidden = false;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast('कॅमेरा नाही: गॅलरीतून चित्र निवडा'); return; }
+    navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' } } }).then(function (s) {
+      QR.stream = s; var v = $('q-vid'); v.srcObject = s; v.play().catch(function () {});
+      clearInterval(QR.timer); QR.timer = setInterval(qrTick, 280);
+    }).catch(function () { toast('कॅमेरा परवानगी मिळाली नाही: गॅलरीतून निवडा', 3500); });
+  }
+  function stopQr() { clearInterval(QR.timer); if (QR.stream) QR.stream.getTracks().forEach(function (t) { t.stop(); }); QR.stream = null; $('q-vid').srcObject = null; }
+  onLeave['v-qr'] = stopQr;
+  function qrTick() {
+    var v = $('q-vid'); if (!v.videoWidth || QR.busy || !$('q-res').hidden) return;
+    QR.busy = true;
+    qrDecodeCanvas(fitCanvas(v, 720)).then(function (val) { QR.busy = false; if (val) qrResult(val); });
+  }
+  function qrParse(v) {
+    var m, o = { raw: v, kind: 'मजकूर', body: v, act: null };
+    if (/^https?:\/\//i.test(v)) { var host = ''; try { host = new URL(v).hostname; } catch (e) { } o.kind = 'वेबसाईट'; o.body = host + '\n' + v; o.act = ['उघडा', v]; o.warn = 'ओळखीची नसेल तर उघडू नका.'; }
+    else if (/^upi:\/\//i.test(v)) {
+      var q = {}; v.split('?')[1] && v.split('?')[1].split('&').forEach(function (kv) { var p = kv.split('='); q[p[0]] = decodeURIComponent((p[1] || '').replace(/\+/g, ' ')); });
+      o.kind = 'UPI पेमेंट'; o.body = 'नाव: ' + (q.pn || '-') + '\nUPI ID: ' + (q.pa || '-') + (q.am ? '\nरक्कम: ₹' + q.am : '') + (q.tn ? '\nनोंद: ' + q.tn : '');
+      o.warn = 'पैसे मिळवण्यासाठी QR स्कॅन करावा लागत नाही. नाव तपासूनच पैसे द्या.';
+    }
+    else if ((m = /^WIFI:(.*)$/i.exec(v))) { var g = function (k) { var r = new RegExp('(?:^|;)' + k + ':((?:\\\\.|[^;])*)').exec(m[1]); return r ? r[1].replace(/\\(.)/g, '$1') : ''; }; o.kind = 'वाय-फाय'; o.body = 'नेटवर्क: ' + g('S') + '\nपासवर्ड: ' + g('P') + '\nसुरक्षा: ' + (g('T') || '-'); o.copy = g('P'); }
+    else if (/^(tel|mailto|sms|geo):/i.test(v)) { o.kind = { tel: 'फोन', mailto: 'ई-मेल', sms: 'SMS', geo: 'ठिकाण' }[v.split(':')[0].toLowerCase()]; o.body = v.replace(/^[a-z]+:/i, ''); o.act = ['उघडा', v]; }
+    else if (/^BEGIN:VCARD/i.test(v)) { o.kind = 'संपर्क'; o.body = v.replace(/BEGIN:VCARD|END:VCARD|VERSION:.*\n?/gi, '').trim(); }
+    return o;
+  }
+  function qrResult(val) {
+    if (navigator.vibrate) navigator.vibrate(40);
+    var o = qrParse(val), r = $('q-res');
+    r.innerHTML = '<b>' + esc(o.kind) + '</b><pre>' + esc(o.body) + '</pre>' + (o.warn ? '<p class="hint">⚠ ' + esc(o.warn) + '</p>' : '') +
+      '<div class="row"><button class="btn ghost" id="q-cp">' + ico('copy') + (o.copy ? 'पासवर्ड कॉपी' : 'कॉपी') + '</button>' + (o.act ? '<button class="btn gold" id="q-op">' + o.act[0] + '</button>' : '') + '<button class="btn ghost" id="q-again">पुन्हा</button></div>';
+    r.hidden = false; $('q-h').hidden = true;
+    r.querySelector('#q-cp').onclick = function () { var t = o.copy || o.raw; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast('कॉपी झाले'); }, function () { toast('कॉपी झाले नाही'); }); };
+    if (o.act) r.querySelector('#q-op').onclick = function () { window.open(o.act[1], '_blank', 'noopener'); };
+    r.querySelector('#q-again').onclick = function () { r.hidden = true; $('q-h').hidden = false; };
+  }
+  $('q-close').addEventListener('click', back);
+  $('q-gal').addEventListener('click', function () {
+    pickOne(function (b) { blobToCanvas(b, 1600).then(qrDecodeCanvas).then(function (v) { if (v) qrResult(v); else toast('चित्रात QR सापडला नाही', 3000); }); });
+  });
+
+  /* ---------- मोजमाप (संदर्भ वस्तूवरून लांबी व क्षेत्रफळ) ---------- */
+  var REFS = { a4: ['A4 कागद', 297, 210], card: ['ATM / आधार कार्ड', 85.6, 54], a5: ['A5 कागद', 210, 148], cus: ['सानुकूल', 0, 0] };
+  var MS = null;
+  function measStart() { MS = null; $('ms-start').hidden = false; $('ms-work').hidden = true; go('v-meas'); }
+  function showMeas(blob, fromCam) {
+    enter('v-meas', fromCam);
+    MS = { url: objUrl(blob), ref: [[0.3, 0.3], [0.7, 0.3], [0.7, 0.7], [0.3, 0.7]], key: 'a4', cw: 29.7, ch: 21, step: 'ref', mode: 'len', pts: [], drag: -1 };
+    $('ms-start').hidden = true; $('ms-work').hidden = false; $('ms-out').hidden = true;
+    var im = $('ms-img'); im.onload = function () { MS.nw = im.naturalWidth; MS.nh = im.naturalHeight; msSize(); msCtl(); };
+    im.src = MS.url;
+  }
+  function msSize() {
+    var im = $('ms-img'), cv = $('ms-cv'), r = window.devicePixelRatio || 1;
+    cv.width = Math.round(im.clientWidth * r); cv.height = Math.round(im.clientHeight * r); msDraw();
+  }
+  function fmtLen(mm) { return mm >= 1000 ? (mm / 1000).toFixed(2) + ' मी' : mm >= 100 ? (mm / 10).toFixed(1) + ' सेमी' : (mm / 10).toFixed(2) + ' सेमी'; }
+  function msMap() {
+    var q = MS.ref.map(function (p) { return [p[0] * MS.nw, p[1] * MS.nh]; });
+    var top = dist(q[0], q[1]), left = dist(q[0], q[3]), a = MS.cw * 10, b = MS.ch * 10, W = top >= left ? Math.max(a, b) : Math.min(a, b), H = top >= left ? Math.min(a, b) : Math.max(a, b);
+    var h = homography(q, [[0, 0], [W, 0], [W, H], [0, H]]);
+    return function (p) { var u = p[0] * MS.nw, v = p[1] * MS.nh, d = h[6] * u + h[7] * v + 1; return [(h[0] * u + h[1] * v + h[2]) / d, (h[3] * u + h[4] * v + h[5]) / d]; };
+  }
+  function msDraw() {
+    var cv = $('ms-cv'), x = cv.getContext('2d'), W = cv.width, H = cv.height, s = W / 390;
+    x.clearRect(0, 0, W, H); if (!MS) return;
+    function P(p) { return [p[0] * W, p[1] * H]; }
+    x.lineWidth = 2.5 * s; x.font = '700 ' + 13 * s + 'px sans-serif';
+    var q = MS.ref.map(P);
+    x.beginPath(); q.forEach(function (p, i) { i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); }); x.closePath();
+    x.strokeStyle = '#e0b44a'; x.fillStyle = 'rgba(224,180,74,.15)'; x.fill(); x.stroke();
+    if (MS.step === 'ref') q.forEach(function (p) { x.beginPath(); x.arc(p[0], p[1], 11 * s, 0, 7); x.fillStyle = '#e0b44a'; x.fill(); x.strokeStyle = '#0b1f4b'; x.stroke(); });
+    if (MS.step === 'meas') {
+      var f = msMap(), pts = MS.pts.map(P);
+      x.strokeStyle = '#22d3ee'; x.fillStyle = 'rgba(34,211,238,.18)';
+      if (pts.length) { x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); }); if (MS.mode === 'area' && pts.length > 2) { x.closePath(); x.fill(); } x.stroke(); }
+      pts.forEach(function (p, i) {
+        x.beginPath(); x.arc(p[0], p[1], 7 * s, 0, 7); x.fillStyle = '#22d3ee'; x.fill(); x.strokeStyle = '#0b1f4b'; x.lineWidth = 2 * s; x.stroke();
+        var j = i + 1 < pts.length ? i + 1 : (MS.mode === 'area' && pts.length > 2 ? 0 : -1);
+        if (j >= 0 && (MS.mode === 'area' || i + 1 < pts.length)) {
+          var d = dist(f(MS.pts[i]), f(MS.pts[j])), mx = (p[0] + pts[j][0]) / 2, my = (p[1] + pts[j][1]) / 2, t = fmtLen(d), w = x.measureText(t).width;
+          x.fillStyle = 'rgba(11,31,75,.88)'; x.fillRect(mx - w / 2 - 4 * s, my - 10 * s, w + 8 * s, 20 * s); x.fillStyle = '#fff'; x.textBaseline = 'middle'; x.fillText(t, mx - w / 2, my);
+        }
+      });
+    }
+  }
+  function msCtl() {
+    var c = $('ms-ctl'), o = $('ms-out');
+    if (MS.step === 'ref') {
+      c.innerHTML = '<b>1. संदर्भ वस्तू</b><small>जे फोटोत आहे ते निवडा, आणि सोन्याचे चार ठिपके त्याच्या चार कोपऱ्यांवर ओढा.</small>' +
+        optGroup('ref', Object.keys(REFS).map(function (k) { return [k, REFS[k][0]]; }), MS.key) +
+        '<div id="ms-cus" ' + (MS.key === 'cus' ? '' : 'hidden') + ' style="display:' + (MS.key === 'cus' ? 'flex' : 'none') + ';gap:8px;margin:8px 0"><input class="f" id="ms-cw" type="number" inputmode="decimal" placeholder="लांबी सेमी" value="' + MS.cw + '"><input class="f" id="ms-ch" type="number" inputmode="decimal" placeholder="रुंदी सेमी" value="' + MS.ch + '"></div>' +
+        '<div class="row"><button class="btn gold wide" id="ms-next">पुढे: मोजा</button></div>';
+      o.hidden = true;
+      c.querySelector('.opt').addEventListener('click', function (e) {
+        var b = e.target.closest('button'); if (!b) return; MS.key = b.dataset.v; this.querySelectorAll('button').forEach(function (z) { z.classList.toggle('on', z === b); });
+        if (MS.key !== 'cus') { MS.cw = REFS[MS.key][1] / 10; MS.ch = REFS[MS.key][2] / 10; }
+        c.querySelector('#ms-cus').style.display = MS.key === 'cus' ? 'flex' : 'none';
+      });
+      c.querySelector('#ms-next').onclick = function () {
+        if (MS.key === 'cus') { MS.cw = +c.querySelector('#ms-cw').value; MS.ch = +c.querySelector('#ms-ch').value; if (!(MS.cw > 0 && MS.ch > 0)) { toast('संदर्भ वस्तूची लांबी व रुंदी टाका'); return; } }
+        MS.step = 'meas'; msCtl(); msDraw();
+      };
+    } else {
+      c.innerHTML = '<b>2. मोजा</b><small>फोटोवर बिंदू टॅप करा. बिंदू ओढूनही हलवता येतो.</small>' + optGroup('mode', [['len', 'लांबी'], ['area', 'क्षेत्रफळ']], MS.mode) +
+        '<div class="row"><button class="btn ghost" id="ms-undo">मागे</button><button class="btn ghost" id="ms-clr">पुसा</button><button class="btn ghost" id="ms-ref">संदर्भ बदला</button></div>';
+      c.querySelector('.opt').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; MS.mode = b.dataset.v; this.querySelectorAll('button').forEach(function (z) { z.classList.toggle('on', z === b); }); if (MS.mode === 'len' && MS.pts.length > 2) MS.pts = MS.pts.slice(0, 2); msDraw(); msOut(); });
+      c.querySelector('#ms-undo').onclick = function () { MS.pts.pop(); msDraw(); msOut(); };
+      c.querySelector('#ms-clr').onclick = function () { MS.pts = []; msDraw(); msOut(); };
+      c.querySelector('#ms-ref').onclick = function () { MS.step = 'ref'; msCtl(); msDraw(); };
+      msOut();
+    }
+  }
+  function msOut() {
+    var o = $('ms-out'), f = msMap(), P = MS.pts.map(f), h = '';
+    if (MS.mode === 'len' && P.length >= 2) h = '<div class="big">' + fmtLen(dist(P[0], P[1])) + '</div><small>दोन बिंदूंमधील अंतर</small>';
+    else if (MS.mode === 'area' && P.length >= 3) {
+      var a = 0, per = 0; P.forEach(function (p, i) { var q = P[(i + 1) % P.length]; a += p[0] * q[1] - q[0] * p[1]; per += dist(p, q); }); a = Math.abs(a) / 2;
+      var m2 = a / 1e6, cm2 = a / 100;
+      h = '<div class="big">' + (m2 >= 1 ? m2.toFixed(2) + ' चौ.मी.' : cm2.toFixed(1) + ' चौ.सेमी') + '</div><small>' + (m2 * 10.7639).toFixed(2) + ' चौ.फूट • ' + (m2 / 101.17).toFixed(3) + ' गुंठा • परिमिती ' + fmtLen(per) + '</small>';
+    }
+    o.hidden = !h; o.innerHTML = h + (h ? '<p class="hint">अचूकतेसाठी: संदर्भ वस्तू मोजायच्या पृष्ठभागावरच ठेवा आणि फोटो सरळ वरून घ्या.</p>' : '');
+  }
+  (function () {
+    var cv = $('ms-cv');
+    function pos(e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; }
+    function near(list, p, rad) { var best = -1, bd = rad; list.forEach(function (q, i) { var d = Math.hypot((q[0] - p[0]) * cv.clientWidth, (q[1] - p[1]) * cv.clientHeight); if (d < bd) { bd = d; best = i; } }); return best; }
+    var moved = false, start = null;
+    cv.addEventListener('pointerdown', function (e) {
+      if (!MS) return; var p = pos(e); moved = false; start = p;
+      MS.drag = near(MS.step === 'ref' ? MS.ref : MS.pts, p, 26);
+      try { cv.setPointerCapture(e.pointerId); } catch (x) { }
+    });
+    cv.addEventListener('pointermove', function (e) {
+      if (!MS || MS.drag < 0) return; var p = pos(e); moved = true;
+      p = [Math.min(1, Math.max(0, p[0])), Math.min(1, Math.max(0, p[1]))];
+      (MS.step === 'ref' ? MS.ref : MS.pts)[MS.drag] = p; msDraw(); if (MS.step === 'meas') msOut();
+    });
+    cv.addEventListener('pointerup', function (e) {
+      if (!MS) return;
+      if (MS.step === 'meas' && MS.drag < 0 && !moved) {
+        var p = pos(e); if (MS.mode === 'len' && MS.pts.length >= 2) MS.pts = []; MS.pts.push(p); msDraw(); msOut();
+      }
+      MS.drag = -1;
+    });
+  })();
+  window.addEventListener('resize', function () { if (MS && $('v-meas').classList.contains('on')) msSize(); });
+  $('ms-cam').addEventListener('click', function () { openCam(null, 'doc', function (b, fc) { showMeas(b, fc); }, 'संदर्भ वस्तू व मोजायची जागा एकत्र दिसू द्या'); });
+  $('ms-gal').addEventListener('click', function () { pickOne(function (b) { showMeas(b, false); }); });
+
+  /* ---------- वस्तू मोजणी ---------- */
+  var CT = null;
+  function countStart() { CT = null; $('ct-start').hidden = false; $('ct-work').hidden = true; go('v-cnt'); }
+  function showCount(blob, fromCam) {
+    enter('v-cnt', fromCam);
+    blobToCanvas(blob, 640).then(function (c) {
+      CT = { small: c, blob: blob, pts: [], mode: 'dark', timer: 0 };
+      $('ct-start').hidden = true; $('ct-work').hidden = false; $('ct-aiout').textContent = '';
+      var im = $('ct-img'); im.onload = function () { ctSize(); ctRun(); }; im.src = objUrl(blob);
+    });
+  }
+  function ctSize() { var im = $('ct-img'), cv = $('ct-cv'), r = window.devicePixelRatio || 1; cv.width = Math.round(im.clientWidth * r); cv.height = Math.round(im.clientHeight * r); ctDraw(); }
+  function ctRun() {
+    if (!CT) return;
+    var c = CT.small, W = c.width, H = c.height, d = c.getContext('2d').getImageData(0, 0, W, H).data, g = new Float32Array(W * H), i, x, y;
+    for (i = 0; i < W * H; i++) g[i] = d[i * 4] * 0.3 + d[i * 4 + 1] * 0.59 + d[i * 4 + 2] * 0.11;
+    /* स्थानिक सरासरी (integral image) */
+    var S = new Float64Array((W + 1) * (H + 1));
+    for (y = 0; y < H; y++) { var rs = 0; for (x = 0; x < W; x++) { rs += g[y * W + x]; S[(y + 1) * (W + 1) + x + 1] = S[y * (W + 1) + x + 1] + rs; } }
+    var R = Math.round(Math.max(W, H) / 9), th = +$('ct-th').value, dark = CT.mode === 'dark', m = new Uint8Array(W * H);
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) {
+      var x0 = Math.max(0, x - R), x1 = Math.min(W, x + R + 1), y0 = Math.max(0, y - R), y1 = Math.min(H, y + R + 1);
+      var mean = (S[y1 * (W + 1) + x1] - S[y0 * (W + 1) + x1] - S[y1 * (W + 1) + x0] + S[y0 * (W + 1) + x0]) / ((x1 - x0) * (y1 - y0)), v = g[y * W + x];
+      m[y * W + x] = (dark ? mean - v : v - mean) > th ? 1 : 0;
+    }
+    var minA = Math.pow(+$('ct-min').value, 2), maxA = W * H * 0.2, lab = new Uint8Array(W * H), comps = [], st = new Int32Array(W * H);
+    for (i = 0; i < W * H; i++) {
+      if (!m[i] || lab[i]) continue;
+      var sp = 0, a = 0, sx = 0, sy = 0, x0b = W, x1b = 0, y0b = H, y1b = 0; st[sp++] = i; lab[i] = 1;
+      while (sp) {
+        var p = st[--sp], px = p % W, py = (p / W) | 0; a++; sx += px; sy += py;
+        if (px < x0b) x0b = px; if (px > x1b) x1b = px; if (py < y0b) y0b = py; if (py > y1b) y1b = py;
+        if (px > 0 && m[p - 1] && !lab[p - 1]) { lab[p - 1] = 1; st[sp++] = p - 1; }
+        if (px < W - 1 && m[p + 1] && !lab[p + 1]) { lab[p + 1] = 1; st[sp++] = p + 1; }
+        if (py > 0 && m[p - W] && !lab[p - W]) { lab[p - W] = 1; st[sp++] = p - W; }
+        if (py < H - 1 && m[p + W] && !lab[p + W]) { lab[p + W] = 1; st[sp++] = p + W; }
+      }
+      if (a >= minA && a <= maxA) comps.push({ a: a, cx: sx / a, cy: sy / a, x0: x0b, x1: x1b, y0: y0b, y1: y1b });
+    }
+    var as = comps.map(function (z) { return z.a; }).sort(function (u, v) { return u - v; }), med = as.length ? as[Math.floor(as.length / 2)] : 1, pts = [];
+    comps.forEach(function (z) {
+      var n = z.a > med * 1.7 ? Math.min(12, Math.round(z.a / med)) : 1;
+      if (n === 1) pts.push({ x: z.cx / W, y: z.cy / H });
+      else { var cols = Math.ceil(Math.sqrt(n * (z.x1 - z.x0 + 1) / (z.y1 - z.y0 + 1))), rows = Math.ceil(n / cols), k; for (k = 0; k < n; k++) pts.push({ x: (z.x0 + (z.x1 - z.x0) * ((k % cols) + 0.5) / cols) / W, y: (z.y0 + (z.y1 - z.y0) * ((((k / cols) | 0)) + 0.5) / rows) / H }); }
+    });
+    CT.pts = pts; ctDraw();
+  }
+  function ctDraw() {
+    if (!CT) return;
+    var cv = $('ct-cv'), x = cv.getContext('2d'), W = cv.width, H = cv.height, s = W / 390;
+    x.clearRect(0, 0, W, H);
+    CT.pts.forEach(function (p) { x.beginPath(); x.arc(p.x * W, p.y * H, 6 * s, 0, 7); x.fillStyle = p.man ? '#22d3ee' : '#e0b44a'; x.fill(); x.lineWidth = 2 * s; x.strokeStyle = '#0b1f4b'; x.stroke(); });
+    $('ct-n').textContent = CT.pts.length;
+  }
+  (function () {
+    var deb; function again() { clearTimeout(deb); deb = setTimeout(ctRun, 140); }
+    $('ct-th').addEventListener('input', again); $('ct-min').addEventListener('input', again);
+    $('ct-mode').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b || !CT) return; CT.mode = b.dataset.v; this.querySelectorAll('button').forEach(function (z) { z.classList.toggle('on', z === b); }); ctRun(); });
+    $('ct-cv').addEventListener('pointerup', function (e) {
+      if (!CT) return; var r = this.getBoundingClientRect(), nx = (e.clientX - r.left) / r.width, ny = (e.clientY - r.top) / r.height, best = -1, bd = 22;
+      CT.pts.forEach(function (p, i) { var d = Math.hypot((p.x - nx) * r.width, (p.y - ny) * r.height); if (d < bd) { bd = d; best = i; } });
+      if (best >= 0) CT.pts.splice(best, 1); else CT.pts.push({ x: nx, y: ny, man: 1 });
+      ctDraw();
+    });
+    $('ct-new').addEventListener('click', function () { $('ct-cam').click(); });
+    $('ct-cam').addEventListener('click', function () { openCam(null, 'doc', function (b, fc) { showCount(b, fc); }, 'वस्तू पसरवून वरून फोटो घ्या'); });
+    $('ct-gal').addEventListener('click', function () { pickOne(function (b) { showCount(b, false); }); });
+    $('ct-ai').addEventListener('click', function () {
+      if (!CT) return;
+      needAI().then(function () { busy('AI मोजत आहे…', 'Gemini'); return blobToCanvas(CT.blob, 1400); }).then(function (c) { return toJpeg(c, 0.85); }).then(blobToB64).then(function (b64) {
+        return api('ai', { task: 'chat', json: true, prompt: 'या फोटोतील मुख्य वस्तू (एकाच प्रकारच्या) अचूक मोजा. JSON द्या: {"count": संख्या, "what": "वस्तू कोणत्या (मराठीत)"}.', images: [{ b64: b64, mime: 'image/jpeg' }] });
+      }).then(function (r) { done(); $('ct-aiout').textContent = 'AI: ' + r.count + ' ' + (r.what || '') + ' (ॲपचा अंदाज: ' + CT.pts.length + ')'; }).catch(fail);
+    });
+  })();
+
+  /* ---------- गणित: फोटो काढा → AI सोडवतो ---------- */
+  function mathStart() {
+    needAI().then(function () {
+      openCam(null, 'doc', function (b, fc) {
+        blobToCanvas(b, 1400).then(function (c) { return toJpeg(c, 0.85); }).then(function (jb) { return blobToB64(jb).then(function (b64) { return { b64: b64, mime: 'image/jpeg', thumb: objUrl(jb) }; }); })
+          .then(function (img) { openAi(null, fc); aiSend('या फोटोतील गणिताचे उदाहरण / उदाहरणे पायरी-पायरीने सोडवा. प्रत्येक पायरी सोप्या मराठीत समजावा आणि शेवटी अंतिम उत्तर ठळक लिहा. फोटो अस्पष्ट असेल तर तसे सांगा.', img); });
+      }, 'गणिताचे उदाहरण चौकटीत घ्या');
+    }).catch(fail);
+  }
+
+  /* ---------- AI विचारा ---------- */
+  var AIS = { hist: [], doc: null, preset: null, img: null, busy: false };
+  var AIP = [
+    ['sum', 'सारांश', 1, 'या मजकुराचा सोप्या मराठीत सारांश द्या: एका ओळीत विषय, मग मुख्य मुद्दे, शेवटी करायची कामे / मुदत.'],
+    ['fin', 'लिहून पूर्ण करा', 0, 'खालील अपूर्ण मजकूर त्याच शैलीत व भाषेत पूर्ण करा.'],
+    ['short', 'लहान करा', 1, 'हा मजकूर अर्थ न बदलता अर्ध्या लांबीत लिहा.'],
+    ['simple', 'सोपे करा', 1, 'हा मजकूर अगदी सोप्या भाषेत समजावून सांगा; कठीण शब्दांचे सोपे अर्थ द्या.'],
+    ['logic', 'तर्क तपासा', 1, 'या मजकुरातील तर्कातील चुका, विसंगती, परस्परविरोधी विधाने आणि गहाळ पुरावे शोधा. मुद्देसूद सांगा.'],
+    ['gram', 'व्याकरण तपासा', 1, 'व्याकरण, शुद्धलेखन व वाक्यरचनेतील चुका दाखवा आणि नंतर दुरुस्त केलेला पूर्ण मजकूर द्या.'],
+    ['solve', 'सोडवा / टेस्ट', 1, 'यातील प्रश्न / कार्ये सोडवा. प्रत्येक उत्तर पायऱ्यांसह द्या.'],
+    ['mis', 'दिशाभूल तपासा', 1, 'या मजकुरातील दिशाभूल करणारी, अतिशयोक्त, पडताळणी न झालेली किंवा संशयास्पद विधाने शोधा; प्रत्येकाचे कारण सांगा.'],
+    ['rew', 'पुन्हा लिहा', 1, 'हा मजकूर अधिक स्पष्ट व व्यावसायिक भाषेत पुन्हा लिहा.'],
+    ['tr', 'भाषांतर', 1, 'या मजकुराचे भाषांतर करा. भाषा सांगितली नसेल तर मराठी मजकूर इंग्रजीत आणि इतर भाषेतील मजकूर मराठीत करा.'],
+    ['test', 'दस्तावर टेस्ट', 1, 'या मजकुरावर आधारित 10 बहुपर्यायी प्रश्नांची टेस्ट बनवा; शेवटी उत्तरसूची द्या.'],
+    ['qa', 'दस्तावर प्रश्न', 1, 'फक्त या मजकुराच्या आधारे पुढील प्रश्नाचे उत्तर द्या. उत्तर मजकुरात नसेल तर तसे सांगा.'],
+    ['dates', 'तारखा व कामे', 1, 'यातील सर्व तारखा, मुदती आणि करायची कामे यादीत लिहा (तारीख: काम).'],
+    ['reply', 'उत्तर पत्र', 1, 'या पत्र / संदेशाला योग्य, सभ्य व औपचारिक उत्तर लिहा.'],
+    ['essay', 'निबंध', 0, 'दिलेल्या विषयावर सुसंगत निबंध लिहा: प्रस्तावना, मुद्दे, निष्कर्ष.'],
+    ['cv', 'बायोडेटा / रेझ्युमे', 0, 'दिलेल्या माहितीवरून व्यावसायिक बायोडेटा / रेझ्युमे तयार करा. नसलेली माहिती बनवू नका; [ ] मध्ये रिकामी जागा ठेवा.']
+  ];
+  function aiFmt(t) { return esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/^\s*[\*\-] /gm, '• '); }
+  function openAi(doc, fromCam) {
+    AIS.doc = doc || null; AIS.preset = null; AIS.img = null;
+    $('ai-prs').innerHTML = AIP.map(function (p) { return '<button data-p="' + p[0] + '">' + p[1] + '</button>'; }).join('');
+    enter('v-ai', fromCam); aiCtx(); aiRender();
+  }
+  function aiCtx() {
+    $('ai-ctx').textContent = AIS.doc ? AIS.doc.name : (AIS.img ? 'फोटो जोडला आहे' : 'दस्त निवडलेला नाही (मजकूर इथे टाका)');
+    $('ai-in').placeholder = AIS.preset ? (AIS.preset.d ? 'दस्त निवडा, किंवा मजकूर टाका. (सूचना ऐच्छिक)' : 'विषय / मजकूर / माहिती टाका') : 'काहीही विचारा किंवा वरील पर्याय निवडा';
+    $('ai-prs').querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', !!AIS.preset && b.dataset.p === AIS.preset.id); });
+  }
+  function aiRender() {
+    var h = AIS.hist;
+    $('ai-msgs').innerHTML = h.length ? h.map(function (m, i) {
+      return '<div class="msg ' + m.r + '">' + '<div class="b">' + (m.thumb ? '<img class="th" src="' + m.thumb + '" alt="">' : '') + aiFmt(m.t) + '</div>' +
+        (m.r === 'a' && !m.pending ? '<div class="mt"><button data-k="cp" data-i="' + i + '">' + ico('copy') + 'कॉपी</button><button data-k="wd" data-i="' + i + '">' + ico('word') + 'Word</button><button data-k="sh" data-i="' + i + '">' + ico('share') + 'शेअर</button><button data-k="tx" data-i="' + i + '">' + ico('text') + 'संपादन</button></div>' : '') + '</div>';
+    }).join('') : '<div class="rcard"><b>AI मदतनीस</b><small>वर "दस्त निवडा" दाबा किंवा फोटो जोडा. मग वरचा पर्याय निवडा (सारांश, व्याकरण, टेस्ट, उत्तर पत्र…) किंवा स्वतः काहीही विचारा.</small></div>';
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+  $('ai-prs').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var p = AIP.filter(function (x) { return x[0] === b.dataset.p; })[0], cur = AIS.preset && AIS.preset.id === p[0];
+    AIS.preset = cur ? null : { id: p[0], d: p[2], p: p[3] }; aiCtx();
+  });
+  $('ai-msgs').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-k]'); if (!b) return; var m = AIS.hist[+b.dataset.i], nm = safeName((AIS.doc ? AIS.doc.name + ' ' : '') + 'AI');
+    if (b.dataset.k === 'cp') (navigator.clipboard ? navigator.clipboard.writeText(m.t) : Promise.reject()).then(function () { toast('कॉपी झाले'); }, function () { toast('कॉपी झाले नाही'); });
+    else if (b.dataset.k === 'wd') deliver(buildDocx(m.t.replace(/\*\*/g, ''), false, nm), nm + '.docx', true);
+    else if (b.dataset.k === 'sh') { if (navigator.share) navigator.share({ text: m.t }).catch(function () { }); else deliver(new Blob(['﻿' + m.t], { type: 'text/plain;charset=utf-8' }), nm + '.txt', false); }
+    else showText(m.t.replace(/\*\*/g, ''), 'AI उत्तर', nm);
+  });
+  $('ai-clr').addEventListener('click', function () { AIS.hist = []; AIS.img = null; aiCtx(); aiRender(); });
+  $('ai-in').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(120, this.scrollHeight) + 'px'; });
+  $('ai-pick').addEventListener('click', function () {
+    var docs = DOCS.filter(function (d) { return d.kind === 'pdf' || d.pages.length; });
+    openDlg('<h3>दस्त निवडा</h3><div class="ckl">' + (AIS.doc ? '<button class="mi" data-id=""><i class="c-bad">' + ico('del') + '</i><div>दस्त काढा</div></button>' : '') +
+      (docs.length ? docs.map(function (d) { return '<button class="mi" data-id="' + d.id + '"><i class="c-navy">' + ico('file') + '</i><div>' + esc(d.name) + '<small>' + (d.kind === 'pdf' ? 'PDF' : d.pages.length + ' पान') + '</small></div></button>'; }).join('') : '<p class="s">अजून दस्त नाही</p>') + '</div>', function (bx) {
+      bx.addEventListener('click', function (e) { var b = e.target.closest('.mi'); if (!b) return; AIS.doc = DOCS.filter(function (d) { return d.id === b.dataset.id; })[0] || null; AIS.img = null; closeDlg(); aiCtx(); });
+    });
+  });
+  $('ai-img').addEventListener('click', function () {
+    pickOne(function (b) { blobToCanvas(b, 1400).then(function (c) { return toJpeg(c, 0.85); }).then(function (jb) { return blobToB64(jb).then(function (b64) { AIS.img = { b64: b64, mime: 'image/jpeg', thumb: objUrl(jb) }; AIS.doc = null; aiCtx(); toast('फोटो जोडला'); }); }); });
+  });
+  function aiDocPayload(doc) {
+    if (doc.text) return Promise.resolve({ text: doc.text });
+    if (doc.kind === 'pdf') return DB.getB(doc.id + ':pdf').then(blobToB64).then(function (b) { return { images: [{ b64: b, mime: MIME.pdf }] }; });
+    var keep = CUR; CUR = doc;
+    return pageImages(1600, 0.8, 8).then(function (imgs) { CUR = keep; return { images: imgs }; }, function (e) { CUR = keep; throw e; });
+  }
+  function aiSend(prompt, img, userShown) {
+    if (AIS.busy) return;
+    needAI().then(function () {
+      AIS.busy = true;
+      var hist = AIS.hist.filter(function (m) { return !m.pending; }).slice(-8).map(function (m) { return { r: m.r, t: m.t }; });
+      AIS.hist.push({ r: 'u', t: userShown || prompt, thumb: img && img.thumb }); AIS.hist.push({ r: 'a', t: 'विचार करत आहे…', pending: 1 }); aiRender();
+      var pay = img ? Promise.resolve({ images: [{ b64: img.b64, mime: img.mime }] }) : (AIS.doc ? aiDocPayload(AIS.doc) : Promise.resolve({}));
+      return pay.then(function (p) { return api('ai', { task: 'chat', prompt: prompt, text: p.text, images: p.images, history: hist }); }).then(function (r) {
+        AIS.hist.pop(); AIS.hist.push({ r: 'a', t: r.text }); AIS.busy = false; aiRender();
+      }).catch(function (e) { AIS.hist.pop(); AIS.busy = false; aiRender(); throw e; });
+    }).catch(function (e) { AIS.busy = false; fail(e); });
+  }
+  $('ai-go').addEventListener('click', function () {
+    var q = $('ai-in').value.trim(), P = AIS.preset, img = AIS.img;
+    if (!P && !q && !img && !AIS.doc) { toast('काहीतरी विचारा किंवा दस्त निवडा'); return; }
+    var prompt, hasSrc = AIS.doc || img;
+    if (P && P.d && !hasSrc) { if (!q) { toast('दस्त निवडा किंवा मजकूर टाका'); return; } prompt = P.p + '\n\nमजकूर:\n' + q; }
+    else prompt = (P ? P.p : (hasSrc && !q ? 'या दस्ताबद्दल थोडक्यात सांगा.' : '')) + (q ? (P ? '\n\nवापरकर्त्याची सूचना / विषय: ' : '') + q : '');
+    $('ai-in').value = ''; $('ai-in').style.height = 'auto';
+    aiSend(prompt, img, (P ? '[' + P.p.slice(0, 0) + AIP.filter(function (x) { return x[0] === P.id; })[0][1] + '] ' : '') + q);
+    AIS.preset = null; AIS.img = null; aiCtx();
+  });
+
+  /* ---------- पासपोर्ट पान ---------- */
+  /* (कॅमेरा 'pass' मोड: makeIdPage मध्येच) */
   /* ---------- सेटिंग्ज ---------- */
   function openSettings() {
     var u = apiUrl(), k = LS.get('sm-key') || '';
@@ -1688,7 +2782,7 @@ function uni2kruti(s){
       '<span class="fl">OCR भाषा</span>' + optGroup('ocr', [['mr', 'मराठी'], ['hi', 'हिंदी'], ['en', 'इंग्रजी']], LS.get('sm-ocr') || 'mr') +
       '<span class="fl">नवीन पानांचा फिल्टर</span>' + optGroup('flt', FILTERS, LS.get('sm-filter') || 'magic') +
       '<span class="fl">रूप</span>' + optGroup('th', [['', 'फोनप्रमाणे'], ['light', 'दिवस'], ['dark', 'रात्र']], LS.get('sm-theme') || '') +
-      '<div class="row"><button class="btn gold wide" id="s-ok">' + ico('check') + 'जतन</button></div><p class="hint" style="text-align:center">ScanOS v1.0</p>', function (bx) {
+      '<div class="row"><button class="btn gold wide" id="s-ok">' + ico('check') + 'जतन</button></div><p class="hint" style="text-align:center">ScanOS v3.0</p>', function (bx) {
       bindOpts(bx);
       function store() {
         LS.set('sm-api', bx.querySelector('#s-u').value.trim()); LS.set('sm-key', bx.querySelector('#s-k').value.trim().toUpperCase());
@@ -1702,6 +2796,19 @@ function uni2kruti(s){
       bx.querySelector('#s-ok').onclick = function () { store(); closeDlg(); toast('जतन झाले'); };
     });
   }
+
+  /* ---------- मुख्य बटणे (v3) ---------- */
+  $('b-psp').addEventListener('click', function () { openCam(null, 'pass'); });
+  $('b-qr').addEventListener('click', openQr);
+  $('b-meas').addEventListener('click', measStart);
+  $('b-cnt').addEventListener('click', countStart);
+  $('b-mth').addEventListener('click', mathStart);
+  $('b-ai').addEventListener('click', function () { openAi(null); });
+  $('b-mrg').addEventListener('click', function () { mergeDlg(null); });
+  $('b-blk').addEventListener('click', function () {
+    var c = canvas(1654, 2339), x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+    toJpeg(c, 0.9).then(function (bl) { return addPages([{ blob: bl, quad: fullQuad(), filter: 'orig' }], null, 'नवे पान', true); }).then(function () { openMark('text', 0); }).catch(fail);
+  });
 
   /* ---------- मुख्य बटणे ---------- */
   $('b-set').addEventListener('click', openSettings);
