@@ -166,6 +166,15 @@ h2 span{flex:1}
 .btn.danger{background:var(--bad-l);color:var(--bad)}
 .btn.wide{width:100%}
 /* मजकूर */
+.ofr{border:1px solid var(--line);border-radius:14px;padding:8px;margin-bottom:8px;display:grid;gap:6px}
+.lcard{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px;background:var(--bg)}
+.lcard small{display:block;color:var(--muted)}.lcard p{margin:6px 0 0;font-size:14px}
+.lbd{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:99px;font-size:12.5px;font-weight:700}
+.lbd.g{background:var(--ok-l);color:var(--ok)}.lbd.y{background:var(--gold-l);color:var(--ai)}
+.lwarn{border:1px solid var(--gold);border-radius:14px;padding:8px 12px;margin-bottom:10px;background:var(--gold-l);font-size:13.5px}.lwarn ul{margin:4px 0 0;padding-left:18px}
+.lsg{display:flex;gap:10px;align-items:flex-start;padding:8px 2px;border-bottom:1px solid var(--line)}.lsg small{display:block;color:var(--muted)}
+.lcp{display:grid;grid-template-columns:1fr 120px 44px;gap:6px;margin-bottom:6px}.lcp .btn{padding:0}
+textarea.f{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:16px;line-height:1.5;resize:vertical}
 textarea.tx{width:100%;min-height:52vh;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card);font-size:16.5px;line-height:1.6;resize:vertical}
 textarea.tx:focus{outline:2px solid var(--pri);border-color:transparent}
 .tbar{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--card);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))}
@@ -334,6 +343,7 @@ html,button,a,input,label,.dc,.pg{touch-action:manipulation}
 #onb .sk{background:rgba(255,255,255,.12);color:#fff;flex:.6!important}
 #v-ai main{padding-bottom:170px}
 #v-home main{padding-bottom:130px}
+.fsw{display:flex;align-items:center;gap:10px;margin:2px 0 12px}.fsw span{font-weight:700;color:var(--muted);font-size:13.5px}.fsw input{flex:1;accent-color:var(--gold)}.fsw .btn{padding:8px 12px;flex:none;touch-action:none;user-select:none;-webkit-user-select:none}.aib{font-size:9.5px;font-weight:800;background:var(--gold);color:#0b1f4b;border-radius:6px;padding:0 4px;margin-right:2px}
 .ckl label span{flex:1}
 .ckl .mi{margin:0}
 </style>
@@ -441,6 +451,7 @@ html,button,a,input,label,.dc,.pg{touch-action:manipulation}
    <button class="tool" id="b-meas"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-ruler"/></svg></i>मोजमाप</button>
    <button class="tool" id="b-cnt"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-count"/></svg></i>मोजणी</button>
    <button class="tool" id="b-mth"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-math"/></svg></i>गणित सोडवा</button>
+   <button class="tool" id="b-let"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-send"/></svg></i>पत्र सहायक</button>
    <button class="tool" id="b-ai"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-chat"/></svg></i>AI विचारा</button>
    </div>
    <h2><span>दस्त व भाषा</span></h2>
@@ -584,6 +595,9 @@ html,button,a,input,label,.dc,.pg{touch-action:manipulation}
    <button class="act" data-a="tr"><i class="c-navy"><svg class="i"><use href="#i-lang"/></svg></i>भाषांतर</button>
    <button class="act" data-a="sum"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-spark"/></svg></i>सारांश</button>
    <button class="act" data-a="fields"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-list"/></svg></i>माहिती काढा</button>
+   <button class="act" data-a="letter"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-send"/></svg></i>उत्तर तयार करा</button>
+   <button class="act" data-a="redact"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-hide"/></svg></i>खाजगी माहिती लपवा</button>
+   <button class="act" data-a="photo"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-id"/></svg></i>पासपोर्ट फोटो शीट</button>
    <button class="act" data-a="hand"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-edit"/></svg></i>हस्तलिखित वाचा</button>
   </div>
   <h2><span>जतन व शेअर</span></h2>
@@ -604,6 +618,9 @@ html,button,a,input,label,.dc,.pg{touch-action:manipulation}
  <main class="wrap">
   <div class="pv"><img id="e-img" alt=""></div>
   <div class="flt" id="e-flt"></div>
+  <div class="fsw" id="e-fsw"><span>ताकद</span><input type="range" id="e-fs" min="0" max="100" value="60"><button class="btn ghost" id="e-cmp">मूळ पहा</button></div>
+  <div class="row"><button class="btn ghost" id="e-aicol"><sup class="aib">AI</sup><svg class="i"><use href="#i-wand"/></svg>रंग भरा</button><button class="btn ghost" id="e-aifix"><sup class="aib">AI</sup><svg class="i"><use href="#i-spark"/></svg>फोटो सुधार</button></div>
+  <div class="row"><button class="btn ghost wide" id="e-aiundo" hidden>AI आधीचा फोटो परत आणा</button></div>
   <div class="row">
    <button class="btn ghost" id="e-rl"><svg class="i"><use href="#i-rotl"/></svg>डावीकडे</button>
    <button class="btn ghost" id="e-rr"><svg class="i"><use href="#i-rotr"/></svg>उजवीकडे</button>
@@ -791,7 +808,7 @@ function uni2kruti(s){
   };
   try { var th = LS.get('sm-theme'); if (th) document.documentElement.dataset.theme = th; } catch (e) {}
   var LANGS = [['mr', 'मराठी'], ['en', 'इंग्रजी'], ['hi', 'हिंदी'], ['gu', 'गुजराती'], ['te', 'तेलुगू'], ['kn', 'कन्नड'], ['ta', 'तमिळ'], ['ur', 'उर्दू'], ['bn', 'बंगाली'], ['pa', 'पंजाबी'], ['ml', 'मल्याळम']];
-  var FILTERS = [['orig', 'मूळ'], ['magic', 'स्पष्ट'], ['bw', 'काळा-पांढरा'], ['gray', 'ग्रे'], ['vivid', 'रंगीत']];
+  var FILTERS = [['orig', 'मूळ'], ['auto', 'स्मार्ट'], ['magic', 'स्पष्ट'], ['flat', 'चुरगळलेला सरळ'], ['clean', 'स्वच्छ झेरॉक्स'], ['bw', 'काळा-पांढरा'], ['photo', 'जुना फोटो'], ['tint', 'सेपिया'], ['gray', 'ग्रे'], ['vivid', 'रंगीत']];
   var MAX_SRC = 2600, MAX_OUT = 2200;
 
   /* ---------- छोटी मदत ---------- */
@@ -1016,9 +1033,124 @@ function uni2kruti(s){
     for (var k = 0; k < 2; k++) pass(function (x, y, ch) { var s = 0; for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) s += at(x + dx, y + dy, ch); return s / 9; });
     return { G: G, gw: gw, gh: gh, cs: cs };
   }
-  function applyFilter(c, f) {
+  /* ---------- v4: नवे फिल्टर (सर्व फोनमध्येच) ---------- */
+  function clamp255(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
+  /** पार्श्वभूमीने भागून (सावली / प्रकाशाचा फरक काढून) d मध्येच */
+  function bgDivide(d, w, h) {
+    var B = bgGrid(d, w, h), G = B.G, gw = B.gw, gh = B.gh, cs = B.cs, i, p;
+    for (var j = 0; j < h; j++) {
+      var fy = j / cs - 0.5, y0 = Math.max(0, Math.min(gh - 1, Math.floor(fy))), y1 = Math.min(gh - 1, y0 + 1), ty = Math.max(0, Math.min(1, fy - y0));
+      for (i = 0; i < w; i++) {
+        var fx = i / cs - 0.5, x0 = Math.max(0, Math.min(gw - 1, Math.floor(fx))), x1 = Math.min(gw - 1, x0 + 1), tx = Math.max(0, Math.min(1, fx - x0));
+        var a = (y0 * gw + x0) * 3, bb = (y0 * gw + x1) * 3, cc = (y1 * gw + x0) * 3, dd = (y1 * gw + x1) * 3; p = (j * w + i) * 4;
+        for (var ch = 0; ch < 3; ch++) {
+          var bg = (G[a + ch] * (1 - tx) + G[bb + ch] * tx) * (1 - ty) + (G[cc + ch] * (1 - tx) + G[dd + ch] * tx) * ty;
+          d[p + ch] = clamp255(d[p + ch] * 255 / Math.max(40, bg));
+        }
+      }
+    }
+  }
+  /** तीक्ष्णता (unsharp mask): लहान box blur वापरून */
+  function unsharp(d, w, h, amt) {
+    if (amt <= 0) return;
+    var n = w * h, t = new Uint8ClampedArray(n * 3), ch, i, j, k, R = 2, s;
+    for (ch = 0; ch < 3; ch++) {
+      for (j = 0; j < h; j++) {   /* आडवे */
+        s = 0; var row = j * w;
+        for (k = -R; k <= R; k++) s += d[(row + Math.max(0, Math.min(w - 1, k))) * 4 + ch];
+        for (i = 0; i < w; i++) { t[(row + i) * 3 + ch] = s / (2 * R + 1); s += d[(row + Math.min(w - 1, i + R + 1)) * 4 + ch] - d[(row + Math.max(0, i - R)) * 4 + ch]; }
+      }
+      for (i = 0; i < w; i++) {   /* उभे, निकाल d मध्ये */
+        var col = new Float32Array(h);
+        for (j = 0; j < h; j++) col[j] = t[(j * w + i) * 3 + ch];
+        s = 0; for (k = -R; k <= R; k++) s += col[Math.max(0, Math.min(h - 1, k))];
+        for (j = 0; j < h; j++) {
+          var p = (j * w + i) * 4 + ch, bl = s / (2 * R + 1);
+          d[p] = clamp255(d[p] + (d[p] - bl) * amt);
+          s += col[Math.min(h - 1, j + R + 1)] - col[Math.max(0, j - R)];
+        }
+      }
+    }
+  }
+  function fltFlat(d, w, h, st) {
+    bgDivide(d, w, h);
+    var hi = 255 * (0.95 - 0.16 * st), lo = 55 + 25 * st, sc = 255 / (hi - lo), p, ch;
+    for (p = 0; p < w * h * 4; p += 4) for (ch = 0; ch < 3; ch++) { var v = (d[p + ch] - lo) * sc; d[p + ch] = v < 0 ? 0 : v > 255 ? 255 : v; }
+    unsharp(d, w, h, 0.35 + 0.5 * st);
+  }
+  function fltClean(d, w, h, st) {
+    bgDivide(d, w, h);
+    var n = w * h, W1 = w + 1, S = new Float64Array(W1 * (h + 1)), Q = new Float64Array(W1 * (h + 1)), g = new Uint8Array(n), i, j, p;
+    for (i = 0; i < n; i++) g[i] = (d[i * 4] * 0.299 + d[i * 4 + 1] * 0.587 + d[i * 4 + 2] * 0.114);
+    for (j = 0; j < h; j++) { var rs = 0, rq = 0; for (i = 0; i < w; i++) { var v = g[j * w + i]; rs += v; rq += v * v; S[(j + 1) * W1 + i + 1] = S[j * W1 + i + 1] + rs; Q[(j + 1) * W1 + i + 1] = Q[j * W1 + i + 1] + rq; } }
+    var R = Math.max(8, Math.round(Math.min(w, h) / 38)), k = 0.12 + 0.12 * st;
+    for (j = 0; j < h; j++) {
+      var y0 = Math.max(0, j - R), y1 = Math.min(h, j + R + 1);
+      for (i = 0; i < w; i++) {
+        var x0 = Math.max(0, i - R), x1 = Math.min(w, i + R + 1), cnt = (x1 - x0) * (y1 - y0);
+        var s1 = S[y1 * W1 + x1] - S[y0 * W1 + x1] - S[y1 * W1 + x0] + S[y0 * W1 + x0], s2 = Q[y1 * W1 + x1] - Q[y0 * W1 + x1] - Q[y1 * W1 + x0] + Q[y0 * W1 + x0];
+        var m = s1 / cnt, sd = Math.sqrt(Math.max(0, s2 / cnt - m * m)), T = m * (1 + k * (sd / 128 - 1)), o = (g[j * w + i] - T) * 14 + 128;
+        p = (j * w + i) * 4; d[p] = d[p + 1] = d[p + 2] = o < 0 ? 0 : o > 255 ? 255 : o;
+      }
+    }
+  }
+  /** छायाचित्र: रंग-ताण (auto levels), डाग / ठिपके कमी, तीक्ष्णता. काळे-पांढरे असेल तर धूसर */
+  function fltPhoto(d, w, h, st) {
+    var n = w * h, p, ch, i, j, sat = 0, cnt = 0;
+    for (p = 0; p < n * 4; p += 4 * 7) { var mx = Math.max(d[p], d[p + 1], d[p + 2]), mn = Math.min(d[p], d[p + 1], d[p + 2]); sat += mx ? (mx - mn) / mx : 0; cnt++; }
+    var isBW = sat / cnt < 0.12;
+    if (isBW) for (p = 0; p < n * 4; p += 4) { var l = d[p] * 0.299 + d[p + 1] * 0.587 + d[p + 2] * 0.114; d[p] = d[p + 1] = d[p + 2] = l; }
+    var lut = [], chs = isBW ? 1 : 3;
+    for (ch = 0; ch < chs; ch++) {
+      var hist = new Uint32Array(256); for (p = ch; p < n * 4; p += 4 * 3) hist[d[p]]++;
+      var tot = 0; for (i = 0; i < 256; i++) tot += hist[i];
+      var clip = tot * 0.004, a = 0, lo = 0, hi = 255; for (i = 0; i < 256; i++) { a += hist[i]; if (a > clip) { lo = i; break; } }
+      a = 0; for (i = 255; i >= 0; i--) { a += hist[i]; if (a > clip) { hi = i; break; } }
+      if (hi - lo < 40) { lo = 0; hi = 255; }
+      lo = lo * st; hi = 255 - (255 - hi) * st;
+      var mean = 0; for (i = 0; i < 256; i++) mean += i * hist[i]; mean = (mean / Math.max(1, tot) - lo) / Math.max(1, hi - lo);
+      var gam = Math.max(0.7, Math.min(1.45, Math.log(0.46) / Math.log(Math.max(0.05, Math.min(0.95, mean))))); gam = 1 + (gam - 1) * st;
+      var T = new Uint8Array(256); for (i = 0; i < 256; i++) T[i] = clamp255(255 * Math.pow(Math.max(0, Math.min(1, (i - lo) / Math.max(1, hi - lo))), gam));
+      lut.push(T);
+    }
+    for (p = 0; p < n * 4; p += 4) { d[p] = lut[0][d[p]]; d[p + 1] = lut[isBW ? 0 : 1][d[p + 1]]; d[p + 2] = lut[isBW ? 0 : 2][d[p + 2]]; }
+    /* ठिपके / धूळ: opening / closing ने छोटे उजळ व काळे ठिपके, फक्त जिथे फरक मोठा तिथेच बदलणे */
+    var L = new Uint8Array(n), thr = 78 - 34 * st, R = Math.max(2, Math.round(Math.max(w, h) / 700)); for (i = 0; i < n; i++) L[i] = d[i * 4] * 0.299 + d[i * 4 + 1] * 0.587 + d[i * 4 + 2] * 0.114;
+    function mm(src, isMax) {   /* वेगळे करता येणारे min / max (चौरस 2R+1) */
+      var tmp = new Uint8Array(n), out = new Uint8Array(n), a, b, k, v;
+      for (j = 0; j < h; j++) for (i = 0; i < w; i++) { v = isMax ? 0 : 255; for (k = Math.max(0, i - R); k <= Math.min(w - 1, i + R); k++) { b = src[j * w + k]; if (isMax ? b > v : b < v) v = b; } tmp[j * w + i] = v; }
+      for (j = 0; j < h; j++) for (i = 0; i < w; i++) { v = isMax ? 0 : 255; for (k = Math.max(0, j - R); k <= Math.min(h - 1, j + R); k++) { b = tmp[k * w + i]; if (isMax ? b > v : b < v) v = b; } out[j * w + i] = v; }
+      return out;
+    }
+    var op = mm(mm(L, false), true), cl = mm(mm(L, true), false);
+    for (i = 0; i < n; i++) {
+      var r = 0; if (L[i] - op[i] > thr) r = op[i] - L[i]; else if (cl[i] - L[i] > thr) r = cl[i] - L[i];
+      if (r) { var o = i * 4; d[o] = clamp255(d[o] + r); d[o + 1] = clamp255(d[o + 1] + r); d[o + 2] = clamp255(d[o + 2] + r); }
+    }
+    if (!isBW) for (p = 0; p < n * 4; p += 4) { var Lm = d[p] * 0.299 + d[p + 1] * 0.587 + d[p + 2] * 0.114, sf = 1 + 0.25 * st; d[p] = clamp255(Lm + (d[p] - Lm) * sf); d[p + 1] = clamp255(Lm + (d[p + 1] - Lm) * sf); d[p + 2] = clamp255(Lm + (d[p + 2] - Lm) * sf); }
+    unsharp(d, w, h, 0.3 + 0.4 * st);
+  }
+  /** सेपिया / उबदार रंगछटा (काळ्या-पांढऱ्या फोटोला ऑफलाइन रंगछटा) */
+  function fltTint(d, w, h, st) {
+    fltPhoto(d, w, h, 0.7);
+    var stops = [[0, 26, 18, 14], [0.3, 104, 70, 50], [0.62, 196, 150, 112], [1, 252, 236, 212]], p, n = w * h;
+    for (p = 0; p < n * 4; p += 4) {
+      var l = (d[p] * 0.299 + d[p + 1] * 0.587 + d[p + 2] * 0.114) / 255, k = 0; while (k < 2 && l > stops[k + 1][0]) k++;
+      var a = stops[k], b = stops[k + 1], t = (l - a[0]) / (b[0] - a[0]);
+      for (var ch = 0; ch < 3; ch++) { var tv = a[ch + 1] + (b[ch + 1] - a[ch + 1]) * t; d[p + ch] = d[p + ch] * (1 - st) + tv * st; }
+    }
+  }
+  /** फोटो की कागद? पाहून फिल्टर निवड */
+  function pickAuto(d, w, h) {
+    var paper = 0, sat = 0, cnt = 0;
+    for (var p = 0; p < w * h * 4; p += 4 * 9) { var r = d[p], g = d[p + 1], b = d[p + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (r + g + b) / 3; sat += mx ? (mx - mn) / mx : 0; if (l > 150 && (mx ? (mx - mn) / mx : 0) < 0.3) paper++; cnt++; }
+    return paper / cnt > 0.38 ? 'flat' : 'photo';
+  }
+  function applyFilter(c, f, strength) {
     if (!f || f === 'orig') return c;
-    var w = c.width, h = c.height, x = c.getContext('2d'), id = x.getImageData(0, 0, w, h), d = id.data, n = w * h, i, p;
+    var w = c.width, h = c.height, x = c.getContext('2d'), id = x.getImageData(0, 0, w, h), d = id.data, n = w * h, i, p, st = (strength == null ? 60 : strength) / 100;
+    if (f === 'auto') f = pickAuto(d, w, h);
+    if (f === 'flat' || f === 'clean' || f === 'photo' || f === 'tint') { ({ flat: fltFlat, clean: fltClean, photo: fltPhoto, tint: fltTint })[f](d, w, h, st); x.putImageData(id, 0, 0); return c; }
     if (f === 'gray') { for (p = 0; p < n * 4; p += 4) { var l = d[p] * 0.299 + d[p + 1] * 0.587 + d[p + 2] * 0.114; l = (l - 12) * 1.08; d[p] = d[p + 1] = d[p + 2] = l; } x.putImageData(id, 0, 0); return c; }
     if (f === 'vivid') { for (p = 0; p < n * 4; p += 4) { var r = d[p], g = d[p + 1], b = d[p + 2], L = (r + g + b) / 3; d[p] = (L + (r - L) * 1.45 - 128) * 1.18 + 136; d[p + 1] = (L + (g - L) * 1.45 - 128) * 1.18 + 136; d[p + 2] = (L + (b - L) * 1.45 - 128) * 1.18 + 136; } x.putImageData(id, 0, 0); return c; }
     var B = bgGrid(d, w, h), G = B.G, gw = B.gw, gh = B.gh, cs = B.cs;
@@ -1051,7 +1183,7 @@ function uni2kruti(s){
       if (!b) throw new Error('पानाचा मूळ फोटो सापडला नाही');
       return blobToCanvas(b, MAX_SRC);
     }).then(function (c) {
-      var o = applyFilter(rotate(warp(c, pg.quad || fullQuad(), maxOut || MAX_OUT), pg.rot || 0), pg.filter);
+      var o = applyFilter(rotate(warp(c, pg.quad || fullQuad(), maxOut || MAX_OUT), pg.rot || 0), pg.filter, pg.fs);
       if (noMarks || !pg.marks || !pg.marks.length) return o;
       return preloadMarks(pg.marks).then(function () {
         var src = null;
@@ -1429,7 +1561,7 @@ function uni2kruti(s){
     return DB.all().then(function (all) {
       DOCS = (all || []).sort(function (a, b) { return b.updated - a.updated; });
       var q = $('q').value.trim().toLowerCase();
-      var list = DOCS.filter(function (d) { return !q || (d.name || '').toLowerCase().indexOf(q) >= 0 || (d.text || '').toLowerCase().indexOf(q) >= 0; });
+      var list = DOCS.filter(function (d) { return !q || (d.name || '').toLowerCase().indexOf(q) >= 0 || (d.text || '').toLowerCase().indexOf(q) >= 0 || (d.tags || []).join(' ').toLowerCase().indexOf(q) >= 0; });
       $('h-count').textContent = DOCS.length ? DOCS.length + ' दस्त' : '';
       freeUrls();
       $('docs').innerHTML = list.length ? list.map(docCard).join('') : '<div class="empty" style="grid-column:1/-1">' + (q ? 'या शोधाचा दस्त नाही' : 'अजून एकही दस्त नाही.<br>खालील सोनेरी बटण दाबून कागद स्कॅन करा.') + '</div>';
@@ -1526,12 +1658,48 @@ function uni2kruti(s){
     if (CAM.once) { var cb = CAM.once, bl = CAM.shots[0].blob; CAM.once = null; CAM.shots = []; stopCam(); cb(bl, true); return; }
     var shots = CAM.shots.slice(), mode = CAM.mode, target = CAM.target;
     CAM.shots = [];
+    var express = LS.get('sm-exp') !== '0' && mode === 'doc' && shots.every(function (x) { return x.auto; });
+    if (express) {
+      /* झटपट: सर्व कडा आपोआप सापडल्या असतील तर कापण्याची पायरी वगळून थेट जतन */
+      stack.pop(); stopCam(); if (!stack.length) stack = ['v-home'];
+      history.replaceState({ v: stack[stack.length - 1] }, ''); setView(stack[stack.length - 1]);
+      addPages(shots, target, 'स्कॅन', true).then(function () { postScan(shots.length, target); }).catch(fail);
+      return;
+    }
     stack.pop(); stopCam();   /* कॅमेरा इतिहासातून काढून कापणे त्याच जागी */
     history.replaceState({ v: 'v-crop' }, ''); stack.push('v-crop'); setView('v-crop');
     cropReview(shots).then(function (items) { return mode === 'id' || mode === 'pass' ? makeIdPage(items, mode === 'pass' ? 1.46 : 1.25) : items; }).then(function (items) {
       stack.pop(); if (!stack.length) stack = ['v-home'];
       return addPages(items, target, mode === 'id' ? 'ओळखपत्र' : mode === 'pass' ? 'पासपोर्ट' : 'स्कॅन', true);
     }).catch(fail);
+  }
+  /** स्कॅन झाल्यावर थेट पुढची कृती (PDF शेअर / आणखी पाने) */
+  function postScan(n, target) {
+    var d = CUR; if (!d) return;
+    openDlg('<h3>' + ico('check') + ' जतन झाले</h3><p class="s">' + esc(d.name) + ' • ' + d.pages.length + ' पान</p>' +
+      '<div class="row"><button class="btn gold wide" id="ps-sh">' + ico('share') + 'PDF शेअर करा</button></div>' +
+      '<div class="row"><button class="btn ghost" id="ps-more">' + ico('cam') + 'आणखी पाने</button><button class="btn ghost" id="ps-open">' + ico('file') + 'उघडा / संपादन</button></div>', function (bx) {
+      bx.querySelector('#ps-sh').onclick = function () { closeDlg(); actShare(); };
+      bx.querySelector('#ps-more').onclick = function () { closeDlg(); openCam(d.id, 'doc'); };
+      bx.querySelector('#ps-open').onclick = closeDlg;
+    });
+    autoName(d);
+  }
+  /** AI ने दस्ताचे नाव व खूण ठरवणे (चालू असेल तरच; आधीचे नाव बदलले नसेल तरच) */
+  function autoName(d) {
+    if (!aiOn() || !apiUrl() || LS.get('sm-an') === '0' || d.kind === 'pdf' || !d.pages.length) return;
+    if (d.named || !/^(स्कॅन|ओळखपत्र|पासपोर्ट) \d+-\d+-\d+ \d{4}$/.test(d.name)) return;
+    DB.getB(d.pages[0].id + ':p').then(function (b) { return b && blobToCanvas(b, 1000).then(function (c) { return toJpeg(c, 0.8); }); }).then(function (b) {
+      return b && blobToB64(b);
+    }).then(function (b64) {
+      if (!b64) return;
+      return api('ai', { task: 'chat', json: true, prompt: 'हा कागद कोणता आहे? JSON द्या: {"title": "मराठीत छोटे नाव (जास्तीत जास्त 6 शब्द, उदा. वीज बिल ऑक्टोबर, आधार कार्ड, बँक पासबुक)", "tags": ["3 ते 5 शोध-शब्द"], "kind": "पत्र / बिल / ओळखपत्र / फॉर्म / इतर"}. कागदावर असलेलेच शब्द वापरा.', images: [{ b64: b64, mime: 'image/jpeg' }] });
+    }).then(function (r) {
+      if (!r) return; var j = r.json || r; if (typeof j === 'string') { try { j = JSON.parse(j); } catch (e) { return; } }
+      if (j && j.title && !d.named) { d.name = String(j.title).trim().slice(0, 60) || d.name; d.named = 1; }
+      if (j && j.tags) d.tags = [].concat(j.tags, j.kind || []).map(String).slice(0, 8);
+      d.updated = Date.now(); return DB.put(d).then(function () { if (CUR && CUR.id === d.id) { CUR = d; if (stack[stack.length - 1] === 'v-doc') renderDoc(); } toast('नाव दिले: ' + d.name); });
+    }).catch(function () {});
   }
   $('c-shut').addEventListener('click', shoot);
   $('c-done').addEventListener('click', camDone);
@@ -1898,11 +2066,15 @@ function uni2kruti(s){
   }
 
   /* ---------- पान संपादन ---------- */
-  var EI = 0;
+  var EI = 0, EDC = { pg: null, url: null };
   function openEdit(i) { EI = i; go('v-edit'); renderEdit(true); }
   function renderEdit(withPreviews) {
     var pg = CUR.pages[EI]; $('e-title').textContent = 'पान ' + (EI + 1) + ' / ' + CUR.pages.length;
     DB.getB(pg.id + ':p').then(function (b) { var im = $('e-img'); if (im.dataset.u) URL.revokeObjectURL(im.dataset.u); im.dataset.u = URL.createObjectURL(b); im.src = im.dataset.u; });
+    var SF = { auto: 1, flat: 1, clean: 1, photo: 1, tint: 1 };
+    $('e-fsw').hidden = !SF[pg.filter]; $('e-fs').value = pg.fs == null ? 60 : pg.fs; $('e-aiundo').hidden = !pg.bk;
+    EDC.pg = pg; if (EDC.url) { URL.revokeObjectURL(EDC.url); EDC.url = null; }
+    renderPage({ id: pg.id, quad: pg.quad, rot: pg.rot, filter: 'orig' }, 1100, true).then(function (c) { return toJpeg(c, 0.8); }).then(function (b) { if (EDC.pg === pg) EDC.url = URL.createObjectURL(b); });
     $('e-flt').innerHTML = FILTERS.map(function (f) { return '<button data-f="' + f[0] + '" class="' + (pg.filter === f[0] ? 'on' : '') + '"><img alt=""><span>' + f[1] + '</span></button>'; }).join('');
     if (withPreviews) {
       /* प्रत्येक फिल्टरचे छोटे नमुने */
@@ -1910,7 +2082,7 @@ function uni2kruti(s){
         var base = rotate(warp(c, pg.quad || fullQuad(), 160), pg.rot || 0);
         $('e-flt').querySelectorAll('button').forEach(function (bt) {
           var cc = canvas(base.width, base.height); cc.getContext('2d').drawImage(base, 0, 0);
-          bt.querySelector('img').src = applyFilter(cc, bt.dataset.f).toDataURL('image/jpeg', 0.7);
+          bt.querySelector('img').src = applyFilter(cc, bt.dataset.f, pg.fs).toDataURL('image/jpeg', 0.7);
         });
       });
     }
@@ -1920,6 +2092,36 @@ function uni2kruti(s){
     return processPage(pg).then(function () { CUR.text = null; CUR.updated = Date.now(); return DB.put(CUR); }).then(function () { done(); renderEdit(true); }).catch(fail);
   }
   $('e-flt').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var pg = CUR.pages[EI]; pg.filter = b.dataset.f; LS.set('sm-filter', pg.filter); savePage(pg, 'फिल्टर लावत आहे…'); });
+  $('e-fs').addEventListener('change', function () { var pg = CUR.pages[EI]; pg.fs = +this.value; savePage(pg, 'ताकद लावत आहे…'); });
+  (function () {
+    var b = $('e-cmp'), im = $('e-img'), keep = null;
+    function down(e) { if (!EDC.url) return; e.preventDefault(); keep = im.src; im.src = EDC.url; }
+    function up() { if (keep) { im.src = keep; keep = null; } }
+    b.addEventListener('pointerdown', down); b.addEventListener('pointerup', up); b.addEventListener('pointerleave', up); b.addEventListener('pointercancel', up); b.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  })();
+  /** AI ने रंग भरा / फोटो सुधार: पानाचे चित्र सर्व्हरवर → नवे चित्र मूळ म्हणून */
+  function aiPhoto(kind) {
+    var pg = CUR.pages[EI], P = {
+      col: 'Colorize this black and white photograph with natural, realistic and historically plausible colors. Keep every person, face, object, composition and fine detail exactly the same. Do not add, remove or redraw anything. Return only the edited image.',
+      fix: 'Restore this old photograph: remove scratches, dust, stains and fading, improve sharpness and contrast. Keep faces and all details faithful and unchanged. Keep it black and white if it is black and white. Return only the edited image.'
+    };
+    needAI().then(function () {
+      busy('AI फोटो बनवत आहे…', 'Gemini • 20-40 सेकंद');
+      return renderPage({ id: pg.id, quad: pg.quad, rot: pg.rot, filter: 'orig' }, 1400, true);
+    }).then(function (c) { return toJpeg(c, 0.9); }).then(blobToB64).then(function (b64) {
+      return api('image', { prompt: P[kind], b64: b64, mime: 'image/jpeg' });
+    }).then(function (r) {
+      var nb = b64ToBlob(r.b64, r.mime || 'image/png');
+      return (pg.bk ? Promise.resolve() : DB.getB(pg.id + ':o').then(function (o) { pg.bk = { quad: pg.quad, rot: pg.rot, filter: pg.filter }; return DB.putB(pg.id + ':o0', o); }))
+        .then(function () { return DB.putB(pg.id + ':o', nb); }).then(function () { pg.quad = fullQuad(); pg.rot = 0; pg.filter = 'orig'; return savePage(pg, 'पान जतन होत आहे…'); });
+    }).catch(fail);
+  }
+  $('e-aicol').addEventListener('click', function () { aiPhoto('col'); });
+  $('e-aifix').addEventListener('click', function () { aiPhoto('fix'); });
+  $('e-aiundo').addEventListener('click', function () {
+    var pg = CUR.pages[EI]; if (!pg.bk) return;
+    DB.getB(pg.id + ':o0').then(function (o) { return DB.putB(pg.id + ':o', o); }).then(function () { pg.quad = pg.bk.quad; pg.rot = pg.bk.rot; pg.filter = pg.bk.filter; pg.bk = null; return DB.delB(pg.id + ':o0'); }).then(function () { return savePage(pg, 'आधीचा फोटो परत आणत आहे…'); }).catch(fail);
+  });
   $('e-rl').addEventListener('click', function () { var pg = CUR.pages[EI]; pg.rot = ((pg.rot || 0) + 3) % 4; savePage(pg); });
   $('e-rr').addEventListener('click', function () { var pg = CUR.pages[EI]; pg.rot = ((pg.rot || 0) + 1) % 4; savePage(pg); });
   $('e-crop').addEventListener('click', function () {
@@ -1938,7 +2140,7 @@ function uni2kruti(s){
   $('e-mr').addEventListener('click', function () { movePage(1); });
   $('e-del').addEventListener('click', function () {
     var pg = CUR.pages.splice(EI, 1)[0]; CUR.text = null; CUR.updated = Date.now();
-    Promise.all([pg.id + ':o', pg.id + ':p', pg.id + ':t'].map(DB.delB)).then(function () { return DB.put(CUR); }).then(function () { toast('पान काढले'); back(); });
+    Promise.all([pg.id + ':o', pg.id + ':o0', pg.id + ':p', pg.id + ':t'].map(DB.delB)).then(function () { return DB.put(CUR); }).then(function () { toast('पान काढले'); back(); });
   });
 
   /* ---------- मार्कअप: पुसा / मजकूर / पेन / आकार / चित्र / सही / लपवा / अस्पष्ट ----------
@@ -2302,7 +2504,7 @@ function uni2kruti(s){
   }
   function clonePage(pg) {
     var n = JSON.parse(JSON.stringify(pg)); n.id = uid();
-    return Promise.all([':o', ':p', ':t'].map(function (s) { return DB.getB(pg.id + s).then(function (b) { return b ? DB.putB(n.id + s, b) : 0; }); })).then(function () { return n; });
+    return Promise.all([':o', ':o0', ':p', ':t'].map(function (s) { return DB.getB(pg.id + s).then(function (b) { return b ? DB.putB(n.id + s, b) : 0; }); })).then(function () { return n; });
   }
   function clonePages(pgs) {
     var out = [], i = 0;
@@ -2893,16 +3095,18 @@ function uni2kruti(s){
       '<span class="fl">प्रवेश कोड</span><input class="f" id="s-k" value="' + esc(k) + '" placeholder="setup() ने दिलेला कोड" autocomplete="off" autocapitalize="characters" spellcheck="false">' +
       '<div class="row"><button class="btn ghost" id="s-test">' + ico('check') + 'जोडणी तपासा</button></div><p class="hint" id="s-st"></p>' +
       '<label class="sw"><span>AI (Gemini) वापरा<small>सारांश, माहिती काढणे, हस्तलिखित, अचूक Excel. मोफत Gemini ला गेलेला मजकूर Google सुधारणेसाठी वापरू शकते: अतिगोपनीय कागदांसाठी बंद ठेवा.</small></span><input type="checkbox" id="s-ai"' + (aiOn() ? ' checked' : '') + '></label>' +
+      '<label class="sw"><span>झटपट स्कॅन<small>कडा आपोआप सापडल्या तर कापण्याची पायरी वगळून लगेच जतन होते.</small></span><input type="checkbox" id="s-exp"' + (LS.get('sm-exp') !== '0' ? ' checked' : '') + '></label>' +
+      '<label class="sw"><span>AI स्वयं नाव व खूण<small>स्कॅननंतर दस्ताला आपोआप नाव मिळते, शोधणे सोपे होते (AI चालू असल्यास).</small></span><input type="checkbox" id="s-an"' + (LS.get('sm-an') !== '0' ? ' checked' : '') + '></label>' +
       '<span class="fl">OCR भाषा</span>' + optGroup('ocr', [['mr', 'मराठी'], ['hi', 'हिंदी'], ['en', 'इंग्रजी']], LS.get('sm-ocr') || 'mr') +
       '<span class="fl">नवीन पानांचा फिल्टर</span>' + optGroup('flt', FILTERS, LS.get('sm-filter') || 'magic') +
       '<span class="fl">रूप</span>' + optGroup('th', [['', 'फोनप्रमाणे'], ['light', 'दिवस'], ['dark', 'रात्र']], LS.get('sm-theme') || '') +
       '<span class="fl">सुरक्षा</span><div class="row"><button class="btn ghost" id="s-pin">' + ico('lock') + 'PIN लॉक: ' + (LS.get('sm-pin') ? 'बदला / काढा' : 'ठेवा') + '</button></div>' +
-      '<div class="row"><button class="btn gold wide" id="s-ok">' + ico('check') + 'जतन</button></div><p class="hint" style="text-align:center">ScanOS v3.1</p>', function (bx) {
+      '<div class="row"><button class="btn gold wide" id="s-ok">' + ico('check') + 'जतन</button></div><p class="hint" style="text-align:center">ScanOS v4</p>', function (bx) {
       bindOpts(bx);
       bx.querySelector('#s-pin').onclick = function () { store(); closeDlg(); pinDlg(); };
       function store() {
         LS.set('sm-api', bx.querySelector('#s-u').value.trim()); LS.set('sm-key', bx.querySelector('#s-k').value.trim().toUpperCase());
-        LS.set('sm-ai', bx.querySelector('#s-ai').checked ? '1' : '0'); LS.set('sm-ocr', optVal(bx, 'ocr')); LS.set('sm-filter', optVal(bx, 'flt'));
+        LS.set('sm-ai', bx.querySelector('#s-ai').checked ? '1' : '0'); LS.set('sm-exp', bx.querySelector('#s-exp').checked ? '1' : '0'); LS.set('sm-an', bx.querySelector('#s-an').checked ? '1' : '0'); LS.set('sm-ocr', optVal(bx, 'ocr')); LS.set('sm-filter', optVal(bx, 'flt'));
         var th = optVal(bx, 'th'); LS.set('sm-theme', th); if (th) document.documentElement.dataset.theme = th; else delete document.documentElement.dataset.theme;
       }
       bx.querySelector('#s-test').onclick = function () {
@@ -2912,6 +3116,326 @@ function uni2kruti(s){
       bx.querySelector('#s-ok').onclick = function () { store(); closeDlg(); toast('जतन झाले'); };
     });
   }
+
+  /* ---------- पत्र सहायक (v4): आलेले पत्र वाचून उत्तराचा मसुदा, प्रत / माहितीस्तव, सही, लेटरहेड ---------- */
+  var OFF = null;
+  function offLoad() {
+    if (OFF) return OFF;
+    try { OFF = JSON.parse(LS.get('sm-office') || 'null'); } catch (e) { OFF = null; }
+    OFF = OFF || { name: '', addr: '', jp: '', jn: 0, off: [], dist: '', rules: '', learn: [], lhTop: 18, lhBot: 8, lh: false };
+    return OFF;
+  }
+  function offSave() { LS.set('sm-office', JSON.stringify(OFF)); }
+  function pickImgFile(cb) {
+    var f = document.createElement('input'); f.type = 'file'; f.accept = 'image/*';
+    f.onchange = function () { var x = f.files && f.files[0]; if (x) blobToCanvas(x, 1800).then(function (c) { return toJpeg(c, 0.92); }).then(cb).catch(fail); };
+    f.click();
+  }
+  function today() { var d = new Date(); return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + d.getFullYear(); }
+  function nextJawak() { var o = offLoad(), n = (o.jn || 0) + 1; return (o.jp ? o.jp + '/' : '') + ('00' + n).slice(-3) + '/' + new Date().getFullYear(); }
+
+  /** कार्यालय माहिती: नाव, पत्ता, लेटरहेड, अधिकारी + सही, वितरण यादी, नियम */
+  function officeDlg(after) {
+    var o = offLoad();
+    function row(a, i) {
+      return '<div class="ofr" data-i="' + i + '"><input class="f" data-k="n" placeholder="नाव" value="' + esc(a.n) + '"><input class="f" data-k="d" placeholder="पदनाम (उदा. पोलीस निरीक्षक)" value="' + esc(a.d) + '"><div class="row"><button class="btn ghost" data-sg="' + i + '">' + ico('sign') + (a.sig ? 'सही बदला ✓' : 'सहीचा फोटो') + '</button><button class="btn danger" data-rm="' + i + '">' + ico('del') + '</button></div></div>';
+    }
+    openDlg('<h3>कार्यालय माहिती</h3><p class="s">एकदाच भरा. पत्र बनवताना यावरून प्रत, माहितीस्तव व सही ठरते. ही माहिती फक्त याच फोनमध्ये राहते.</p>' +
+      '<span class="fl">कार्यालयाचे नाव</span><input class="f" id="of-n" value="' + esc(o.name) + '">' +
+      '<span class="fl">पत्ता / फोन / ईमेल (लेटरहेड फोटो नसेल तर वर छापला जातो)</span><textarea class="f" id="of-a" rows="2">' + esc(o.addr) + '</textarea>' +
+      '<div class="row"><button class="btn ghost" id="of-lh">' + ico('img') + (o.lh ? 'लेटरहेड बदला ✓' : 'लेटरहेडचा फोटो') + '</button>' + (o.lh ? '<button class="btn danger" id="of-lhx">' + ico('del') + '</button>' : '') + '</div>' +
+      '<span class="fl">लेटरहेडवर मजकूर कुठून सुरू / कुठे संपवायचा (पानाच्या % मध्ये: वर, खाली सोडायची जागा)</span><div class="row"><input class="f" id="of-t" type="number" min="0" max="50" value="' + o.lhTop + '"><input class="f" id="of-b" type="number" min="0" max="40" value="' + o.lhBot + '"></div>' +
+      '<span class="fl">जावक क्रमांक सुरुवात (उदा. पो.नि./गुन्हे) व आतापर्यंतचा शेवटचा क्रमांक</span><div class="row"><input class="f" id="of-jp" value="' + esc(o.jp) + '"><input class="f" id="of-jn" type="number" min="0" value="' + (o.jn || 0) + '"></div>' +
+      '<span class="fl">अधिकारी (सही करणारे)</span><div id="of-list">' + o.off.map(row).join('') + '</div><div class="row"><button class="btn ghost wide" id="of-add">' + ico('plus') + 'अधिकारी जोडा</button></div>' +
+      '<span class="fl">प्रत / माहितीस्तव द्यायची कार्यालये (दर ओळीला एक: पदनाम, कार्यालय)</span><textarea class="f" id="of-d" rows="4" placeholder="उपविभागीय पोलीस अधिकारी, नागपूर\nपोलीस उपायुक्त, परिमंडळ 2">' + esc(o.dist) + '</textarea>' +
+      '<span class="fl">तुमचे नियम (साध्या भाषेत, उदा. "आर्थिक विषयाची प्रत लेखाधिकाऱ्यांना", "वरिष्ठ कार्यालयाला नेहमी माहितीस्तव")</span><textarea class="f" id="of-r" rows="4">' + esc(o.rules) + '</textarea>' +
+      '<div class="row"><button class="btn gold wide" id="of-ok">' + ico('check') + 'जतन</button></div>', function (bx) {
+      function grab() {
+        o.name = bx.querySelector('#of-n').value.trim(); o.addr = bx.querySelector('#of-a').value.trim(); o.jp = bx.querySelector('#of-jp').value.trim();
+        o.jn = +bx.querySelector('#of-jn').value || 0; o.dist = bx.querySelector('#of-d').value.trim(); o.rules = bx.querySelector('#of-r').value.trim();
+        o.lhTop = +bx.querySelector('#of-t').value || 0; o.lhBot = +bx.querySelector('#of-b').value || 0;
+        bx.querySelectorAll('.ofr').forEach(function (r) { var a = o.off[+r.dataset.i]; if (a) { a.n = r.querySelector('[data-k=n]').value.trim(); a.d = r.querySelector('[data-k=d]').value.trim(); } });
+      }
+      function redo() { grab(); offSave(); closeDlg(); officeDlg(after); }
+      bx.querySelector('#of-lh').onclick = function () { grab(); pickImgFile(function (b) { DB.putB('office:lh', b).then(function () { o.lh = true; offSave(); closeDlg(); officeDlg(after); }); }); };
+      var lx = bx.querySelector('#of-lhx'); if (lx) lx.onclick = function () { o.lh = false; DB.delB('office:lh'); redo(); };
+      bx.querySelector('#of-add').onclick = function () { grab(); o.off.push({ n: '', d: '', sig: false }); redo(); };
+      bx.addEventListener('click', function (e) {
+        var s = e.target.closest('[data-sg]'), r = e.target.closest('[data-rm]');
+        if (s) { grab(); var i = +s.dataset.sg; pickImgFile(function (b) { DB.putB('office:sig' + i, b).then(function () { o.off[i].sig = true; offSave(); closeDlg(); officeDlg(after); }); }); }
+        if (r) { grab(); var j = +r.dataset.rm; o.off.splice(j, 1); redo(); }
+      });
+      bx.querySelector('#of-ok').onclick = function () { grab(); o.off = o.off.filter(function (a) { return a.n || a.d; }); offSave(); closeDlg(); toast('कार्यालय माहिती जतन झाली'); if (after) setTimeout(after, 250); };
+    });
+  }
+
+  /** पहिली पायरी: पत्र कसे द्यायचे */
+  function letterStart() {
+    var o = offLoad();
+    if (!o.off.length) { toast('आधी कार्यालय माहिती व अधिकारी भरा', 3000); officeDlg(letterStart); return; }
+    needAI().then(function () {
+      openDlg('<h3>पत्र सहायक</h3><p class="s">आलेले पत्र वाचून प्रत, माहितीस्तव, सही व उत्तराचा मसुदा सुचवतो. तुम्ही तपासून मंजूर करायचे.</p>' +
+        '<button class="mi" data-k="cam"><i class="c-pri">' + ico('cam') + '</i><div>पत्र स्कॅन करा<small>एक पान कॅमेऱ्याने</small></div></button>' +
+        '<button class="mi" data-k="doc"><i class="c-navy">' + ico('file') + '</i><div>आधी स्कॅन केलेला दस्त निवडा<small>अनेक पानांचे पत्र असल्यास</small></div></button>' +
+        '<button class="mi" data-k="reg"><i class="c-ok">' + ico('list') + '</i><div>जावक नोंदवही<small>आतापर्यंतची उत्तरे, Excel मध्ये</small></div></button>' +
+        '<button class="mi" data-k="off"><i class="c-ai">' + ico('set') + '</i><div>कार्यालय माहिती<small>अधिकारी, सही, लेटरहेड, नियम</small></div></button>', function (bx) {
+        bx.addEventListener('click', function (e) {
+          var b = e.target.closest('.mi'); if (!b) return; closeDlg(); var k = b.dataset.k;
+          if (k === 'off') return officeDlg();
+          if (k === 'reg') return regDlg();
+          if (k === 'cam') return openCam(null, 'doc', function (blob) { letterRead([blob]); }, 'पत्र चौकटीत धरा');
+          chooseDoc(function (d) { docPageBlobs(d, 4).then(letterRead); });
+        });
+      });
+    }).catch(fail);
+  }
+  function chooseDoc(cb) {
+    var l = DOCS.filter(function (d) { return d.kind !== 'pdf'; }).slice(0, 12);
+    if (!l.length) { toast('आधी पत्र स्कॅन करा'); return; }
+    openDlg('<h3>दस्त निवडा</h3>' + l.map(function (d, i) { return '<button class="mi" data-i="' + i + '"><i class="c-pri">' + ico('file') + '</i><div>' + esc(d.name) + '<small>' + d.pages.length + ' पान • ' + fdate(d.updated) + '</small></div></button>'; }).join(''), function (bx) {
+      bx.addEventListener('click', function (e) { var b = e.target.closest('.mi'); if (!b) return; closeDlg(); cb(l[+b.dataset.i]); });
+    });
+  }
+  function docPageBlobs(d, max) {
+    return Promise.all(d.pages.slice(0, max).map(function (p) { return DB.getB(p.id + ':p'); }));
+  }
+  function blobsToImgs(bl) {
+    return Promise.all(bl.map(function (b) { return blobToCanvas(b, 1700).then(function (c) { return toJpeg(c, 0.85); }).then(blobToB64).then(function (x) { return { b64: x, mime: 'image/jpeg' }; }); }));
+  }
+
+  function letterPrompt(o) {
+    return 'तू एका शासकीय कार्यालयाचा पत्रव्यवहार सहायक आहेस. जोडलेले आलेले (आवक) पत्र अतिशय काळजीपूर्वक वाच (मराठी / हिंदी / इंग्रजी) आणि त्याला कार्यालयातर्फे उत्तराचा मसुदा तयार कर.\n' +
+      'कार्यालय: ' + o.name + '\n' +
+      'सही करू शकणारे अधिकारी (यातीलच एक निवड): ' + o.off.map(function (a, i) { return i + ') ' + a.n + ', ' + a.d; }).join(' | ') + '\n' +
+      'प्रत / माहितीस्तव द्यायची कार्यालये (यातीलच निवड; पत्रात स्पष्ट लिहिलेली प्रतही घे): ' + (o.dist.replace(/\n+/g, ' | ') || 'यादी दिलेली नाही, फक्त पत्रात नमूद असलेली घे') + '\n' +
+      'कार्यालयाचे नियम: ' + (o.rules || 'नाहीत') + '\n' +
+      'पूर्वी झालेल्या सुधारणा (यातून शिक: ) ' + ((o.learn || []).join('; ') || 'नाहीत') + '\n' +
+      'कडक नियम: १) नावे, पदनामे, क्रमांक, दिनांक, रकमा, पत्त्याचे तपशील पत्रातून अक्षरशः जसेच्या तसे घे. २) पत्रात नसलेली माहिती कधीही रचू नको; माहिती हवी असल्यास मसुद्यात [____] रिकामी जागा ठेव. ३) अस्पष्ट किंवा वाचता न आलेले सर्व भाग "uncertain" मध्ये लिही. ४) प्रत्येक प्रत / सहीच्या निर्णयाला "reason" (एका ओळीचे कारण) दे. ५) kind मध्ये फक्त "कार्यवाहीस्तव" किंवा "माहितीस्तव" किंवा "प्रत" यापैकी एक. ६) उत्तर शासकीय मराठीत, सौजन्यपूर्ण व थोडक्यात. ७) उत्तराची गरज नसेल तर reply_needed=false.\n' +
+      'फक्त JSON द्या: {"from":"पत्र पाठवणारे कार्यालय","ref":"पत्राचा क्रमांक व दिनांक","subject":"पत्राचा विषय","summary":"2 ओळींत सार","action":"आपल्याला काय करायचे","deadline":"मुदत किंवा रिकामे","reply_needed":true,"to":"उत्तर ज्यांना जाणार (पदनाम, कार्यालय, पत्ता)","reply_subject":"उत्तराचा विषय","reply_ref":"संदर्भ ओळ","body":"उत्तराचा पूर्ण मजकूर (संबोधन ते शेवटचा परिच्छेद, \\n ने परिच्छेद वेगळे)","copies":[{"who":"","kind":"","reason":""}],"signer":{"idx":0,"reason":""},"confidence":0.0,"uncertain":["..."]}';
+  }
+
+  var LET = null;
+  function letterRead(bl) {
+    var o = offLoad(); bl = bl.filter(Boolean);
+    if (!bl.length) { toast('पत्राचा फोटो मिळाला नाही'); return; }
+    busy('पत्र वाचत आहे…', 'Gemini • पहिली फेरी');
+    blobsToImgs(bl).then(function (imgs) {
+      return api('ai', { task: 'chat', json: true, prompt: letterPrompt(o), images: imgs }).then(function (r) {
+        busy('मसुदा तपासत आहे…', 'Gemini • दुसरी फेरी');
+        var chk = 'खालील मसुदा वर जोडलेल्या मूळ पत्रानुसार तपास. नावे, क्रमांक, दिनांक, रकमा, पदनामे, संदर्भ मूळ पत्राशी जुळतात का? प्रत / माहितीस्तव व सही योग्य वाटते का? चुका असतील तर यादी करा. JSON: {"ok":true/false,"issues":["..."]}. मसुदा: ' + JSON.stringify(r);
+        return api('ai', { task: 'chat', json: true, prompt: chk, images: imgs }).then(function (v) { return { r: r, v: v }; }, function () { return { r: r, v: { ok: null, issues: [] } }; });
+      });
+    }).then(function (x) {
+      done();
+      var r = x.r || {}, si = r.signer && +r.signer.idx; if (!(si >= 0 && si < o.off.length)) si = 0;
+      LET = {
+        blobs: bl, r: r, v: x.v || {}, aiSigner: si, aiCopies: JSON.stringify(r.copies || []),
+        d: { to: r.to || '', subj: r.reply_subject || r.subject || '', ref: r.reply_ref || (r.ref ? 'आपले पत्र क्र. ' + r.ref : ''), body: r.body || '', signer: si, copies: (r.copies || []).map(function (c) { return { who: c.who, kind: c.kind || 'माहितीस्तव', reason: c.reason || '' }; }), no: nextJawak(), date: today() }
+      };
+      letterReview();
+    }).catch(fail);
+  }
+
+  function letterReview() {
+    var L = LET, o = offLoad(), d = L.d, r = L.r, v = L.v, conf = Math.round((+r.confidence || 0) * 100);
+    var warn = [].concat(r.uncertain || [], v.ok === false ? (v.issues || []) : []).filter(Boolean);
+    openDlg('<h3>उत्तराचा मसुदा</h3>' +
+      '<div class="lcard"><b>' + esc(r.from || 'आलेले पत्र') + '</b><small>' + esc(r.ref || '') + '</small><p>' + esc(r.summary || '') + '</p>' + (r.action ? '<p><b>करायचे:</b> ' + esc(r.action) + '</p>' : '') + (r.deadline ? '<p><b>मुदत:</b> ' + esc(r.deadline) + '</p>' : '') +
+      '<span class="lbd ' + (conf >= 85 && !warn.length ? 'g' : 'y') + '">AI खात्री ' + conf + '%' + (v.ok === true ? ' • दुसऱ्या फेरीत जुळले' : '') + '</span></div>' +
+      (r.reply_needed === false ? '<p class="hint">AI च्या मते या पत्राला उत्तराची गरज नाही; हवे असल्यास खाली मसुदा वापरा.</p>' : '') +
+      (warn.length ? '<div class="lwarn"><b>याची खात्री करा:</b><ul>' + warn.map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul></div>' : '') +
+      '<span class="fl">जावक क्रमांक / दिनांक</span><div class="row"><input class="f" id="lt-no" value="' + esc(d.no) + '"><input class="f" id="lt-dt" value="' + esc(d.date) + '"></div>' +
+      '<span class="fl">प्रति</span><textarea class="f" id="lt-to" rows="3">' + esc(d.to) + '</textarea>' +
+      '<span class="fl">विषय</span><textarea class="f" id="lt-sub" rows="2">' + esc(d.subj) + '</textarea>' +
+      '<span class="fl">संदर्भ</span><textarea class="f" id="lt-ref" rows="2">' + esc(d.ref) + '</textarea>' +
+      '<span class="fl">मजकूर</span><textarea class="f" id="lt-body" rows="10">' + esc(d.body) + '</textarea>' +
+      '<span class="fl">सही कोणाची</span><div id="lt-sg">' + o.off.map(function (a, i) { return '<label class="lsg"><input type="radio" name="lsg" value="' + i + '"' + (i === d.signer ? ' checked' : '') + '><span><b>' + esc(a.n) + '</b> ' + esc(a.d) + (i === L.aiSigner && r.signer && r.signer.reason ? '<small>AI: ' + esc(r.signer.reason) + '</small>' : '') + '</span></label>'; }).join('') + '</div>' +
+      '<span class="fl">प्रत / माहितीस्तव</span><div id="lt-cp">' + d.copies.map(copyRow).join('') + '</div>' +
+      '<div class="row"><button class="btn ghost wide" id="lt-cadd">' + ico('plus') + 'प्रत जोडा</button></div>' +
+      '<div class="row"><button class="btn gold wide" id="lt-mk">' + ico('pdf') + 'लेटरहेडवर पत्र बनवा</button></div>' +
+      '<div class="row"><button class="btn ghost wide" id="lt-re">' + ico('wand') + 'पुन्हा वाचा / दुसरे पत्र</button></div>' +
+      '<p class="hint">मसुदा AI ने बनवला आहे. सही करण्यापूर्वी स्वतः वाचून खात्री करा.</p>', function (bx) {
+      function grab() {
+        d.no = bx.querySelector('#lt-no').value.trim(); d.date = bx.querySelector('#lt-dt').value.trim(); d.to = bx.querySelector('#lt-to').value.trim();
+        d.subj = bx.querySelector('#lt-sub').value.trim(); d.ref = bx.querySelector('#lt-ref').value.trim(); d.body = bx.querySelector('#lt-body').value.trim();
+        var sg = bx.querySelector('input[name=lsg]:checked'); d.signer = sg ? +sg.value : 0;
+        d.copies = Array.prototype.map.call(bx.querySelectorAll('.lcp'), function (e) { return { who: e.querySelector('input').value.trim(), kind: e.querySelector('select').value }; }).filter(function (c) { return c.who; });
+      }
+      bx.querySelector('#lt-cp').addEventListener('click', function (e) { var x = e.target.closest('[data-x]'); if (x) { x.closest('.lcp').remove(); } });
+      bx.querySelector('#lt-cadd').onclick = function () { bx.querySelector('#lt-cp').insertAdjacentHTML('beforeend', copyRow({ who: '', kind: 'माहितीस्तव' })); };
+      bx.querySelector('#lt-re').onclick = function () { closeDlg(); letterStart(); };
+      bx.querySelector('#lt-mk').onclick = function () { grab(); closeDlg(); letterMake(); };
+    });
+  }
+  function copyRow(c) {
+    return '<div class="lcp"><input class="f" value="' + esc(c.who) + '" placeholder="कार्यालय / पदनाम"><select class="f">' + ['माहितीस्तव', 'कार्यवाहीस्तव', 'प्रत'].map(function (k) { return '<option' + (k === c.kind ? ' selected' : '') + '>' + k + '</option>'; }).join('') + '</select><button class="btn danger" data-x>' + ico('x') + '</button></div>';
+  }
+
+  /** मजकूर रुंदीनुसार ओळींत तोडणे */
+  function wrapLines(x, text, maxW) {
+    var out = [];
+    String(text || '').split('\n').forEach(function (para) {
+      if (!para.trim()) { out.push(''); return; }
+      var words = para.split(/\s+/), line = '';
+      words.forEach(function (w) {
+        var t = line ? line + ' ' + w : w;
+        if (x.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t;
+      });
+      if (line) out.push(line);
+    });
+    return out;
+  }
+  /** A4 (200 dpi) वर पत्र काढणे; लेटरहेड फोटो असेल तर पार्श्वभूमी म्हणून */
+  function letterRender() {
+    var o = offLoad(), d = LET.d, W = 1654, H = 2339, ML = 170, MR = 150, pages = [], sg = o.off[d.signer] || { n: '', d: '' };
+    return Promise.all([o.lh ? DB.getB('office:lh') : null, sg.sig ? DB.getB('office:sig' + d.signer) : null]).then(function (r) {
+      return Promise.all([r[0] ? loadImg(r[0]) : null, r[1] ? loadImg(r[1]) : null]);
+    }).then(function (im) {
+      var lh = im[0], sig = im[1], c, x, y, bottom;
+      var FS = 40, LHT = FS * 1.75;
+      function newPage() {
+        c = canvas(W, H); x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); x.fillStyle = '#111'; x.textBaseline = 'top';
+        if (lh) { x.drawImage(lh, 0, 0, W, H); y = H * (o.lhTop || 0) / 100 + 40; }
+        else {
+          y = 120; x.textAlign = 'center'; x.font = '700 54px ' + MFONT; x.fillText(o.name, W / 2, y); y += 78;
+          x.font = '400 32px ' + MFONT; wrapLines(x, o.addr, W - 400).forEach(function (l) { x.fillText(l, W / 2, y); y += 44; });
+          x.strokeStyle = '#111'; x.lineWidth = 3; x.beginPath(); x.moveTo(ML, y + 8); x.lineTo(W - MR, y + 8); x.stroke(); y += 50; x.textAlign = 'left';
+        }
+        bottom = H - H * (o.lhBot || 8) / 100;
+        pages.push(c);
+      }
+      function text(t, font, indent, gap) {
+        x.font = font; x.textAlign = 'left';
+        wrapLines(x, t, W - ML - MR - (indent || 0)).forEach(function (l) {
+          if (y + LHT > bottom) newPage(), x.font = font;
+          x.fillText(l, ML + (indent || 0), y); y += LHT;
+        });
+        y += gap || 0;
+      }
+      newPage();
+      x.font = '400 ' + FS + 'px ' + MFONT; x.fillText('जा.क्र.: ' + d.no, ML, y); x.textAlign = 'right'; x.fillText('दिनांक: ' + d.date, W - MR, y); x.textAlign = 'left'; y += LHT + 20;
+      text('प्रति,', '700 ' + FS + 'px ' + MFONT, 0, 0); text(d.to, '400 ' + FS + 'px ' + MFONT, 40, 18);
+      if (d.subj) text('विषय: ' + d.subj, '700 ' + FS + 'px ' + MFONT, 0, 8);
+      if (d.ref) text('संदर्भ: ' + d.ref, '400 ' + FS + 'px ' + MFONT, 0, 18);
+      text(d.body, '400 ' + FS + 'px ' + MFONT, 0, 30);
+      /* सही: शेवटच्या ओळीपासून वेगळे होऊ नये */
+      var sgH = 150 + LHT * 2 + 20;
+      if (y + sgH > bottom) newPage();
+      var sx = W - MR - 520;
+      if (sig) { var sh = 130, sw = Math.min(500, sig.width * sh / sig.height); x.drawImage(sig, sx + (500 - sw) / 2, y, sw, sw * sig.height / sig.width); y += sh + 10; } else y += 110;
+      x.textAlign = 'center'; x.font = '700 ' + FS + 'px ' + MFONT; x.fillText(sg.n, sx + 250, y); y += LHT;
+      x.font = '400 ' + (FS - 4) + 'px ' + MFONT; wrapLines(x, sg.d + (o.name ? ', ' + o.name : ''), 500).forEach(function (l) { x.fillText(l, sx + 250, y); y += LHT - 6; });
+      x.textAlign = 'left'; y += 30;
+      if (d.copies.length) {
+        if (y + LHT * 2 > bottom) newPage();
+        text('प्रत,', '700 ' + (FS - 4) + 'px ' + MFONT, 0, 0);
+        d.copies.forEach(function (cp, i) { text((i + 1) + ') ' + cp.who + ' — ' + cp.kind, '400 ' + (FS - 4) + 'px ' + MFONT, 40, 0); });
+      }
+      return Promise.all(pages.map(function (p) { return toJpeg(p, 0.92); }));
+    });
+  }
+  function letterMake() {
+    var o = offLoad(), L = LET, d = L.d;
+    busy('पत्र बनत आहे…', 'लेटरहेडवर');
+    letterRender().then(function (blobs) {
+      /* क्रमांक पुढे सरकवणे व नोंदवहीत नोंद */
+      var n = parseInt(String(d.no).split('/').filter(function (z) { return /^\d+$/.test(z) && z.length <= 4; })[0], 10); if (n && n > (o.jn || 0)) o.jn = n;
+      /* सुधारणांतून शिकणे */
+      var learn = o.learn || [], sub = L.r.subject || d.subj;
+      if (d.signer !== L.aiSigner) learn.push('"' + String(sub).slice(0, 50) + '" सारख्या पत्राला सही ' + (o.off[d.signer] || {}).n + ' यांची असते (AI ने ' + (o.off[L.aiSigner] || {}).n + ' सुचवले होते)');
+      var was = (JSON.parse(L.aiCopies) || []).map(function (c) { return c.who; }), now = d.copies.map(function (c) { return c.who; });
+      now.filter(function (w) { return was.indexOf(w) < 0; }).forEach(function (w) { learn.push('"' + String(sub).slice(0, 50) + '" सारख्या पत्राची प्रत ' + w + ' यांना द्यावी'); });
+      was.filter(function (w) { return now.indexOf(w) < 0; }).forEach(function (w) { learn.push('"' + String(sub).slice(0, 50) + '" सारख्या पत्राची प्रत ' + w + ' यांना देऊ नये'); });
+      o.learn = learn.slice(-15); offSave();
+      var reg = []; try { reg = JSON.parse(LS.get('sm-reg') || '[]'); } catch (e) { reg = []; }
+      reg.push({ no: d.no, date: d.date, from: L.r.from || '', ref: L.r.ref || '', subj: d.subj, to: d.to.replace(/\n/g, ', '), sign: (o.off[d.signer] || {}).n || '', copies: d.copies.map(function (c) { return c.who + ' (' + c.kind + ')'; }).join('; ') });
+      LS.set('sm-reg', JSON.stringify(reg.slice(-500)));
+      var items = blobs.map(function (b) { return { blob: b, quad: fullQuad(), rot: 0, filter: 'orig' }; });
+      return addPages(items, null, 'उत्तर', false).then(function () {
+        CUR.name = 'उत्तर ' + String(d.subj || 'पत्र').slice(0, 40); CUR.named = 1; CUR.updated = Date.now();
+        return DB.put(CUR);
+      });
+    }).then(function () { done(); showDoc(CUR); toast('पत्र तयार. खाली PDF शेअर करा.', 3500); }).catch(fail);
+  }
+  function regDlg() {
+    var reg = []; try { reg = JSON.parse(LS.get('sm-reg') || '[]'); } catch (e) { reg = []; }
+    openDlg('<h3>जावक नोंदवही</h3><p class="s">' + reg.length + ' नोंदी</p>' + reg.slice(-8).reverse().map(function (r) { return '<div class="lcard"><b>' + esc(r.no) + ' • ' + esc(r.date) + '</b><small>' + esc(r.subj) + '</small><small>प्रति: ' + esc(r.to) + '</small></div>'; }).join('') +
+      '<div class="row"><button class="btn gold wide" id="rg-x">' + ico('xls') + 'Excel म्हणून डाउनलोड</button></div>', function (bx) {
+      bx.querySelector('#rg-x').onclick = function () {
+        if (!reg.length) { toast('नोंदी नाहीत'); return; }
+        var rows = [['जावक क्र.', 'दिनांक', 'कोणाकडून आले', 'संदर्भ', 'विषय', 'प्रति', 'सही', 'प्रत / माहितीस्तव']].concat(reg.map(function (r) { return [r.no, r.date, r.from, r.ref, r.subj, r.to, r.sign, r.copies]; }));
+        deliver(buildXlsx(rows), 'जावक-नोंदवही.xlsx', false);
+      };
+    });
+  }
+  $('b-let').addEventListener('click', letterStart);
+  ACTS.letter = function () { if (CUR.kind === 'pdf') { toast('आधी पानांत रूपांतर करा'); return; } needAI().then(function () { return docPageBlobs(CUR, 4); }).then(function (bl) { if (!offLoad().off.length) { toast('आधी कार्यालय माहिती भरा'); officeDlg(function () { letterRead(bl); }); } else letterRead(bl); }).catch(fail); };
+
+  /** संवेदनशील माहिती (आधार, PAN, मोबाईल, खाते / कार्ड क्रमांक, ईमेल) AI ने शोधून काळ्या पट्टीने लपवणे */
+  function actRedact() {
+    if (CUR.kind === 'pdf') { toast('आधी पानांत रूपांतर करा'); return; }
+    needAI().then(function () {
+      var d = CUR, i = 0, total = 0;
+      function next() {
+        if (i >= d.pages.length) return Promise.resolve();
+        var pg = d.pages[i++]; busy('संवेदनशील माहिती शोधत आहे…', 'पान ' + i + ' / ' + d.pages.length);
+        return DB.getB(pg.id + ':p').then(function (b) { return blobToCanvas(b, 1600); }).then(function (c) { return toJpeg(c, 0.85); }).then(blobToB64).then(function (b64) {
+          return api('ai', { task: 'chat', json: true, prompt: 'या कागदावरील खाजगी माहिती शोध: आधार क्रमांक, PAN, मोबाईल / फोन क्रमांक, बँक खाते क्रमांक, कार्ड क्रमांक, ईमेल, जन्मतारीख, घराचा पत्ता. प्रत्येकीसाठी फक्त त्या क्रमांकाची / मजकुराची चौकट द्या. JSON: {"items":[{"label":"आधार","box":[ymin,xmin,ymax,xmax]}]}. box चे मूल्य 0 ते 1000 (पानाच्या उंची / रुंदीचे हजारावे). काही नसेल तर items रिकामे.', images: [{ b64: b64, mime: 'image/jpeg' }] });
+        }).then(function (r) {
+          var it = (r && r.items) || [], n = 0; pg.marks = pg.marks || [];
+          it.forEach(function (m) {
+            var b = m.box; if (!b || b.length !== 4) return;
+            var y0 = Math.max(0, b[0] / 1000 - 0.004), x0 = Math.max(0, b[1] / 1000 - 0.006), y1 = Math.min(1, b[2] / 1000 + 0.004), x1 = Math.min(1, b[3] / 1000 + 0.006);
+            if (y1 <= y0 || x1 <= x0 || (x1 - x0) * (y1 - y0) > 0.25) return;
+            pg.marks.push({ t: 'rect', x: x0, y: y0, w: x1 - x0, h: y1 - y0, bg: '#000' }); n++;
+          });
+          total += n; return n ? processPage(pg) : 0;
+        }).then(next);
+      }
+      return next().then(function () { d.text = null; d.updated = Date.now(); return DB.put(d); }).then(function () { done(); renderDoc(); toast(total ? total + ' ठिकाणी माहिती लपवली. पान उघडून तपासा.' : 'लपवण्यासारखी माहिती सापडली नाही', 3500); });
+    }).catch(fail);
+  }
+  ACTS.redact = actRedact;
+
+  /** पासपोर्ट / व्हिसा फोटो शीट: चेहरा चौकटीत सरकवा, पांढरी पार्श्वभूमी (AI), 4x6 इंच शीटवर अनेक प्रती */
+  function actPhoto() {
+    if (CUR.kind === 'pdf') { toast('आधी पानांत रूपांतर करा'); return; }
+    var SZ = { '35x45': [35, 45], '51x51': [51, 51], '25x35': [25, 35] }, st = { z: 1, x: 0.5, y: 0.45, s: '35x45', img: null };
+    openDlg('<h3>पासपोर्ट फोटो शीट</h3><p class="s">दस्ताचे पहिले पान वापरले जाते (फोटो असलेले). चेहरा चौकटीत येईल असे सरकवा.</p>' +
+      '<canvas id="pf-c" width="300" height="386" style="width:100%;max-width:300px;display:block;margin:0 auto 10px;border-radius:12px;border:1px solid var(--line)"></canvas>' +
+      '<span class="fl">आकार (मिमी)</span>' + optGroup('pfs', [['35x45', '35×45'], ['51x51', '51×51'], ['25x35', '25×35']], '35x45') +
+      '<span class="fl">मोठे / लहान</span><input type="range" id="pf-z" min="100" max="400" value="100">' +
+      '<span class="fl">डावीकडे ↔ उजवीकडे</span><input type="range" id="pf-x" min="0" max="100" value="50">' +
+      '<span class="fl">वर ↕ खाली</span><input type="range" id="pf-y" min="0" max="100" value="45">' +
+      '<div class="row"><button class="btn ghost wide" id="pf-bg"><sup class="aib">AI</sup>' + ico('wand') + 'पार्श्वभूमी पांढरी करा</button></div>' +
+      '<div class="row"><button class="btn gold wide" id="pf-ok">' + ico('check') + 'शीट बनवा</button></div>', function (bx) {
+      var cv = bx.querySelector('#pf-c');
+      function box() { var a = SZ[st.s], im = st.img, cw = im.width, ch = im.height, r = a[0] / a[1], w = Math.min(cw, ch * r) / st.z, h = w / r; return { w: w, h: h, x: Math.max(0, Math.min(cw - w, st.x * cw - w / 2)), y: Math.max(0, Math.min(ch - h, st.y * ch - h / 2)) }; }
+      function draw() {
+        if (!st.img) return; var a = SZ[st.s]; cv.height = Math.round(cv.width * a[1] / a[0]); var b = box();
+        cv.getContext('2d').drawImage(st.img, b.x, b.y, b.w, b.h, 0, 0, cv.width, cv.height);
+      }
+      DB.getB(CUR.pages[0].id + ':p').then(function (b) { return blobToCanvas(b, 2000); }).then(function (c) { st.img = c; draw(); });
+      bindOpts(bx);
+      bx.querySelector('[data-g=pfs]').addEventListener('click', function () { st.s = optVal(bx, 'pfs'); draw(); });
+      ['z', 'x', 'y'].forEach(function (k) { bx.querySelector('#pf-' + k).addEventListener('input', function () { st[k] = k === 'z' ? this.value / 100 : this.value / 100; draw(); }); });
+      bx.querySelector('#pf-bg').onclick = function () {
+        needAI().then(function () { busy('पार्श्वभूमी बदलत आहे…', 'AI (Gemini)'); return toJpeg(fitCanvas(st.img, 1400), 0.9); }).then(blobToB64).then(function (b64) {
+          return api('image', { prompt: 'या व्यक्तीचा फोटो तसाच ठेवा (चेहरा, केस, कपडे अजिबात बदलू नका), फक्त पार्श्वभूमी एकसंध शुद्ध पांढरी करा. पासपोर्ट फोटोसारखा.', b64: b64, mime: 'image/jpeg' });
+        }).then(function (r) { return blobToCanvas(b64ToBlob(r.b64, r.mime || 'image/png'), 2000); }).then(function (c) { st.img = c; done(); draw(); toast('पार्श्वभूमी पांढरी झाली'); }).catch(fail);
+      };
+      bx.querySelector('#pf-ok').onclick = function () {
+        var a = SZ[st.s], b = box(), dpi = 300, pw = Math.round(a[0] / 25.4 * dpi), ph = Math.round(a[1] / 25.4 * dpi), gap = 24;
+        var one = canvas(pw, ph); one.getContext('2d').drawImage(st.img, b.x, b.y, b.w, b.h, 0, 0, pw, ph);
+        var S = canvas(1200, 1800), x = S.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 1200, 1800);
+        var cols = Math.max(1, Math.floor((1200 - gap) / (pw + gap))), rows = Math.max(1, Math.floor((1800 - gap) / (ph + gap))), ox = (1200 - (cols * (pw + gap) - gap)) / 2, oy = (1800 - (rows * (ph + gap) - gap)) / 2;
+        for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) { var px = ox + c * (pw + gap), py = oy + r * (ph + gap); x.drawImage(one, px, py); x.strokeStyle = '#cfd4dc'; x.lineWidth = 1; x.strokeRect(px, py, pw, ph); }
+        closeDlg(); busy('शीट बनत आहे…');
+        toJpeg(S, 0.95).then(function (jb) { return addPages([{ blob: jb, quad: fullQuad(), filter: 'orig' }], null, 'फोटो शीट', true); }).then(function () { toast(cols * rows + ' फोटो असलेली 4×6 शीट बनली', 3500); }).catch(fail);
+      };
+    });
+  }
+  ACTS.photo = actPhoto;
 
   /* ---------- मुख्य बटणे (v3) ---------- */
   $('b-psp').addEventListener('click', function () { openCam(null, 'pass'); });
@@ -2943,7 +3467,7 @@ function uni2kruti(s){
   }
   var LK = { v: '' };
   function lkDots() { $('lk-d').querySelectorAll('i').forEach(function (d, i) { d.classList.toggle('f', i < LK.v.length); }); }
-  function lockShow() { if (!LS.get('sm-pin')) return; LK.v = ''; lkDots(); $('lock').classList.add('on'); }
+  function lockShow() { if (!LS.get('sm-pin')) return; LK.v = ''; lkDots(); $('lock').classList.add('on'); var bb = $('lk-bio'); if (bb) bb.style.display = LS.get('sm-bio') ? 'block' : 'none'; if (LS.get('sm-bio')) setTimeout(bioUnlock, 350); }
   (function () {
     $('lk-p').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(function (k) { return k === '' ? '<span></span>' : '<button data-k="' + k + '">' + k + '</button>'; }).join('');
     $('lk-p').addEventListener('click', function (e) {
@@ -2956,11 +3480,31 @@ function uni2kruti(s){
       });
     });
   })();
+  /* ---------- Face ID / फिंगरप्रिंट (WebAuthn; PIN कायम राहतो) ---------- */
+  function b2u(a) { return btoa(String.fromCharCode.apply(null, new Uint8Array(a))); }
+  function u2b(t) { var s = atob(t), u = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
+  function bioOk() { return !!(window.PublicKeyCredential && navigator.credentials && window.isSecureContext); }
+  function bioEnable() {
+    if (!bioOk()) { toast('या फोनवर Face ID / फिंगरप्रिंट उपलब्ध नाही'); return Promise.resolve(false); }
+    return navigator.credentials.create({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'ScanOS' }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'scanos', displayName: 'ScanOS' }, pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' }, timeout: 60000 } })
+      .then(function (c) { LS.set('sm-bio', b2u(c.rawId)); return true; }, function () { toast('Face ID / फिंगरप्रिंट चालू झाले नाही'); return false; });
+  }
+  function bioUnlock() {
+    var id = LS.get('sm-bio'); if (!id || !bioOk()) return;
+    navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: 'public-key', id: u2b(id) }], userVerification: 'required', timeout: 60000 } })
+      .then(function () { $('lock').classList.remove('on'); LK.v = ''; lkDots(); }, function () {});
+  }
+  (function () {
+    var b = document.createElement('button'); b.id = 'lk-bio'; b.textContent = 'Face ID / फिंगरप्रिंट वापरा'; b.style.cssText = 'margin-top:14px;background:none;border:0;color:#e0b44a;font-weight:700;font-size:15px;display:none';
+    $('lk-p').parentNode.appendChild(b); b.addEventListener('click', bioUnlock);
+  })();
+
   function pinDlg() {
     var has = !!LS.get('sm-pin');
     openDlg('<h3>PIN लॉक</h3><p class="s">ॲप उघडताना 4 अंकी PIN विचारला जाईल. PIN विसरलात तर ॲप डेटा पुसून नव्याने सुरू करावा लागतो (दस्त जातील), म्हणून लक्षात ठेवा.</p>' +
       '<span class="fl">नवा PIN (4 अंक)</span><input class="f" id="pn1" type="password" inputmode="numeric" maxlength="4" autocomplete="off">' +
       '<span class="fl">पुन्हा तोच PIN</span><input class="f" id="pn2" type="password" inputmode="numeric" maxlength="4" autocomplete="off">' +
+      (has && bioOk() ? '<div class="row"><button class="btn ghost wide" id="pn-bio">' + ico('lock') + (LS.get('sm-bio') ? 'Face ID / फिंगरप्रिंट बंद करा' : 'Face ID / फिंगरप्रिंटने उघडा') + '</button></div>' : '') +
       '<div class="row">' + (has ? '<button class="btn ghost" id="pn-rm">PIN काढा</button>' : '') + '<button class="btn gold" id="pn-ok">' + ico('check') + 'ठेवा</button></div>', function (bx) {
       bx.querySelector('#pn-ok').onclick = function () {
         var a = bx.querySelector('#pn1').value, b = bx.querySelector('#pn2').value;
@@ -2968,7 +3512,8 @@ function uni2kruti(s){
         if (a !== b) { toast('दोन्ही PIN सारखे नाहीत'); return; }
         pinHash(a).then(function (h) { LS.set('sm-pin', h); closeDlg(); toast('PIN ठेवला'); });
       };
-      var rm = bx.querySelector('#pn-rm'); if (rm) rm.onclick = function () { LS.set('sm-pin', ''); closeDlg(); toast('PIN काढला'); };
+      var bi = bx.querySelector('#pn-bio'); if (bi) bi.onclick = function () { if (LS.get('sm-bio')) { LS.set('sm-bio', ''); closeDlg(); toast('बंद केले'); } else bioEnable().then(function (ok) { if (ok) { closeDlg(); toast('चालू झाले. पुढच्या वेळी लॉकवर दिसेल'); } }); };
+      var rm = bx.querySelector('#pn-rm'); if (rm) rm.onclick = function () { LS.set('sm-pin', ''); LS.set('sm-bio', ''); closeDlg(); toast('PIN काढला'); };
     });
   }
 
