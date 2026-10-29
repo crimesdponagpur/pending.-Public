@@ -1,6 +1,6 @@
 {
- "name": "झटपट",
- "short_name": "झटपट",
+ "name": "ScanOS",
+ "short_name": "ScanOS",
  "description": "कागद स्कॅन, PDF, Word, Excel, भाषांतर",
  "start_url": "./",
  "scope": "./",
