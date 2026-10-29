@@ -295,17 +295,15 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
 canvas.pad{width:100%;height:170px;border:1px dashed var(--line);border-radius:14px;background:#fff;touch-action:none;display:block}
 .pv2{width:100%;border:1px solid var(--line);border-radius:10px;display:block;margin:6px 0}
 
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;align-items:flex-end;justify-content:space-around;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;align-items:flex-end;justify-content:space-around;background:var(--card);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
 .tabs button{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;font-size:12px;font-weight:700;color:var(--muted);max-width:90px}
 .tabs button.on{color:var(--pri)}
 .tabs button svg{width:24px;height:24px}
 .tabs .scanb{flex:none;width:62px;height:62px;max-width:none;margin-top:-26px;border-radius:22px;background:var(--gold);color:#0b1f4b;justify-content:center;box-shadow:0 8px 22px rgba(200,150,26,.45)}
 .tabs .scanb svg{width:28px;height:28px}
 .lnk{border:0;background:none;color:var(--pri);font-weight:700;font-size:13.5px;padding:0}
-.tabp{animation:vin .2s ease}
-.view.on{animation:vin .2s ease}
-@keyframes vin{from{opacity:0}to{opacity:1}}
-.tool,.act,.dc,.pg,.tabs button{transition:transform .12s ease}
+html,button,a,input,label,.dc,.pg{touch-action:manipulation}
+.tool,.act,.dc,.pg,.tabs button{transition:transform .06s linear}
 .tool:active,.act:active,.dc:active,.pg:active{transform:scale(.96)}
 .pg{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .pg.tgt{outline:3px solid var(--gold);outline-offset:-3px}
@@ -1425,7 +1423,7 @@ function uni2kruti(s){
     TAB = t;
     document.querySelectorAll('#v-home .tabp').forEach(function (p) { p.hidden = p.dataset.tab !== t; });
     document.querySelectorAll('.tabs [data-tab]').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === t); });
-    window.scrollTo(0, 0);
+    if (window.scrollY) window.scrollTo(0, 0);
   }
   function renderHome() {
     return DB.all().then(function (all) {
@@ -1443,10 +1441,12 @@ function uni2kruti(s){
     });
   }
   $('v-home').addEventListener('click', function (e) {
-    var t = e.target.closest('[data-tab]'); if (t && t.closest('.tabs')) { setTab(t.dataset.tab); return; }
+    var t = e.target.closest('[data-tab]'); if (t && t.closest('.tabs')) { if (TAB !== t.dataset.tab) setTab(t.dataset.tab); return; }
     var g = e.target.closest('[data-go]'); if (g) { $(g.dataset.go).click(); return; }
     var tg = e.target.closest('[data-tab-go]'); if (tg) setTab(tg.dataset.tabGo);
   });
+  /* टॅब: बोट लागताच बदल (click ची वाट न पाहता) */
+  document.querySelector('.tabs').addEventListener('pointerdown', function (e) { var t = e.target.closest('[data-tab]'); if (t && TAB !== t.dataset.tab) setTab(t.dataset.tab); });
   $('q').addEventListener('keydown', function (e) { if (e.key === 'Enter') this.blur(); });
   $('q').addEventListener('input', function () { renderHome(); });
   $('v-home').addEventListener('click', function (e) { var b = e.target.closest('.dc'); if (b) openDoc(b.dataset.id); });
