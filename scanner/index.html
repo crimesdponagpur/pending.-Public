@@ -451,6 +451,7 @@ html,button,a,input,label,.dc,.pg{touch-action:manipulation}
    <button class="tool" id="b-meas"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-ruler"/></svg></i>मोजमाप</button>
    <button class="tool" id="b-cnt"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-count"/></svg></i>मोजणी</button>
    <button class="tool" id="b-mth"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-math"/></svg></i>गणित सोडवा</button>
+   <button class="tool" id="b-bk"><i style="background:var(--pri-l);color:var(--pri)"><svg class="i"><use href="#i-cloud"/></svg></i>Drive बॅकअप</button>
    <button class="tool" id="b-let"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-send"/></svg></i>पत्र सहायक</button>
    <button class="tool" id="b-ai"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-chat"/></svg></i>AI विचारा</button>
    </div>
@@ -598,6 +599,8 @@ html,button,a,input,label,.dc,.pg{touch-action:manipulation}
    <button class="act" data-a="letter"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-send"/></svg></i>उत्तर तयार करा</button>
    <button class="act" data-a="redact"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-hide"/></svg></i>खाजगी माहिती लपवा</button>
    <button class="act" data-a="photo"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-id"/></svg></i>पासपोर्ट फोटो शीट</button>
+   <button class="act" data-a="card"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-id"/></svg></i>कार्ड → संपर्क</button>
+   <button class="act" data-a="cmpdoc"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-cmp"/></svg></i>दोन कागद तुलना</button>
    <button class="act" data-a="hand"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-edit"/></svg></i>हस्तलिखित वाचा</button>
   </div>
   <h2><span>जतन व शेअर</span></h2>
@@ -3436,6 +3439,68 @@ function uni2kruti(s){
     });
   }
   ACTS.photo = actPhoto;
+
+  /* ---------- v4 (4): Drive बॅकअप, व्हिजिटिंग कार्ड → संपर्क, दोन कागदांची तुलना ---------- */
+  function docPdfBlob(d) {
+    if (d.kind === 'pdf') return DB.getB(d.id + ':pdf');
+    return buildPdf(d, { page: LS.get('sm-pdfpg') || 'a4' });
+  }
+  function backupAll() {
+    if (!apiUrl()) return fail(new Error('NOSRV'));
+    var todo = DOCS.filter(function (d) { return !d.bk || d.bk < d.updated; }), i = 0, ok = 0;
+    if (!todo.length) { toast('सर्व दस्तांचा बॅकअप आधीच झालेला आहे'); return; }
+    function next() {
+      if (i >= todo.length) return Promise.resolve();
+      var d = todo[i++]; busy('Drive बॅकअप…', i + ' / ' + todo.length + ' • ' + d.name);
+      return docPdfBlob(d).then(blobToB64).then(function (b64) { return api('save', { name: safeName(d.name) + '.pdf', mime: 'application/pdf', b64: b64 }); })
+        .then(function (r) { d.bk = Date.now(); d.drive = r.url; ok++; return DB.put(d); }).then(tick, function (e) { if (/KEY|NOSRV/.test(e.message)) throw e; }).then(next);
+    }
+    next().then(function () { done(); toast(ok + ' / ' + todo.length + ' दस्त Drive मध्ये ("ScanOS" फोल्डर) जतन झाले', 4000); renderHome(); }).catch(fail);
+  }
+  function vcard(j) {
+    var L = ['BEGIN:VCARD', 'VERSION:3.0', 'FN:' + (j.name || ''), 'N:' + (j.name || '') + ';;;;'];
+    if (j.org) L.push('ORG:' + j.org); if (j.desig) L.push('TITLE:' + j.desig);
+    [].concat(j.phones || []).forEach(function (t) { L.push('TEL;TYPE=WORK:' + t); });
+    [].concat(j.emails || []).forEach(function (t) { L.push('EMAIL:' + t); });
+    if (j.web) L.push('URL:' + j.web); if (j.address) L.push('ADR;TYPE=WORK:;;' + String(j.address).replace(/[\n;]/g, ' ') + ';;;;');
+    L.push('END:VCARD'); return new Blob([L.join('\r\n')], { type: 'text/vcard' });
+  }
+  function actCard() {
+    if (CUR.kind === 'pdf') { toast('आधी पानांत रूपांतर करा'); return; }
+    needAI().then(function () { busy('कार्ड वाचत आहे…', 'AI (Gemini)'); return docPageBlobs(CUR, 2); }).then(blobsToImgs).then(function (imgs) {
+      return api('ai', { task: 'chat', json: true, prompt: 'हे व्हिजिटिंग कार्ड आहे. JSON: {"name":"","desig":"","org":"","phones":[""],"emails":[""],"web":"","address":""}. जे कार्डवर नाही ते रिकामे ठेवा, काहीही रचू नका. फोन क्रमांक अंक जसेच्या तसे.', images: imgs });
+    }).then(function (j) {
+      done();
+      openDlg('<h3>संपर्क</h3><p class="s">तपासा, मग फोनच्या संपर्कांत जोडा (.vcf उघडा)</p>' +
+        '<span class="fl">नाव</span><input class="f" id="vc-n" value="' + esc(j.name) + '"><span class="fl">पद / संस्था</span><input class="f" id="vc-d" value="' + esc([j.desig, j.org].filter(Boolean).join(', ')) + '">' +
+        '<span class="fl">फोन</span><input class="f" id="vc-p" value="' + esc([].concat(j.phones || []).join(', ')) + '"><span class="fl">ईमेल</span><input class="f" id="vc-e" value="' + esc([].concat(j.emails || []).join(', ')) + '">' +
+        '<span class="fl">पत्ता</span><input class="f" id="vc-a" value="' + esc(j.address) + '"><div class="row"><button class="btn gold wide" id="vc-ok">' + ico('share') + 'संपर्क जतन / शेअर</button></div>', function (bx) {
+        bx.querySelector('#vc-ok').onclick = function () {
+          var g = function (k) { return bx.querySelector('#vc-' + k).value.trim(); };
+          var v = vcard({ name: g('n'), org: g('d'), phones: g('p').split(/[,;]\s*/).filter(Boolean), emails: g('e').split(/[,;]\s*/).filter(Boolean), address: g('a'), web: j.web });
+          closeDlg(); deliver(v, safeName(g('n') || 'संपर्क') + '.vcf', true);
+        };
+      });
+    }).catch(fail);
+  }
+  function actCompare() {
+    if (CUR.kind === 'pdf') { toast('आधी पानांत रूपांतर करा'); return; }
+    var A = CUR;
+    needAI().then(function () {
+      var l = DOCS.filter(function (d) { return d.kind !== 'pdf' && d.id !== A.id; }).slice(0, 12);
+      if (!l.length) { toast('तुलनेसाठी दुसरा दस्त नाही'); return; }
+      openDlg('<h3>कोणत्या दस्ताशी तुलना?</h3><p class="s">' + esc(A.name) + ' शी</p>' + l.map(function (d, i) { return '<button class="mi" data-i="' + i + '"><i class="c-pri">' + ico('file') + '</i><div>' + esc(d.name) + '<small>' + d.pages.length + ' पान</small></div></button>'; }).join(''), function (bx) {
+        bx.addEventListener('click', function (e) {
+          var b = e.target.closest('.mi'); if (!b) return; var B = l[+b.dataset.i]; closeDlg(); busy('तुलना करत आहे…', 'AI (Gemini)');
+          Promise.all([docPageBlobs(A, 3), docPageBlobs(B, 3)]).then(function (r) { return Promise.all([blobsToImgs(r[0]), blobsToImgs(r[1])]); }).then(function (r) {
+            return api('ai', { task: 'chat', prompt: 'पहिल्या ' + r[0].length + ' प्रतिमा "कागद अ" (' + A.name + ') च्या आणि पुढच्या ' + r[1].length + ' प्रतिमा "कागद ब" (' + B.name + ') च्या आहेत. दोन्हींतील फरक सविस्तर सांगा: बदललेले शब्द, आकडे, तारखा, रकमा, वाढलेले / गाळलेले परिच्छेद. प्रत्येक फरक अ मध्ये काय व ब मध्ये काय असे मराठीत यादीत द्या. फरक नसेल तर तसे सांगा. काहीही रचू नका.', images: r[0].concat(r[1]) });
+          }).then(function (t) { done(); showText(typeof t === 'string' ? t : (t.text || ''), 'तुलना', A.name + ' तुलना'); }).catch(fail);
+        });
+      });
+    }).catch(fail);
+  }
+  ACTS.card = actCard; ACTS.cmpdoc = actCompare;
+  $('b-bk') && $('b-bk').addEventListener('click', backupAll);
 
   /* ---------- मुख्य बटणे (v3) ---------- */
   $('b-psp').addEventListener('click', function () { openCam(null, 'pass'); });
