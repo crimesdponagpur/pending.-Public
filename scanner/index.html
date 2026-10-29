@@ -2849,7 +2849,22 @@ function uni2kruti(s){
   $('b-idc').addEventListener('click', function () { openCam(null, 'id'); });
   $('b-kru').addEventListener('click', function () { showText('', 'कृतिदेव ↔ Unicode', 'रूपांतर', '<p class="meta">कृतिदेव मजकूर पेस्ट करा व "कृतिदेव→Unicode" दाबा, किंवा Unicode मराठी टाकून "Unicode→कृतिदेव".</p>', 'kruti'); });
 
-  (function () { var sp = $('splash'), end = function () { sp.classList.add('off'); setTimeout(function () { sp.remove(); }, 700); }; sp.onclick = end; setTimeout(end, 3000); })();
+  /* उघडताना लोगो ॲनिमेशन: पहिल्यांदा, आणि ॲप बॅकग्राउंडमधून परत आल्यावरही */
+  (function () {
+    var tpl = $('splash').cloneNode(true), hiddenAt = 0;
+    function play(first) {
+      var sp = first ? $('splash') : tpl.cloneNode(true), t;
+      if (!first) { var old = $('splash'); if (old) old.remove(); document.body.appendChild(sp); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
+      var end = function () { clearTimeout(t); sp.classList.add('off'); setTimeout(function () { sp.remove(); }, 700); };
+      sp.onclick = end; t = setTimeout(end, first ? 3000 : 2800);
+    }
+    play(true);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) hiddenAt = Date.now();
+      else if (hiddenAt && Date.now() - hiddenAt > 10000) { hiddenAt = 0; play(false); }
+    });
+    window.addEventListener('pageshow', function (e) { if (e.persisted) play(false); });
+  })();
   renderHome();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
 })();
