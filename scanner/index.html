@@ -135,7 +135,7 @@ h2 span{flex:1}
 /* दस्त */
 .pages{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .pg{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#e9edf4;aspect-ratio:3/4;padding:0}
-.pg img{width:100%;height:100%;object-fit:cover;display:block}
+.pg img{width:100%;height:100%;object-fit:cover;display:block;-webkit-user-drag:none;pointer-events:none}
 .pg em{position:absolute;left:6px;top:6px;background:rgba(11,31,75,.85);color:#fff;font-style:normal;font-size:12px;font-weight:700;min-width:22px;padding:0 6px;border-radius:10px;text-align:center}
 .pg.add{display:grid;place-items:center;background:var(--card);border-style:dashed;color:var(--pri);font-weight:700;font-size:13px}
 .pg.add div{display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -294,7 +294,48 @@ input.f:focus,select.f:focus{outline:2px solid var(--pri);border-color:transpare
 .thg button em{position:absolute;left:4px;top:4px;background:rgba(11,31,75,.85);color:#fff;font-style:normal;font-size:11px;font-weight:700;padding:0 6px;border-radius:8px}
 canvas.pad{width:100%;height:170px;border:1px dashed var(--line);border-radius:14px;background:#fff;touch-action:none;display:block}
 .pv2{width:100%;border:1px solid var(--line);border-radius:10px;display:block;margin:6px 0}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;align-items:flex-end;justify-content:space-around;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabs button{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;font-size:12px;font-weight:700;color:var(--muted);max-width:90px}
+.tabs button.on{color:var(--pri)}
+.tabs button svg{width:24px;height:24px}
+.tabs .scanb{flex:none;width:62px;height:62px;max-width:none;margin-top:-26px;border-radius:22px;background:var(--gold);color:#0b1f4b;justify-content:center;box-shadow:0 8px 22px rgba(200,150,26,.45)}
+.tabs .scanb svg{width:28px;height:28px}
+.lnk{border:0;background:none;color:var(--pri);font-weight:700;font-size:13.5px;padding:0}
+.tabp{animation:vin .2s ease}
+.view.on{animation:vin .2s ease}
+@keyframes vin{from{opacity:0}to{opacity:1}}
+.tool,.act,.dc,.pg,.tabs button{transition:transform .12s ease}
+.tool:active,.act:active,.dc:active,.pg:active{transform:scale(.96)}
+.pg{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.pg.tgt{outline:3px solid var(--gold);outline-offset:-3px}
+#lock{position:fixed;inset:0;z-index:190;background:linear-gradient(160deg,#13306e,#071536);color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px}
+#lock.on{display:flex}
+#lock h2{margin:0;color:#fff;font-size:20px}
+#lock .dots{display:flex;gap:14px;height:18px}
+#lock .dots i{width:16px;height:16px;border-radius:50%;border:2px solid #f2a516}
+#lock .dots i.f{background:#f2a516}
+#lock .dots.sh{animation:shk .35s}
+@keyframes shk{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+#lock .pad{display:grid;grid-template-columns:repeat(3,76px);gap:14px}
+#lock .pad button{height:76px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:28px;font-weight:600}
+#lock .pad button:active{background:rgba(255,255,255,.3)}
+#onb{position:fixed;inset:0;z-index:180;background:linear-gradient(160deg,#13306e,#071536);color:#fff;display:none;flex-direction:column;padding:calc(30px + env(safe-area-inset-top,0px)) 26px calc(26px + env(safe-area-inset-bottom,0px))}
+#onb.on{display:flex}
+#onb .sl{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
+#onb .ic{width:112px;height:112px;border-radius:32px;background:rgba(242,165,22,.16);display:grid;place-items:center;color:#f2a516}
+#onb .ic svg{width:56px;height:56px}
+#onb h1{margin:8px 0 0;font-size:26px}
+#onb p{margin:0;opacity:.82;max-width:320px;font-size:16px}
+#onb .dt{display:flex;gap:8px;justify-content:center;margin-bottom:16px}
+#onb .dt i{width:8px;height:8px;border-radius:4px;background:rgba(255,255,255,.3);transition:width .2s}
+#onb .dt i.on{width:24px;background:#f2a516}
+#onb .row2{display:flex;gap:10px}
+#onb .row2 button{flex:1;border:0;border-radius:16px;padding:14px;font-weight:800;font-size:17px}
+#onb .nx{background:#f2a516;color:#0b1f4b}
+#onb .sk{background:rgba(255,255,255,.12);color:#fff;flex:.6!important}
 #v-ai main{padding-bottom:170px}
+#v-home main{padding-bottom:130px}
 .ckl label span{flex:1}
 .ckl .mi{margin:0}
 </style>
@@ -378,26 +419,53 @@ canvas.pad{width:100%;height:170px;border:1px dashed var(--line);border-radius:1
    <p>कडा आपोआप ओळखतो, कागद सरळ करतो, PDF / Word / Excel बनवतो</p>
    <button class="go" id="b-scan"><svg class="i"><use href="#i-scan"/></svg> कागद स्कॅन करा</button>
   </div>
-  <div class="tools">
+  <div class="tabp" data-tab="home">
+   <div class="tools">
+    <button class="tool" data-go="b-idc"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-id"/></svg></i>ओळखपत्र</button>
+    <button class="tool" data-go="b-qr"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-qr"/></svg></i>QR वाचा</button>
+    <button class="tool" data-go="b-gal"><i style="background:var(--pri-l);color:var(--pri)"><svg class="i"><use href="#i-img"/></svg></i>गॅलरीतून</button>
+    <button class="tool" data-go="b-mth"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-math"/></svg></i>गणित सोडवा</button>
+   </div>
+   <h2><span>अलीकडील दस्त</span><button class="lnk" data-tab-go="docs">सर्व पाहा</button></h2>
+   <div class="docs" id="docs-r"></div>
+   <div class="priv"><svg class="i"><use href="#i-lock"/></svg><span>स्कॅन केलेले कागद फक्त याच फोनमध्ये राहतात. OCR / Word / भाषांतरासाठी पाठवलेला कागद तुमच्याच Google खात्यात काम झाल्यावर लगेच काढून टाकला जातो.</span></div>
+  </div>
+  <div class="tabp" data-tab="tools" hidden>
+   <h2><span>स्कॅन करा</span></h2>
+   <div class="tools">
    <button class="tool" id="b-gal"><i style="background:var(--pri-l);color:var(--pri)"><svg class="i"><use href="#i-img"/></svg></i>गॅलरीतून</button>
-   <button class="tool" id="b-pdf"><i style="background:var(--bad-l);color:var(--pdf)"><svg class="i"><use href="#i-pdf"/></svg></i>PDF उघडा</button>
    <button class="tool" id="b-idc"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-id"/></svg></i>ओळखपत्र</button>
    <button class="tool" id="b-psp"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-file"/></svg></i>पासपोर्ट</button>
    <button class="tool" id="b-qr"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-qr"/></svg></i>QR वाचा</button>
+   </div>
+   <h2><span>मोजा, सोडवा, विचारा</span></h2>
+   <div class="tools">
    <button class="tool" id="b-meas"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-ruler"/></svg></i>मोजमाप</button>
    <button class="tool" id="b-cnt"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-count"/></svg></i>मोजणी</button>
    <button class="tool" id="b-mth"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-math"/></svg></i>गणित सोडवा</button>
    <button class="tool" id="b-ai"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-chat"/></svg></i>AI विचारा</button>
+   </div>
+   <h2><span>दस्त व भाषा</span></h2>
+   <div class="tools">
+   <button class="tool" id="b-pdf"><i style="background:var(--bad-l);color:var(--pdf)"><svg class="i"><use href="#i-pdf"/></svg></i>PDF उघडा</button>
    <button class="tool" id="b-mrg"><i style="background:var(--pri-l);color:var(--pri)"><svg class="i"><use href="#i-merge"/></svg></i>एकत्र करा</button>
    <button class="tool" id="b-blk"><i style="background:var(--pri-l);color:var(--pri)"><svg class="i"><use href="#i-blank"/></svg></i>रिकामे पान</button>
    <button class="tool" id="b-kru"><i style="background:var(--pri-l);color:var(--pri)"><svg class="i"><use href="#i-swap"/></svg></i>कृतिदेव ↔ Unicode</button>
+   </div>
   </div>
-  <h2><span>माझे दस्त</span><small id="h-count"></small></h2>
-  <div class="search"><svg class="i"><use href="#i-search"/></svg><input id="q" type="search" placeholder="नावाने किंवा मजकुरातून शोधा" autocomplete="off"></div>
-  <div class="docs" id="docs"></div>
-  <div class="priv"><svg class="i"><use href="#i-lock"/></svg><span>स्कॅन केलेले कागद फक्त याच फोनमध्ये राहतात. OCR / Word / भाषांतरासाठी पाठवलेला कागद तुमच्याच Google खात्यात काम झाल्यावर लगेच काढून टाकला जातो.</span></div>
+  <div class="tabp" data-tab="docs" hidden>
+   <h2><span>माझे दस्त</span><small id="h-count"></small></h2>
+   <div class="search"><svg class="i"><use href="#i-search"/></svg><input id="q" type="search" enterkeyhint="search" placeholder="नावाने किंवा मजकुरातून शोधा" autocomplete="off"></div>
+   <div class="docs" id="docs"></div>
+  </div>
  </main>
- <button class="fab" id="b-fab" aria-label="स्कॅन"><svg class="i"><use href="#i-cam"/></svg></button>
+ <nav class="tabs" aria-label="मुख्य मेनू">
+  <button data-tab="home" class="on"><svg class="i"><use href="#i-scan"/></svg>मुख्य</button>
+  <button data-tab="tools"><svg class="i"><use href="#i-wand"/></svg>साधने</button>
+  <button class="scanb" id="b-fab" aria-label="स्कॅन"><svg class="i"><use href="#i-cam"/></svg></button>
+  <button data-tab="docs"><svg class="i"><use href="#i-file"/></svg>दस्त</button>
+  <button data-go="b-ai"><svg class="i"><use href="#i-chat"/></svg>AI</button>
+ </nav>
 </section>
 
 <!-- कॅमेरा -->
@@ -633,6 +701,8 @@ canvas.pad{width:100%;height:170px;border:1px dashed var(--line);border-radius:1
 </section>
 
 
+<div id="lock"><svg width="64" height="64" viewBox="0 0 120 120" aria-hidden="true"><rect width="120" height="120" rx="30" fill="#13306e"/><path d="M36 22h30l20 20v56H36z" fill="#fff"/><path d="M45 62h32M45 74h32M45 86h20" stroke="#13306e" stroke-width="5" stroke-linecap="round"/><rect x="30" y="52" width="60" height="4" rx="2" fill="#f2a516"/></svg><h2>PIN टाका</h2><div class="dots" id="lk-d"><i></i><i></i><i></i><i></i></div><div class="pad" id="lk-p"></div></div>
+<div id="onb"><div class="sl" id="ob-s"></div><div class="dt" id="ob-d"></div><div class="row2"><button class="sk" id="ob-sk">वगळा</button><button class="nx" id="ob-nx">पुढे</button></div></div>
 <div class="dlg" id="dlg"><div class="bx" id="dlg-bx"></div></div>
 <div class="toast" id="toast"></div>
 <div class="busy" id="busy"><div><div class="spin"></div><b id="busy-t">काम चालू आहे…</b><small id="busy-s"></small></div></div>
@@ -1346,6 +1416,17 @@ function uni2kruti(s){
   var DOCS = [], urls = [];
   function freeUrls() { urls.forEach(function (u) { URL.revokeObjectURL(u); }); urls = []; }
   function objUrl(b) { var u = URL.createObjectURL(b); urls.push(u); return u; }
+  function docCard(d) {
+    var n = d.kind === 'pdf' ? 'PDF' : d.pages.length + ' पान';
+    return '<button class="dc" data-id="' + d.id + '"><div class="th' + (d.kind === 'pdf' ? ' pdf' : '') + '" data-th="' + (d.kind === 'pdf' ? '' : (d.pages[0] || {}).id || '') + '">' + (d.kind === 'pdf' ? '<svg class="i" style="width:40px;height:40px"><use href="#i-pdf"/></svg>' : '') + '<em>' + n + '</em></div><div class="m"><b>' + esc(d.name) + '</b><small>' + fdate(d.updated) + '</small></div></button>';
+  }
+  var TAB = 'home';
+  function setTab(t) {
+    TAB = t;
+    document.querySelectorAll('#v-home .tabp').forEach(function (p) { p.hidden = p.dataset.tab !== t; });
+    document.querySelectorAll('.tabs [data-tab]').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === t); });
+    window.scrollTo(0, 0);
+  }
   function renderHome() {
     return DB.all().then(function (all) {
       DOCS = (all || []).sort(function (a, b) { return b.updated - a.updated; });
@@ -1353,19 +1434,22 @@ function uni2kruti(s){
       var list = DOCS.filter(function (d) { return !q || (d.name || '').toLowerCase().indexOf(q) >= 0 || (d.text || '').toLowerCase().indexOf(q) >= 0; });
       $('h-count').textContent = DOCS.length ? DOCS.length + ' दस्त' : '';
       freeUrls();
-      if (!list.length) { $('docs').innerHTML = '<div class="empty" style="grid-column:1/-1">' + (q ? 'या शोधाचा दस्त नाही' : 'अजून एकही दस्त नाही.<br>वरील "कागद स्कॅन करा" दाबा.') + '</div>'; return; }
-      $('docs').innerHTML = list.map(function (d) {
-        var n = d.kind === 'pdf' ? 'PDF' : d.pages.length + ' पान';
-        return '<button class="dc" data-id="' + d.id + '"><div class="th' + (d.kind === 'pdf' ? ' pdf' : '') + '" data-th="' + (d.kind === 'pdf' ? '' : (d.pages[0] || {}).id || '') + '">' + (d.kind === 'pdf' ? '<svg class="i" style="width:40px;height:40px"><use href="#i-pdf"/></svg>' : '') + '<em>' + n + '</em></div><div class="m"><b>' + esc(d.name) + '</b><small>' + fdate(d.updated) + '</small></div></button>';
-      }).join('');
-      $('docs').querySelectorAll('[data-th]').forEach(function (el) {
+      $('docs').innerHTML = list.length ? list.map(docCard).join('') : '<div class="empty" style="grid-column:1/-1">' + (q ? 'या शोधाचा दस्त नाही' : 'अजून एकही दस्त नाही.<br>खालील सोनेरी बटण दाबून कागद स्कॅन करा.') + '</div>';
+      $('docs-r').innerHTML = DOCS.length ? DOCS.slice(0, 4).map(docCard).join('') : '<div class="empty" style="grid-column:1/-1">अजून एकही दस्त नाही.<br>खालील सोनेरी बटण दाबून कागद स्कॅन करा.</div>';
+      $('v-home').querySelectorAll('[data-th]').forEach(function (el) {
         if (!el.dataset.th) return;
         DB.getB(el.dataset.th + ':t').then(function (b) { if (b) el.style.backgroundImage = 'url(' + objUrl(b) + ')'; });
       });
     });
   }
+  $('v-home').addEventListener('click', function (e) {
+    var t = e.target.closest('[data-tab]'); if (t && t.closest('.tabs')) { setTab(t.dataset.tab); return; }
+    var g = e.target.closest('[data-go]'); if (g) { $(g.dataset.go).click(); return; }
+    var tg = e.target.closest('[data-tab-go]'); if (tg) setTab(tg.dataset.tabGo);
+  });
+  $('q').addEventListener('keydown', function (e) { if (e.key === 'Enter') this.blur(); });
   $('q').addEventListener('input', function () { renderHome(); });
-  $('docs').addEventListener('click', function (e) { var b = e.target.closest('.dc'); if (b) openDoc(b.dataset.id); });
+  $('v-home').addEventListener('click', function (e) { var b = e.target.closest('.dc'); if (b) openDoc(b.dataset.id); });
 
   /* ---------- कॅमेरा ---------- */
   var CAM = { stream: null, track: null, mode: 'doc', auto: LS.get('sm-auto') !== '0', shots: [], quad: null, stable: 0, lastQ: null, timer: 0, cool: 0, target: null };
@@ -2812,8 +2896,10 @@ function uni2kruti(s){
       '<span class="fl">OCR भाषा</span>' + optGroup('ocr', [['mr', 'मराठी'], ['hi', 'हिंदी'], ['en', 'इंग्रजी']], LS.get('sm-ocr') || 'mr') +
       '<span class="fl">नवीन पानांचा फिल्टर</span>' + optGroup('flt', FILTERS, LS.get('sm-filter') || 'magic') +
       '<span class="fl">रूप</span>' + optGroup('th', [['', 'फोनप्रमाणे'], ['light', 'दिवस'], ['dark', 'रात्र']], LS.get('sm-theme') || '') +
-      '<div class="row"><button class="btn gold wide" id="s-ok">' + ico('check') + 'जतन</button></div><p class="hint" style="text-align:center">ScanOS v3.0</p>', function (bx) {
+      '<span class="fl">सुरक्षा</span><div class="row"><button class="btn ghost" id="s-pin">' + ico('lock') + 'PIN लॉक: ' + (LS.get('sm-pin') ? 'बदला / काढा' : 'ठेवा') + '</button></div>' +
+      '<div class="row"><button class="btn gold wide" id="s-ok">' + ico('check') + 'जतन</button></div><p class="hint" style="text-align:center">ScanOS v3.1</p>', function (bx) {
       bindOpts(bx);
+      bx.querySelector('#s-pin').onclick = function () { store(); closeDlg(); pinDlg(); };
       function store() {
         LS.set('sm-api', bx.querySelector('#s-u').value.trim()); LS.set('sm-key', bx.querySelector('#s-k').value.trim().toUpperCase());
         LS.set('sm-ai', bx.querySelector('#s-ai').checked ? '1' : '0'); LS.set('sm-ocr', optVal(bx, 'ocr')); LS.set('sm-filter', optVal(bx, 'flt'));
@@ -2849,6 +2935,109 @@ function uni2kruti(s){
   $('b-idc').addEventListener('click', function () { openCam(null, 'id'); });
   $('b-kru').addEventListener('click', function () { showText('', 'कृतिदेव ↔ Unicode', 'रूपांतर', '<p class="meta">कृतिदेव मजकूर पेस्ट करा व "कृतिदेव→Unicode" दाबा, किंवा Unicode मराठी टाकून "Unicode→कृतिदेव".</p>', 'kruti'); });
 
+  /* ---------- PIN लॉक ---------- */
+  function pinHash(p) {
+    var t = 'scanos:' + p;
+    if (window.crypto && crypto.subtle) return crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)).then(function (b) { return Array.prototype.map.call(new Uint8Array(b), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); });
+    return Promise.resolve('x' + btoa(unescape(encodeURIComponent(t))));
+  }
+  var LK = { v: '' };
+  function lkDots() { $('lk-d').querySelectorAll('i').forEach(function (d, i) { d.classList.toggle('f', i < LK.v.length); }); }
+  function lockShow() { if (!LS.get('sm-pin')) return; LK.v = ''; lkDots(); $('lock').classList.add('on'); }
+  (function () {
+    $('lk-p').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(function (k) { return k === '' ? '<span></span>' : '<button data-k="' + k + '">' + k + '</button>'; }).join('');
+    $('lk-p').addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.k === '⌫') LK.v = LK.v.slice(0, -1); else if (LK.v.length < 4) LK.v += b.dataset.k;
+      lkDots();
+      if (LK.v.length === 4) pinHash(LK.v).then(function (h) {
+        if (h === LS.get('sm-pin')) { $('lock').classList.remove('on'); LK.v = ''; if (navigator.vibrate) navigator.vibrate(15); }
+        else { var d = $('lk-d'); d.classList.add('sh'); if (navigator.vibrate) navigator.vibrate([40, 40, 40]); setTimeout(function () { d.classList.remove('sh'); LK.v = ''; lkDots(); }, 380); }
+      });
+    });
+  })();
+  function pinDlg() {
+    var has = !!LS.get('sm-pin');
+    openDlg('<h3>PIN लॉक</h3><p class="s">ॲप उघडताना 4 अंकी PIN विचारला जाईल. PIN विसरलात तर ॲप डेटा पुसून नव्याने सुरू करावा लागतो (दस्त जातील), म्हणून लक्षात ठेवा.</p>' +
+      '<span class="fl">नवा PIN (4 अंक)</span><input class="f" id="pn1" type="password" inputmode="numeric" maxlength="4" autocomplete="off">' +
+      '<span class="fl">पुन्हा तोच PIN</span><input class="f" id="pn2" type="password" inputmode="numeric" maxlength="4" autocomplete="off">' +
+      '<div class="row">' + (has ? '<button class="btn ghost" id="pn-rm">PIN काढा</button>' : '') + '<button class="btn gold" id="pn-ok">' + ico('check') + 'ठेवा</button></div>', function (bx) {
+      bx.querySelector('#pn-ok').onclick = function () {
+        var a = bx.querySelector('#pn1').value, b = bx.querySelector('#pn2').value;
+        if (!/^\d{4}$/.test(a)) { toast('4 अंक टाका'); return; }
+        if (a !== b) { toast('दोन्ही PIN सारखे नाहीत'); return; }
+        pinHash(a).then(function (h) { LS.set('sm-pin', h); closeDlg(); toast('PIN ठेवला'); });
+      };
+      var rm = bx.querySelector('#pn-rm'); if (rm) rm.onclick = function () { LS.set('sm-pin', ''); closeDlg(); toast('PIN काढला'); };
+    });
+  }
+
+  /* ---------- पहिली ओळख ---------- */
+  var OB = { i: 0, S: [
+    ['scan', 'कागद स्कॅन करा', 'सोनेरी बटण दाबा. कागद स्थिर धरा, कडा आपोआप ओळखून फोटो घेतला जातो. PDF, Word, Excel एका क्लिकमध्ये.'],
+    ['edit', 'सुधारा आणि बदला', 'पुसा, मजकूर लिहा, सही करा, वॉटरमार्क लावा, पाने एकत्र / वेगळी करा. पाने दाबून धरून ओढल्यास क्रम बदलतो.'],
+    ['spark', 'AI आणि बरेच काही', 'सारांश, भाषांतर, व्याकरण, टेस्ट, QR, मोजमाप, गणित. यासाठी सेटिंग्जमध्ये एकदा सर्व्हर जोडा.']
+  ] };
+  function obShow() {
+    var x = OB.S[OB.i];
+    $('ob-s').innerHTML = '<div class="ic">' + ico(x[0]) + '</div><h1>' + x[1] + '</h1><p>' + x[2] + '</p>';
+    $('ob-d').innerHTML = OB.S.map(function (_, k) { return '<i class="' + (k === OB.i ? 'on' : '') + '"></i>'; }).join('');
+    $('ob-nx').textContent = OB.i === OB.S.length - 1 ? 'सुरू करा' : 'पुढे';
+  }
+  function obEnd() { $('onb').classList.remove('on'); LS.set('sm-onb', '1'); }
+  $('ob-nx').addEventListener('click', function () { if (OB.i < OB.S.length - 1) { OB.i++; obShow(); } else obEnd(); });
+  $('ob-sk').addEventListener('click', obEnd);
+  (function () {
+    var x0 = null; var o = $('onb');
+    o.addEventListener('pointerdown', function (e) { x0 = e.clientX; });
+    o.addEventListener('pointerup', function (e) { if (x0 === null) return; var dx = e.clientX - x0; x0 = null; if (Math.abs(dx) > 60) { OB.i = Math.max(0, Math.min(OB.S.length - 1, OB.i + (dx < 0 ? 1 : -1))); obShow(); } });
+  })();
+
+  /* ---------- पाने दाबून ओढून क्रम बदला ---------- */
+  (function () {
+    var g = $('d-pages'), st = null, drag = false, block = false;
+    function place(x, y) {
+      st.ghost.style.left = (x - st.w / 2) + 'px'; st.ghost.style.top = (y - st.h / 2) + 'px';
+      var el = document.elementFromPoint(x, y), t = el && el.closest ? el.closest('.pg[data-i]') : null;
+      g.querySelectorAll('.pg').forEach(function (p) { p.classList.toggle('tgt', p === t && t !== st.b); });
+      st.tgt = t && t !== st.b ? +t.dataset.i : -1;
+    }
+    function start() {
+      if (!st) return; drag = true; st.w = st.b.offsetWidth; st.h = st.b.offsetHeight;
+      st.ghost = st.b.cloneNode(true); st.ghost.style.cssText = 'position:fixed;z-index:90;width:' + st.w + 'px;pointer-events:none;opacity:.92;transform:scale(1.07);box-shadow:0 12px 30px rgba(0,0,0,.4)';
+      document.body.appendChild(st.ghost); st.b.style.opacity = '.35'; place(st.x, st.y); if (navigator.vibrate) navigator.vibrate(20);
+    }
+    g.addEventListener('pointerdown', function (e) {
+      var b = e.target.closest('.pg[data-i]'); if (!b || !CUR || CUR.pages.length < 2) return;
+      st = { b: b, i: +b.dataset.i, x: e.clientX, y: e.clientY, tgt: -1 }; st.t = setTimeout(start, 380);
+    });
+    g.addEventListener('pointermove', function (e) {
+      if (!st) return; st.x = e.clientX; st.y = e.clientY;
+      if (!drag) { return; }
+      place(e.clientX, e.clientY);
+    });
+    window.addEventListener('pointermove', function (e) { if (st && !drag && Math.hypot(e.clientX - st.x, e.clientY - st.y) > 12) { clearTimeout(st.t); st = null; } else if (st && drag) { st.x = e.clientX; st.y = e.clientY; place(e.clientX, e.clientY); } });
+    function end() {
+      if (!st) return; clearTimeout(st.t);
+      if (drag) {
+        drag = false; st.ghost.remove(); st.b.style.opacity = ''; block = true; setTimeout(function () { block = false; }, 80);
+        if (st.tgt >= 0) {
+          var from = st.i, to = st.tgt, it = CUR.pages.splice(from, 1)[0]; CUR.pages.splice(to, 0, it); CUR.updated = Date.now(); CUR.text = null;
+          DB.put(CUR).then(function () { renderDoc(); toast('पान ' + (from + 1) + ' → ' + (to + 1)); });
+        } else g.querySelectorAll('.pg').forEach(function (p) { p.classList.remove('tgt'); });
+      }
+      st = null;
+    }
+    g.addEventListener('pointerup', end); g.addEventListener('pointercancel', end); window.addEventListener('pointerup', end);
+    g.addEventListener('touchmove', function (e) { if (drag) e.preventDefault(); }, { passive: false });
+    g.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    g.addEventListener('click', function (e) { if (block) { e.stopPropagation(); e.preventDefault(); } }, true);
+  })();
+
+  /* सुरुवात: PIN, पहिली ओळख */
+  if (LS.get('sm-pin')) lockShow();
+  else if (!LS.get('sm-onb')) { OB.i = 0; obShow(); $('onb').classList.add('on'); }
+
   /* उघडताना लोगो ॲनिमेशन: पहिल्यांदा, आणि ॲप बॅकग्राउंडमधून परत आल्यावरही */
   (function () {
     var tpl = $('splash').cloneNode(true), hiddenAt = 0;
@@ -2860,8 +3049,10 @@ function uni2kruti(s){
     }
     play(true);
     document.addEventListener('visibilitychange', function () {
-      if (document.hidden) hiddenAt = Date.now();
-      else if (hiddenAt && Date.now() - hiddenAt > 10000) { hiddenAt = 0; play(false); }
+      if (document.hidden) { hiddenAt = Date.now(); return; }
+      if (document.activeElement && document.activeElement.blur && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName) && !dlgOpen && stack[stack.length - 1] === 'v-home') document.activeElement.blur();
+      if (hiddenAt && Date.now() - hiddenAt > 30000) lockShow();
+      if (hiddenAt && Date.now() - hiddenAt > 10000) { hiddenAt = 0; play(false); }
     });
     window.addEventListener('pageshow', function (e) { if (e.persisted) play(false); });
   })();
