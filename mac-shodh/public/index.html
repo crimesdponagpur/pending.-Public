@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>शोध</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#14171c;--mute:#5f6773;--line:#dde1e7;--acc:#1f5fbf;--acc2:#e9f0fb;--warn:#a2520a}
+@media (prefers-color-scheme:dark){:root{--bg:#121417;--card:#1b1e23;--fg:#e8eaee;--mute:#9aa3ae;--line:#2c3138;--acc:#6fa3f0;--acc2:#1d2a3d;--warn:#e0a060}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 "Kohinoor Devanagari","Noto Sans Devanagari",system-ui,sans-serif}
+main{max-width:920px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:24px;margin:0 0 2px}
+.sub{color:var(--mute);margin:0 0 16px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type=text],textarea,select{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+textarea{width:100%;min-height:84px;resize:vertical}
+input[type=text]{flex:1;min-width:200px}
+button{font:inherit;border:0;border-radius:8px;padding:8px 14px;background:var(--acc);color:#fff;cursor:pointer}
+button.ghost{background:var(--acc2);color:var(--acc)}
+button:disabled{opacity:.5;cursor:wait}
+label{display:inline-flex;gap:6px;align-items:center;color:var(--mute);font-size:14px}
+.status{font-size:13px;color:var(--mute)}
+.warn{color:var(--warn);font-size:13px}
+.dl{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+.dl a{text-decoration:none;padding:7px 12px;border-radius:8px;background:var(--acc2);color:var(--acc);font-weight:600}
+.hit{border-top:1px solid var(--line);padding:10px 0}
+.hit .src{font-size:12px;color:var(--mute)}
+.hit .src a{color:var(--acc);cursor:pointer}
+.hit .txt{white-space:pre-wrap;font-size:14px;max-height:9em;overflow:auto}
+mark{background:#ffe48a;color:#000;border-radius:2px}
+.answer{white-space:pre-wrap;background:var(--acc2);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.ex{color:var(--acc);cursor:pointer;font-size:13px;margin-right:10px}
+</style>
+</head>
+<body>
+<main>
+  <h1>शोध</h1>
+  <p class="sub">तुमच्या Mac वरील फोल्डरमधील माहिती शोधा आणि Word / Excel / PDF मध्ये मिळवा. सर्व काही याच Mac वर, इंटरनेटशिवाय.</p>
+
+  <div class="card">
+    <div class="row">
+      <input type="text" id="folder" placeholder="फोल्डरचा पत्ता, उदा. ~/Documents/Mahiti">
+      <button class="ghost" id="setFolder">फोल्डर बदला</button>
+      <button class="ghost" id="reindex">पुन्हा वाचा</button>
+    </div>
+    <div class="status" id="status" style="margin-top:6px">…</div>
+  </div>
+
+  <div class="card">
+    <textarea id="q" placeholder="काय हवे ते लिहा, उदा. &quot;रमेश पाटील नावाच्या आरोपीची सर्व माहिती&quot; किंवा &quot;2025 मधील चोरीचे गुन्हे&quot;"></textarea>
+    <div style="margin:4px 0 8px">
+      <span class="ex">चोरी</span><span class="ex">प्रलंबित दोषारोपपत्र</span><span class="ex">मोबाईल नंबर</span>
+    </div>
+    <div class="row">
+      <button id="go">शोधा</button>
+      <label><input type="checkbox" id="ai"> AI ने उत्तर लिहा (Ollama)</label>
+      <select id="model" hidden></select>
+      <label><input type="checkbox" id="web"> वेबवरही शोधा</label>
+      <label>निकाल <select id="limit"><option>15</option><option selected>30</option><option>100</option><option>500</option></select></label>
+    </div>
+  </div>
+
+  <div class="card" id="out" hidden></div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const api = (p, body) => fetch(p, body ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)} : {}).then(r => r.json());
+
+async function refresh() {
+  const s = await api('/api/status');
+  if (document.activeElement !== $('folder')) $('folder').value = s.folder;
+  const ix = s.index;
+  let t = ix.state === 'indexing' ? `फाइल्स वाचत आहे… ${ix.done || 0} / ${ix.files}`
+        : ix.state === 'ready' ? `तयार: ${ix.files} फाइल्स, ${ix.chunks} माहितीचे तुकडे`
+        : ix.state === 'error' ? 'त्रुटी: ' + ix.errors.join(', ') : '…';
+  if (ix.errors && ix.errors.length && ix.state === 'ready') t += ` · ${ix.errors.length} फाइल्स वाचता आल्या नाहीत`;
+  t += s.models.length ? ` · AI तयार (${s.models.length} मॉडेल)` : ' · AI बंद (Ollama चालू नाही)';
+  $('status').textContent = t;
+  const m = $('model');
+  if (s.models.length && !m.options.length) { m.innerHTML = s.models.map(x => `<option>${esc(x)}</option>`).join(''); }
+  m.hidden = !s.models.length;
+  setTimeout(refresh, ix.state === 'indexing' ? 1000 : 8000);
+}
+
+function highlight(text, terms) {
+  let h = esc(text);
+  for (const t of (terms || []).sort((a,b) => b.length - a.length)) {
+    if (t.length < 2) continue;
+    h = h.replace(new RegExp(esc(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<mark>${m}</mark>`);
+  }
+  return h;
+}
+
+async function go() {
+  const q = $('q').value.trim();
+  if (!q) return $('q').focus();
+  $('go').disabled = true; $('go').textContent = $('ai').checked ? 'AI लिहित आहे…' : 'शोधत आहे…';
+  try {
+    const r = await api('/api/ask', {request:q, useAI:$('ai').checked, model:$('model').value, useWeb:$('web').checked, limit:+$('limit').value});
+    if (r.error) throw new Error(r.error);
+    let h = `<div class="dl">
+      <a href="/api/download/${r.id}.docx">Word (.docx)</a>
+      <a href="/api/download/${r.id}.xlsx">Excel (.xlsx)</a>
+      <a href="/api/download/${r.id}.pdf" target="_blank">PDF / छपाई</a></div>`;
+    if (r.aiError) h += `<p class="warn">${esc(r.aiError)}</p>`;
+    if (r.answer) h += `<div class="answer">${esc(r.answer)}</div>`;
+    h += `<div class="status">${r.hits.length} निकाल सापडले</div>`;
+    r.hits.forEach((x, i) => {
+      h += `<div class="hit"><div class="src">[${i+1}] <a data-f="${esc(x.file)}">${esc(x.file)}</a> · ${esc(x.where)}</div><div class="txt">${highlight(x.text, x.terms)}</div></div>`;
+    });
+    (r.web || []).forEach((w, i) => {
+      h += `<div class="hit"><div class="src">[W${i+1}] <a href="${esc(w.url)}" target="_blank" rel="noopener">${esc(w.title)}</a></div><div class="txt">${esc(w.snippet)}</div></div>`;
+    });
+    $('out').innerHTML = h; $('out').hidden = false;
+  } catch (e) {
+    $('out').innerHTML = `<p class="warn">${esc(e.message)}</p>`; $('out').hidden = false;
+  } finally {
+    $('go').disabled = false; $('go').textContent = 'शोधा';
+  }
+}
+
+$('go').onclick = go;
+$('q').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) go(); });
+document.querySelectorAll('.ex').forEach(el => el.onclick = () => { $('q').value = el.textContent; go(); });
+$('out').addEventListener('click', e => { const f = e.target.dataset && e.target.dataset.f; if (f) api('/api/open?f=' + encodeURIComponent(f), {}); });
+$('setFolder').onclick = async () => { const r = await api('/api/folder', {folder:$('folder').value}); if (r.error) alert(r.error); refresh(); };
+$('reindex').onclick = () => api('/api/reindex', {}).then(refresh);
+refresh();
+</script>
+</body>
+</html>
