@@ -2,12 +2,16 @@
   "name": "shodh",
   "version": "1.0.0",
   "description": "Mac वरील फोल्डरमधील माहिती शोधून Word / Excel / PDF बनवणारे स्थानिक ॲप",
-  "main": "server.js",
+  "main": "main.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "electron .",
+    "web": "node server.js",
+    "dist": "electron-builder --mac"
   },
   "dependencies": {
+    "chart.js": "^4.6.1",
     "docx": "^9.15.0",
+    "exceljs": "^4.4.0",
     "mammoth": "^1.13.0",
     "minisearch": "^7.2.0",
     "pdf-parse": "^1.1.1",
@@ -16,5 +20,36 @@
   "private": true,
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "electron": "^45.1.0",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "in.nagpur.shodh",
+    "productName": "Shodh",
+    "files": [
+      "main.js",
+      "preload.js",
+      "server.js",
+      "lib/**",
+      "public/**",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "title": "Shodh"
+    }
   }
 }

@@ -4,7 +4,7 @@ const path = require('path');
 const MiniSearch = require('minisearch');
 const { extractFile, SUPPORTED } = require('./extract');
 
-const CACHE = path.join(__dirname, '..', '.cache', 'files.json');
+const CACHE = path.join(process.env.SHODH_DATA || path.join(__dirname, '..'), '.cache', 'files.json');
 
 // मराठी/इंग्रजी शब्द तोडणे: अक्षरे, मात्रा (\p{M}) व अंक एकत्र ठेवायचे
 const tokenize = s => s.toLowerCase().match(/[\p{L}\p{M}\p{N}]+/gu) || [];

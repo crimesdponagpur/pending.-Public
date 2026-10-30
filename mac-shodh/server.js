@@ -7,17 +7,20 @@ const path = require('path');
 const crypto = require('crypto');
 const { execFile } = require('child_process');
 const { Index } = require('./lib/indexer');
-const { ollamaModels, ollamaAnswer, webSearch } = require('./lib/ai');
+const { ollamaModels, ollamaAnswer, planRequest, summarize, webSearch } = require('./lib/ai');
+const { buildTables, catalog, runPlan } = require('./lib/tables');
 const { toDocx, toXlsx, toPrintHtml } = require('./lib/output');
 
 const PORT = Number(process.env.PORT) || 3939;
-const CONFIG = path.join(__dirname, 'config.json');
+// Mac ॲपमध्ये SHODH_DATA = ~/Library/Application Support/शोध
+const DATA = process.env.SHODH_DATA || __dirname;
+const CONFIG = path.join(DATA, 'config.json');
 const expand = p => p.replace(/^~(?=$|\/)/, os.homedir());
 
 function loadConfig() {
   let c = {};
   try { c = JSON.parse(fs.readFileSync(CONFIG, 'utf8')); } catch {}
-  const folder = process.argv[2] || process.env.SHODH_FOLDER || c.folder || '~/Shodh-Mahiti';
+  const folder = (require.main === module && process.argv[2]) || process.env.SHODH_FOLDER || c.folder || '~/Shodh-Mahiti';
   return { ...c, folder: path.resolve(expand(folder)) };
 }
 
@@ -29,6 +32,7 @@ const reports = new Map();
 function reindex() {
   console.log('निर्देशांक बनवत आहे:', config.folder);
   return index.build(config.folder).then(s => {
+    tables = buildTables(index.chunks);
     console.log(`तयार: ${s.files} फाइल्स, ${s.chunks} तुकडे` + (s.errors.length ? `, ${s.errors.length} फाइल्स वाचता आल्या नाहीत` : ''));
     return s;
   }).catch(err => { index.status = { state: 'error', errors: [err.message] }; });
@@ -41,33 +45,54 @@ const send = (res, code, body, type = 'application/json; charset=utf-8', extra =
 
 const readBody = req => new Promise((ok, bad) => {
   let s = '';
-  req.on('data', d => { s += d; if (s.length > 1e6) req.destroy(); });
+  req.on('data', d => { s += d; if (s.length > 15e6) req.destroy(); });
   req.on('end', () => { try { ok(s ? JSON.parse(s) : {}); } catch (e) { bad(e); } });
 });
+
+let tables = [];
 
 async function ask({ request = '', useAI = false, model, useWeb = false, limit = 30 }) {
   request = String(request).trim();
   if (!request) throw new Error('काय हवे ते लिहा');
-  const hits = index.query(request, useAI ? Math.min(limit, 15) : limit);
+  const hits = index.query(request, limit);
   const web = useWeb ? await webSearch(request) : [];
-  let answer = null, aiError = null;
+  let answer = null, aiError = null, analysis = null, plan = null;
   if (useAI) {
     const models = await ollamaModels();
     const m = model && models.includes(model) ? model : models[0];
     if (!m) aiError = 'Ollama चालू नाही किंवा मॉडेल नाही (README पहा). फक्त शोध-निकाल दिले आहेत.';
     else {
       try {
-        const kind = /excel|एक्सेल|तक्ता|table|यादी/i.test(request) ? 'table' : 'doc';
-        answer = await ollamaAnswer({ model: m, request, hits, web, kind });
+        // ज्या तक्त्यांत शोध-निकाल आले ते AI ला आधी दाखवायचे
+        if (tables.length) {
+          const hitCount = new Map();
+          for (const h of hits) if (h.headers) { const sig = h.headers.join('\u0001'); hitCount.set(sig, (hitCount.get(sig) || 0) + 1); }
+          const ranked = [...tables].sort((a, b) => (hitCount.get(b.headers.slice(0, -1).join('\u0001')) || 0) - (hitCount.get(a.headers.slice(0, -1).join('\u0001')) || 0));
+          plan = await planRequest({ model: m, request, catalog: catalog(ranked) });
+        }
+        if (plan && plan.mode === 'analysis') {
+          try {
+            analysis = runPlan(tables, plan);
+            answer = await summarize({ model: m, request, result: analysis });
+          } catch (e) {
+            aiError = 'मोजणी जमली नाही (' + e.message + '). त्याऐवजी लिखित उत्तर दिले आहे.';
+            analysis = null;
+          }
+        }
+        if (!analysis) {
+          const kind = /excel|एक्सेल|तक्ता|table|यादी/i.test(request) ? 'table' : 'doc';
+          answer = await ollamaAnswer({ model: m, request, hits: hits.slice(0, 15), web, kind });
+        }
       } catch (e) { aiError = e.message; }
     }
   }
   const title = request.length > 80 ? request.slice(0, 77) + '...' : request;
   const id = crypto.randomBytes(6).toString('hex');
-  const rep = { id, title, request, answer, hits, web, aiError, at: new Date().toISOString() };
+  const rep = { id, title, request, answer, hits, web, aiError, analysis, plan, at: new Date().toISOString() };
   reports.set(id, rep);
   if (reports.size > 50) reports.delete(reports.keys().next().value);
-  return rep;
+  // पानावर मूळ ओळी पाठवायची गरज नाही
+  return { ...rep, analysis: analysis && { ...analysis, rows: undefined } };
 }
 
 const safeName = s => s.replace(/[\\/:*?"<>|\n]+/g, ' ').trim().slice(0, 60) || 'shodh';
@@ -80,6 +105,16 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === 'GET' && url.pathname === '/') {
       return send(res, 200, fs.readFileSync(path.join(__dirname, 'public', 'index.html')), 'text/html; charset=utf-8');
+    }
+    if (req.method === 'GET' && url.pathname === '/chart.js') {
+      return send(res, 200, fs.readFileSync(path.join(__dirname, 'node_modules', 'chart.js', 'dist', 'chart.umd.min.js')), 'text/javascript; charset=utf-8');
+    }
+    const ch = url.pathname.match(/^\/api\/chart\/([0-9a-f]+)$/);
+    if (req.method === 'POST' && ch) {
+      const rep = reports.get(ch[1]);
+      const { png } = await readBody(req);
+      if (rep && typeof png === 'string' && png.startsWith('data:image/png;base64,')) rep.chartPng = Buffer.from(png.split(',')[1], 'base64');
+      return send(res, 200, { ok: !!rep });
     }
     if (req.method === 'GET' && url.pathname === '/api/status') {
       return send(res, 200, { folder: config.folder, index: index.status, models: await ollamaModels() });
@@ -105,8 +140,8 @@ const server = http.createServer(async (req, res) => {
       const rep = reports.get(dl[1]);
       if (!rep) return send(res, 404, { error: 'निकाल जुना झाला, पुन्हा शोधा' });
       const name = encodeURIComponent(safeName(rep.title));
-      if (dl[2] === 'pdf') return send(res, 200, toPrintHtml(rep), 'text/html; charset=utf-8');
-      const buf = dl[2] === 'docx' ? await toDocx(rep) : toXlsx(rep);
+      if (dl[2] === 'pdf') return send(res, 200, toPrintHtml(rep, !url.searchParams.has('app')), 'text/html; charset=utf-8');
+      const buf = dl[2] === 'docx' ? await toDocx(rep) : await toXlsx(rep);
       const type = dl[2] === 'docx'
         ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -127,9 +162,23 @@ const server = http.createServer(async (req, res) => {
 });
 
 // फक्त याच Mac वरून उघडता यावे म्हणून 127.0.0.1
-server.listen(PORT, '127.0.0.1', () => {
-  const link = `http://localhost:${PORT}`;
-  console.log(`\nशोध ॲप चालू आहे: ${link}\nफोल्डर: ${config.folder}\nबंद करण्यासाठी: Ctrl + C\n`);
-  if (process.platform === 'darwin' && !process.env.NO_OPEN) execFile('open', [link]);
-  reindex();
-});
+function start(port = PORT) {
+  return new Promise((ok, bad) => {
+    server.once('error', bad);
+    server.listen(port, '127.0.0.1', () => {
+      port = server.address().port;
+      console.log(`\nशोध चालू आहे: http://localhost:${port}\nफोल्डर: ${config.folder}\nबंद करण्यासाठी: Ctrl + C\n`);
+      reindex();
+      ok(port);
+    });
+  });
+}
+
+module.exports = { start };
+
+// Terminal मधून (npm run web) चालवले तर ब्राउझरमध्ये उघडा
+if (require.main === module) {
+  start().then(port => {
+    if (process.platform === 'darwin' && !process.env.NO_OPEN) execFile('open', [`http://localhost:${port}`]);
+  });
+}

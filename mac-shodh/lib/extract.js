@@ -45,13 +45,23 @@ async function extractPdf(file) {
   return pages.flatMap((t, i) => chunkText(t, 'पान ' + (i + 1)));
 }
 
+// तारीख नेहमी YYYY-MM-DD, म्हणजे वर्ष/महिना काढता येतो
+const pad = n => String(n).padStart(2, '0');
+const cellText = v => v instanceof Date
+  ? `${v.getFullYear()}-${pad(v.getMonth() + 1)}-${pad(v.getDate())}`
+  : typeof v === 'number' ? String(Math.round(v * 1e6) / 1e6) : String(v ?? '');
+
 // Excel: प्रत्येक ओळ स्वतंत्र तुकडा, स्तंभांच्या नावांसह (म्हणजे Excel आउटपुटमध्ये मूळ स्तंभ परत मिळतात)
 function extractSheet(file) {
   const wb = XLSX.readFile(file, { cellDates: true });
   const out = [];
   for (const name of wb.SheetNames) {
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, defval: '', raw: false });
-    const hi = rows.findIndex(r => r.filter(c => String(c).trim()).length >= 2);
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, defval: '', raw: true })
+      .map(r => r.map(cellText));
+    // शीर्षक-ओळ: सुरुवातीच्या ओळींपैकी जवळपास सर्व स्तंभ भरलेली पहिली ओळ
+    const filled = rows.slice(0, 20).map(r => r.filter(c => String(c).trim()).length);
+    const most = Math.max(0, ...filled);
+    const hi = most < 2 ? -1 : filled.findIndex(n => n >= Math.max(2, most * 0.6));
     if (hi < 0) continue;
     const headers = rows[hi].map((h, i) => String(h).trim() || 'स्तंभ ' + (i + 1));
     for (let r = hi + 1; r < rows.length; r++) {
