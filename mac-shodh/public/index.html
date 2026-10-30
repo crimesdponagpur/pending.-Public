@@ -53,6 +53,7 @@ h2.t{font-size:18px;margin:0 0 4px}
       <button class="ghost" id="reindex">पुन्हा वाचा</button>
     </div>
     <div class="status" id="status" style="margin-top:6px">…</div>
+    <div class="row" id="drives" style="margin-top:6px"></div>
   </div>
 
   <div class="card">
@@ -84,8 +85,11 @@ async function refresh() {
         : ix.state === 'ready' ? `तयार: ${ix.files} फाइल्स, ${ix.chunks} माहितीचे तुकडे`
         : ix.state === 'error' ? 'त्रुटी: ' + ix.errors.join(', ') : '…';
   if (ix.errors && ix.errors.length && ix.state === 'ready') t += ` · ${ix.errors.length} फाइल्स वाचता आल्या नाहीत`;
+  if (ix.googleNative) t += ` · ${ix.googleNative} Google Sheets/Docs वाचता येत नाहीत (त्या .xlsx/.docx म्हणून ठेवा)`;
   t += s.models.length ? ` · AI तयार (${s.models.length} मॉडेल)` : ' · AI बंद (Ollama चालू नाही)';
   $('status').textContent = t;
+  const other = (s.drives || []).filter(d => !s.folder.startsWith(d));
+  $('drives').innerHTML = other.map(d => `<button class="ghost" data-d="${esc(d)}">Google Drive वापरा: ${esc(d.split('/').slice(-2).join(' / '))}</button>`).join('');
   const m = $('model');
   if (s.models.length && !m.options.length) { m.innerHTML = s.models.map(x => `<option>${esc(x)}</option>`).join(''); $('ai').checked = true; }
   m.hidden = !s.models.length;
@@ -170,6 +174,12 @@ $('setFolder').onclick = async () => {
   if (window.shodh) { const f = await window.shodh.pickFolder(); if (!f) return; $('folder').value = f; }
   const r = await api('/api/folder', {folder:$('folder').value}); if (r.error) alert(r.error); refresh();
 };
+$('drives').addEventListener('click', async e => {
+  const d = e.target.dataset && e.target.dataset.d;
+  if (!d) return;
+  $('folder').value = d;
+  const r = await api('/api/folder', {folder:d}); if (r.error) alert(r.error); refresh();
+});
 if (window.shodh) $('setFolder').textContent = 'फोल्डर निवडा';
 $('reindex').onclick = () => api('/api/reindex', {}).then(refresh);
 refresh();

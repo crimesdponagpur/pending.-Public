@@ -15,14 +15,19 @@ const STOP = new Set(('आणि व या ही हा हे ते ती �
   'word excel pdf वर्ड एक्सेल पीडीएफ फाइल फाईल format फॉरमॅट तक्ता अहवाल यादी ' +
   'the a an of in on for to and or is are was give show me find all about with from list make please').split(/\s+/));
 
-function walk(dir, out = []) {
+// Google Docs/Sheets (.gsheet/.gdoc) Mac वर फक्त लिंक असतात, त्यातील मजकूर वाचता येत नाही
+const GOOGLE_NATIVE = ['.gsheet', '.gdoc', '.gslides'];
+
+function walk(dir, out = [], skipped = []) {
   let entries = [];
   try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return out; }
   for (const e of entries) {
     if (e.name.startsWith('.') || e.name.startsWith('~$') || e.name === 'node_modules') continue;
     const p = path.join(dir, e.name);
-    if (e.isDirectory()) walk(p, out);
-    else if (SUPPORTED.includes(path.extname(e.name).toLowerCase())) out.push(p);
+    const ext = path.extname(e.name).toLowerCase();
+    if (e.isDirectory()) walk(p, out, skipped);
+    else if (SUPPORTED.includes(ext)) out.push(p);
+    else if (GOOGLE_NATIVE.includes(ext)) skipped.push(path.relative(dir, p));
   }
   return out;
 }
@@ -40,8 +45,10 @@ class Index {
     this.status = { state: 'indexing', files: 0, chunks: 0, done: 0, errors: [] };
     let cache = {};
     try { cache = JSON.parse(fs.readFileSync(CACHE, 'utf8')); } catch {}
-    const files = walk(folder);
+    const google = [];
+    const files = walk(folder, [], google);
     this.status.files = files.length;
+    this.status.googleNative = google.length;
     const fresh = {};
     for (const f of files) {
       const st = fs.statSync(f);

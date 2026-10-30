@@ -51,6 +51,24 @@ const readBody = req => new Promise((ok, bad) => {
 
 let tables = [];
 
+// Google Drive for desktop चा फोल्डर: ~/Library/CloudStorage/GoogleDrive-<email>/My Drive
+function driveFolders() {
+  const base = path.join(os.homedir(), 'Library', 'CloudStorage');
+  const out = [];
+  try {
+    for (const d of fs.readdirSync(base)) {
+      if (!d.startsWith('GoogleDrive')) continue;
+      for (const sub of fs.readdirSync(path.join(base, d))) {
+        if (!sub.startsWith('.')) out.push(path.join(base, d, sub));
+      }
+    }
+  } catch {}
+  return out;
+}
+
+// Drive मधून नवीन फाइल्स येत राहतात, म्हणून दर 10 मिनिटांनी बदल तपासा (फक्त बदललेल्या फाइल्स वाचल्या जातात)
+setInterval(() => { if (index.status.state !== 'indexing') reindex(); }, 10 * 60 * 1000).unref();
+
 async function ask({ request = '', useAI = false, model, useWeb = false, limit = 30 }) {
   request = String(request).trim();
   if (!request) throw new Error('काय हवे ते लिहा');
@@ -117,7 +135,7 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: !!rep });
     }
     if (req.method === 'GET' && url.pathname === '/api/status') {
-      return send(res, 200, { folder: config.folder, index: index.status, models: await ollamaModels() });
+      return send(res, 200, { folder: config.folder, index: index.status, models: await ollamaModels(), drives: driveFolders() });
     }
     if (req.method === 'POST' && url.pathname === '/api/folder') {
       const { folder } = await readBody(req);

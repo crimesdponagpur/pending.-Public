@@ -71,6 +71,8 @@ if (!app.requestSingleInstanceLock()) app.quit();
 app.on('second-instance', () => { if (win) { win.show(); win.focus(); } });
 
 app.whenReady().then(async () => {
+  const icon = path.join(__dirname, 'build', 'icon.png');
+  if (app.dock && fs.existsSync(icon)) app.dock.setIcon(icon);
   ensureOllama();
   let port;
   try { port = await start(3939); } catch { port = await start(0); }
