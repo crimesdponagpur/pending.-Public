@@ -175,6 +175,9 @@ h2 span{flex:1}
 .lsg{display:flex;gap:10px;align-items:flex-start;padding:8px 2px;border-bottom:1px solid var(--line)}.lsg small{display:block;color:var(--muted)}
 .lcp{display:grid;grid-template-columns:1fr 120px 44px;gap:6px;margin-bottom:6px}.lcp .btn{padding:0}
 textarea.f{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:16px;line-height:1.5;resize:vertical}
+.tbw{overflow-x:auto;margin:6px 0 10px;border:1px solid var(--line);border-radius:12px}
+.tb{border-collapse:collapse;width:max-content;min-width:100%}.tb th{background:var(--pri-l);font-size:13px;padding:7px 8px;text-align:left;white-space:nowrap}
+.tb td{border-top:1px solid var(--line);padding:0}.tb td input{width:100%;min-width:70px;border:0;padding:9px 8px;background:transparent;font-size:14.5px}
 textarea.tx{width:100%;min-height:52vh;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card);font-size:16.5px;line-height:1.6;resize:vertical}
 textarea.tx:focus{outline:2px solid var(--pri);border-color:transparent}
 .tbar{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--card);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))}
@@ -451,6 +454,8 @@ html,button,a,input,label,.dc,.pg{touch-action:manipulation}
    <button class="tool" id="b-meas"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-ruler"/></svg></i>मोजमाप</button>
    <button class="tool" id="b-cnt"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-count"/></svg></i>मोजणी</button>
    <button class="tool" id="b-mth"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-math"/></svg></i>गणित सोडवा</button>
+   <button class="tool" id="b-bkf"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-down"/></svg></i>बॅकअप फाईल</button>
+   <button class="tool" id="b-rsf"><i style="background:var(--ok-l);color:var(--ok)"><svg class="i"><use href="#i-plus"/></svg></i>बॅकअपमधून परत</button>
    <button class="tool" id="b-bk"><i style="background:var(--pri-l);color:var(--pri)"><svg class="i"><use href="#i-cloud"/></svg></i>Drive बॅकअप</button>
    <button class="tool" id="b-let"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-send"/></svg></i>पत्र सहायक</button>
    <button class="tool" id="b-ai"><i style="background:var(--gold-l);color:var(--ai)"><svg class="i"><use href="#i-chat"/></svg></i>AI विचारा</button>
@@ -589,6 +594,14 @@ html,button,a,input,label,.dc,.pg{touch-action:manipulation}
    <button class="act" data-a="split"><i class="c-ok"><svg class="i"><use href="#i-split"/></svg></i>वेगळे करा</button>
    <button class="act" data-a="add"><i class="c-pri"><svg class="i"><use href="#i-plus"/></svg></i>पाने जोडा</button>
    <button class="act" data-a="blank"><i class="c-pri"><svg class="i"><use href="#i-blank"/></svg></i>रिकामे पान</button>
+  </div>
+  <h2><span>समजून घ्या व तक्ता</span></h2>
+  <div class="acts">
+   <button class="act" data-a="table"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-list"/></svg></i>तक्ता बनवा</button>
+   <button class="act" data-a="health"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-spark"/></svg></i>रक्त / आरोग्य अहवाल</button>
+   <button class="act" data-a="rx"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-edit"/></svg></i>औषध चिठ्ठी</button>
+   <button class="act" data-a="receipt"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-xls"/></svg></i>बिल / रसीद</button>
+   <button class="act" data-a="deadline"><sup>AI</sup><i class="c-ai"><svg class="i"><use href="#i-hash"/></svg></i>मुदत → कॅलेंडर</button>
   </div>
   <h2><span>AI आणि भाषा</span></h2>
   <div class="acts">
@@ -3520,6 +3533,191 @@ function uni2kruti(s){
   ACTS.card = actCard; ACTS.cmpdoc = actCompare;
   $('b-bk') && $('b-bk').addEventListener('click', backupAll);
 
+  /* ---------- v4 (5): तक्ता, रक्त अहवाल, औषध चिठ्ठी, रसीद, मुदत, बॅकअप फाईल ---------- */
+  var DISC_HEALTH = 'ही फक्त समजण्यासाठी माहिती आहे, निदान किंवा औषधाचा सल्ला नाही. निर्णयापूर्वी डॉक्टरांना विचारा.';
+  function aiDocJson(prompt, max) {
+    return docPageBlobs(CUR, max || 5).then(function (bl) { return blobsToImgs(bl.filter(Boolean)); }).then(function (imgs) {
+      return api('ai', { task: 'chat', json: true, prompt: prompt, images: imgs });
+    });
+  }
+  function aiDocAction(msg, prompt, then, max) {
+    if (CUR.kind === 'pdf') { toast('आधी पानांत रूपांतर करा'); return; }
+    needAI().then(function () { busy(msg, 'AI (Gemini)'); return aiDocJson(prompt, max); }).then(function (j) { done(); then(j || {}); }).catch(fail);
+  }
+  var FLAGC = { 'जास्त': '#b45309', 'कमी': '#b45309', 'तपासा': '#b91c1c', 'सामान्य': '#047857' };
+
+  /** संपादता येणारा तक्ता: Excel, पानावर (PDF), कॉपी */
+  function tableDlg(title, head, rows, o) {
+    o = o || {};
+    var flagCol = head.indexOf('स्थिती');
+    openDlg('<h3>' + esc(title) + '</h3>' + (o.top || '') +
+      '<p class="s">चुका असल्यास खाली सुधारा, मग खालील बटण दाबा.</p>' +
+      '<div class="tbw"><table class="tb"><thead><tr>' + head.map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      rows.map(function (r) { return '<tr>' + head.map(function (h, i) { var v = r[i] == null ? '' : r[i]; return '<td><input value="' + esc(v) + '"' + (i === flagCol && FLAGC[v] ? ' style="color:' + FLAGC[v] + ';font-weight:700"' : '') + '></td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
+      (o.bottom || '') +
+      '<div class="row"><button class="btn gold" id="tb-x">' + ico('xls') + 'Excel</button><button class="btn ghost" id="tb-p">' + ico('pdf') + 'पान म्हणून जोडा</button></div>' +
+      '<div class="row"><button class="btn ghost wide" id="tb-c">' + ico('txt') + 'मजकूर कॉपी</button></div>' +
+      (o.extra || []).map(function (x, i) { return '<div class="row"><button class="btn ghost wide" data-ex="' + i + '">' + x.label + '</button></div>'; }).join('') +
+      (o.note ? '<p class="hint">' + esc(o.note) + '</p>' : ''), function (bx) {
+      function grab() { return Array.prototype.map.call(bx.querySelectorAll('tbody tr'), function (tr) { return Array.prototype.map.call(tr.querySelectorAll('input'), function (i) { return i.value.trim(); }); }); }
+      bx.querySelector('#tb-x').onclick = function () { deliver(buildXlsx([head].concat(grab())), safeName(title) + '.xlsx', true); };
+      bx.querySelector('#tb-c').onclick = function () {
+        var t = [head].concat(grab()).map(function (r) { return r.join('\t'); }).join('\n');
+        (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast('कॉपी झाले'); }, function () { toast('कॉपी झाले नाही'); });
+      };
+      bx.querySelector('#tb-p').onclick = function () {
+        var g = grab(); closeDlg(); busy('तक्ता पानावर काढत आहे…');
+        tableBlobs(title, head, g, o.note).then(function (bl) { return addPages(bl.map(function (b) { return { blob: b, quad: fullQuad(), filter: 'orig' }; }), null, 'तक्ता', false); })
+          .then(function () { CUR.name = String(title).slice(0, 50); CUR.named = 1; return DB.put(CUR); }).then(function () { done(); showDoc(CUR); toast('तक्त्याचे पान तयार'); }).catch(fail);
+      };
+      bx.querySelectorAll('[data-ex]').forEach(function (b) { b.onclick = function () { o.extra[+b.dataset.ex].fn(head, grab()); }; });
+    });
+  }
+  /** तक्ता A4 पानांवर (रुंदीनुसार स्तंभ, ओळी तुटतात, पाने वाढतात) */
+  function tableBlobs(title, head, rows, note) {
+    var W = 1654, H = 2339, M = 110, FS = 32, LH = 44, pages = [], c, x, y, cw;
+    var tw = W - 2 * M, probe = canvas(10, 10).getContext('2d'); probe.font = '400 ' + FS + 'px ' + MFONT;
+    var mx = head.map(function (h, i) { var m = probe.measureText(h).width; rows.forEach(function (r) { m = Math.max(m, Math.min(probe.measureText(String(r[i] || '')).width, 600)); }); return m + 30; });
+    var sum = mx.reduce(function (a, b) { return a + b; }, 0); cw = mx.map(function (m) { return Math.max(110, m * tw / sum); });
+    var s2 = cw.reduce(function (a, b) { return a + b; }, 0); cw = cw.map(function (m) { return m * tw / s2; });
+    function np() { c = canvas(W, H); x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); x.fillStyle = '#111'; x.textBaseline = 'top'; pages.push(c); y = M; }
+    function row(cells, bold, fill) {
+      x.font = (bold ? '700 ' : '400 ') + FS + 'px ' + MFONT;
+      var ls = cells.map(function (t, i) { return wrapLines(x, String(t || ''), cw[i] - 20); }), n = Math.max.apply(null, ls.map(function (l) { return l.length; })), h = n * LH + 16;
+      if (y + h > H - M) { np(); }
+      var cx = M; if (fill) { x.fillStyle = fill; x.fillRect(M, y, tw, h); x.fillStyle = '#111'; }
+      ls.forEach(function (l, i) { var col = FLAGC[cells[i]]; if (col) x.fillStyle = col; l.forEach(function (t, k) { x.fillText(t, cx + 10, y + 8 + k * LH); }); x.fillStyle = '#111'; cx += cw[i]; });
+      x.strokeStyle = '#c7ccd6'; x.lineWidth = 1.5; x.strokeRect(M, y, tw, h); var xx = M; cw.forEach(function (w) { xx += w; x.beginPath(); x.moveTo(xx, y); x.lineTo(xx, y + h); x.stroke(); });
+      y += h;
+    }
+    np(); x.font = '700 48px ' + MFONT; x.fillText(title, M, y); y += 80;
+    row(head, true, '#e8edf8'); rows.forEach(function (r) { row(head.map(function (h, i) { return r[i]; })); });
+    if (note) { y += 30; x.font = '400 28px ' + MFONT; x.fillStyle = '#555'; wrapLines(x, note, tw).forEach(function (l) { if (y + 40 > H - M) np(), x.font = '400 28px ' + MFONT, x.fillStyle = '#555'; x.fillText(l, M, y); y += 38; }); }
+    return Promise.all(pages.map(function (p) { return toJpeg(p, 0.92); }));
+  }
+  function arr(v) { return Array.isArray(v) ? v : []; }
+
+  /* १) कोणताही मजकूर / फोटो → तक्ता */
+  ACTS.table = function () {
+    aiDocAction('तक्ता बनत आहे…', 'या कागदातील / फोटोतील सर्व माहिती एका तक्त्यात द्या. जे शब्द व आकडे कागदावर आहेत तेच जसेच्या तसे घ्या, काहीही रचू नका. JSON: {"title":"तक्त्याचे नाव","header":["स्तंभ 1","स्तंभ 2"],"rows":[["..",".."]]}. प्रत्येक ओळीत स्तंभांइतकेच घटक. यादी असेल तर क्रमांक स्तंभही ठेवा.', function (j) {
+      var h = arr(j.header); if (!h.length || !arr(j.rows).length) { toast('तक्त्यासारखी माहिती सापडली नाही'); return; }
+      tableDlg(j.title || CUR.name, h, j.rows.map(function (r) { return arr(r).map(String); }));
+    });
+  };
+
+  /* २) रक्त तपासणी अहवाल सोप्या मराठीत */
+  ACTS.health = function () {
+    aiDocAction('अहवाल वाचत आहे…', 'हा वैद्यकीय तपासणी अहवाल (रक्त / लघवी इ.) आहे. प्रत्येक चाचणी कागदावर आहे तशी अचूक वाचा; आकडे, एकक व सामान्य मर्यादा जसेच्या तसे. JSON: {"patient":"","date":"","lab":"","tests":[{"name":"चाचणी (मराठीत नाव, कंसात इंग्रजी)","value":"","unit":"","range":"अहवालातील सामान्य मर्यादा","status":"सामान्य / जास्त / कमी / तपासा"}],"summary":"5 ते 7 सोप्या मराठी ओळी: काय सामान्य आहे, काय बदललेले आहे व त्याचा साधा अर्थ. निदान करू नका, औषध सुचवू नका","doctor_q":["डॉक्टरांना विचारायचे 3 ते 5 प्रश्न"],"urgent":"एखादे मूल्य खूपच असामान्य दिसले तर तातडीने डॉक्टरांना भेटण्याची सौम्य सूचना, अन्यथा रिकामे"}. status अहवालातील मर्यादेवरूनच ठरवा; मर्यादा नसेल तर "तपासा".', function (j) {
+      var t = arr(j.tests); if (!t.length) { toast('चाचण्या सापडल्या नाहीत. फोटो स्पष्ट घ्या.'); return; }
+      var bad = t.filter(function (r) { return r.status && r.status !== 'सामान्य'; }).length;
+      var top = '<div class="lcard"><b>' + esc(j.patient || 'रुग्ण') + '</b><small>' + esc([j.date, j.lab].filter(Boolean).join(' • ')) + '</small><p>' + esc(t.length) + ' चाचण्या, त्यातील <b>' + bad + '</b> सामान्य नाहीत / तपासण्याजोग्या.</p></div>' +
+        (j.urgent ? '<div class="lwarn"><b>लक्षात घ्या:</b> ' + esc(j.urgent) + '</div>' : '') +
+        '<div class="lcard"><b>सोप्या शब्दांत</b><p style="white-space:pre-wrap">' + esc(j.summary || '') + '</p></div>';
+      var bottom = arr(j.doctor_q).length ? '<div class="lcard"><b>डॉक्टरांना विचारा</b><ul style="margin:6px 0 0;padding-left:18px">' + j.doctor_q.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ul></div>' : '';
+      tableDlg('आरोग्य अहवाल', ['चाचणी', 'मूल्य', 'स्थिती', 'एकक', 'सामान्य मर्यादा'], t.map(function (r) { return [r.name, r.value, r.status || 'तपासा', r.unit, r.range]; }), {
+        top: top, bottom: bottom, note: DISC_HEALTH + ' आकडे मूळ अहवालाशी पडताळा.',
+        extra: [{ label: ico('txt') + 'सारांश शेअर करा', fn: function () { deliver(new Blob([(j.summary || '') + '\n\nडॉक्टरांना विचारा:\n' + arr(j.doctor_q).map(function (q) { return '- ' + q; }).join('\n') + '\n\n' + DISC_HEALTH], { type: 'text/plain' }), 'अहवाल-सारांश.txt', true); } }]
+      });
+    }, 3);
+  };
+
+  /* ३) औषध चिठ्ठी → औषध, मात्रा, वेळापत्रक */
+  ACTS.rx = function () {
+    aiDocAction('चिठ्ठी वाचत आहे…', 'ही डॉक्टरांची औषध चिठ्ठी आहे (हस्तलिखित असू शकते). प्रत्येक औषध वाचा. वाचता न आल्यास नावापुढे "?" लिहा, अंदाजाने रचू नका. JSON: {"doctor":"","date":"","meds":[{"name":"औषध","morning":"1 किंवा 0 किंवा अर्धी इ.","noon":"","night":"","food":"जेवणाआधी / जेवणानंतर / रिकाम्या पोटी / रिकामे","days":"किती दिवस","note":""}],"advice":"इतर सल्ला"}', function (j) {
+      var m = arr(j.meds); if (!m.length) { toast('औषधे सापडली नाहीत'); return; }
+      tableDlg('औषध वेळापत्रक', ['औषध', 'सकाळ', 'दुपार', 'रात्र', 'केव्हा', 'दिवस', 'टीप'], m.map(function (r) { return [r.name, r.morning, r.noon, r.night, r.food, r.days, r.note]; }), {
+        top: '<div class="lcard"><b>' + esc(j.doctor || 'डॉक्टर') + '</b><small>' + esc(j.date || '') + '</small>' + (j.advice ? '<p>' + esc(j.advice) + '</p>' : '') + '</div><div class="lwarn">हस्ताक्षर वाचण्यात चूक होऊ शकते. औषध घेण्यापूर्वी केमिस्ट किंवा डॉक्टरांकडून नाव व मात्रा पक्की करा.</div>',
+        note: DISC_HEALTH
+      });
+    }, 3);
+  };
+
+  /* ४) रसीद / बिल → खर्च नोंद */
+  function expLoad() { try { return JSON.parse(LS.get('sm-exp2') || '[]'); } catch (e) { return []; } }
+  ACTS.receipt = function () {
+    aiDocAction('बिल वाचत आहे…', 'हे दुकानाचे बिल / रसीद आहे. JSON: {"shop":"","date":"dd/mm/yyyy","items":[{"n":"वस्तू","q":"संख्या","amt":"रक्कम"}],"gst":"","total":"एकूण रक्कम (फक्त आकडा)","category":"किराणा / इंधन / औषध / प्रवास / जेवण / इतर"}. आकडे कागदावर आहेत तसेच, रचू नका.', function (j) {
+      var it = arr(j.items);
+      var rows = it.map(function (r) { return [r.n, r.q, r.amt]; }); if (j.gst) rows.push(['GST', '', j.gst]); rows.push(['एकूण', '', j.total]);
+      tableDlg((j.shop || 'बिल') + ' ' + (j.date || ''), ['वस्तू', 'संख्या', 'रक्कम'], rows, {
+        top: '<div class="lcard"><b>' + esc(j.shop || 'दुकान') + '</b><small>' + esc(j.date || '') + ' • ' + esc(j.category || '') + '</small></div>',
+        extra: [
+          { label: ico('plus') + 'खर्चाच्या नोंदवहीत जोडा', fn: function () { var e = expLoad(); e.push({ date: j.date || today(), shop: j.shop || '', cat: j.category || '', total: String(j.total || '').replace(/[^\d.]/g, '') }); LS.set('sm-exp2', JSON.stringify(e.slice(-1000))); toast('नोंद झाली (' + e.length + ' नोंदी)'); } },
+          { label: ico('xls') + 'खर्च नोंदवही Excel मध्ये', fn: function () { var e = expLoad(); if (!e.length) { toast('नोंदी नाहीत'); return; } deliver(buildXlsx([['दिनांक', 'दुकान', 'प्रकार', 'रक्कम']].concat(e.map(function (r) { return [r.date, r.shop, r.cat, r.total]; }))), 'खर्च-नोंदवही.xlsx', true); } }
+        ]
+      });
+    }, 2);
+  };
+
+  /* ५) मुदत → फोनच्या कॅलेंडरसाठी .ics */
+  ACTS.deadline = function () {
+    aiDocAction('मुदत शोधत आहे…', 'या कागदातील सर्व मुदती / तारखा शोधा ज्यांच्या आधी काही करायचे आहे (उदा. उत्तर द्या, बिल भरा, हजर राहा, नूतनीकरण). आजची तारीख ' + new Date().toISOString().slice(0, 10) + ' आहे. JSON: {"items":[{"title":"काय करायचे (छोटे)","date":"YYYY-MM-DD"}]}. तारीख नसलेले घेऊ नका. रचू नका.', function (j) {
+      var it = arr(j.items).filter(function (r) { return /^\d{4}-\d{2}-\d{2}$/.test(r.date); });
+      if (!it.length) { toast('मुदत सापडली नाही'); return; }
+      openDlg('<h3>मुदती</h3><p class="s">तपासून कॅलेंडरमध्ये जोडा (आधी एक दिवस आठवण येईल)</p>' + it.map(function (r, i) { return '<div class="lcp" style="grid-template-columns:1fr 150px"><input class="f" data-t="' + i + '" value="' + esc(r.title) + '"><input class="f" type="date" data-d="' + i + '" value="' + esc(r.date) + '"></div>'; }).join('') +
+        '<div class="row"><button class="btn gold wide" id="dl-ok">' + ico('check') + 'कॅलेंडर फाईल (.ics)</button></div>', function (bx) {
+        bx.querySelector('#dl-ok').onclick = function () {
+          var L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ScanOS//MR'];
+          it.forEach(function (r, i) {
+            var d = bx.querySelector('[data-d="' + i + '"]').value.replace(/-/g, ''), t = bx.querySelector('[data-t="' + i + '"]').value || r.title; if (!d) return;
+            var nx = new Date(Date.UTC(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8) + 1)).toISOString().slice(0, 10).replace(/-/g, '');
+            L.push('BEGIN:VEVENT', 'UID:' + uid() + '@scanos', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]|\.\d+/g, ''), 'DTSTART;VALUE=DATE:' + d, 'DTEND;VALUE=DATE:' + nx, 'SUMMARY:' + String(t).replace(/[\n,;]/g, ' '), 'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + String(t).replace(/[\n,;]/g, ' '), 'TRIGGER:-P1D', 'END:VALARM', 'END:VEVENT');
+          });
+          L.push('END:VCALENDAR'); closeDlg(); deliver(new Blob([L.join('\r\n')], { type: 'text/calendar' }), 'मुदती.ics', true);
+        };
+      });
+    }, 4);
+  };
+
+  /* ---------- पूर्ण बॅकअप फाईल (सर्व दस्त, पाने, कार्यालय माहिती) व परत आणणे ---------- */
+  function backupFile() {
+    busy('बॅकअप फाईल बनत आहे…', 'सर्व दस्त');
+    DB.all().then(function (docs) {
+      var keys = ['office:lh'].concat([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (i) { return 'office:sig' + i; }));
+      docs.forEach(function (d) { keys.push(d.id + ':pdf'); (d.pages || []).forEach(function (p) { [':o', ':o0', ':p', ':t'].forEach(function (s) { keys.push(p.id + s); }); }); });
+      var files = [], i = 0, ls = {}; ['sm-office', 'sm-reg', 'sm-exp2'].forEach(function (k) { if (LS.get(k)) ls[k] = LS.get(k); });
+      files.push({ name: 'manifest.json', data: JSON.stringify({ app: 'ScanOS', v: 4, docs: docs, ls: ls }) });
+      function nx() {
+        if (i >= keys.length) return Promise.resolve();
+        var k = keys[i++]; if (i % 20 === 0) busy('बॅकअप फाईल बनत आहे…', i + ' / ' + keys.length);
+        return DB.getB(k).then(function (b) { return b ? blobBytes(b).then(function (u) { files.push({ name: 'b/' + encodeURIComponent(k), data: u }); }) : 0; }).then(nx);
+      }
+      return nx().then(function () { return zip(files, 'application/zip'); });
+    }).then(function (z) { done(); var d = new Date(); return deliver(z, 'ScanOS-बॅकअप-' + d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + '.zip', true); }).catch(fail);
+  }
+  function unzipStored(u) {
+    var dv = new DataView(u.buffer, u.byteOffset, u.byteLength), e = u.length - 22;
+    while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+    if (e < 0) throw new Error('ही ScanOS बॅकअप फाईल नाही');
+    var n = dv.getUint16(e + 10, true), p = dv.getUint32(e + 16, true), out = {}, dec = new TextDecoder();
+    for (var i = 0; i < n; i++) {
+      var meth = dv.getUint16(p + 10, true), size = dv.getUint32(p + 24, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+      var name = dec.decode(u.subarray(p + 46, p + 46 + nl)); if (meth !== 0) throw new Error('फाईल संकुचित आहे, ScanOS ची नाही');
+      var lnl = dv.getUint16(off + 26, true), lxl = dv.getUint16(off + 28, true), ds = off + 30 + lnl + lxl;
+      out[name] = u.subarray(ds, ds + size); p += 46 + nl + xl + cl;
+    }
+    return out;
+  }
+  function restoreFile(file) {
+    busy('परत आणत आहे…', 'फाईल वाचत आहे');
+    blobBytes(file).then(function (u) {
+      var f = unzipStored(u), man = f['manifest.json']; if (!man) throw new Error('ही ScanOS बॅकअप फाईल नाही');
+      var m = JSON.parse(new TextDecoder().decode(man)), docs = m.docs || [], i = 0, names = Object.keys(f).filter(function (k) { return k.indexOf('b/') === 0; }), j = 0;
+      function nb() {
+        if (j >= names.length) return Promise.resolve();
+        var nm = names[j++], key = decodeURIComponent(nm.slice(2)); if (j % 20 === 0) busy('परत आणत आहे…', j + ' / ' + names.length);
+        var t = /:p$|:t$|:o0?$/.test(key) || /^office:(lh|sig)/.test(key) ? 'image/jpeg' : 'application/pdf';
+        return DB.putB(key, new Blob([f[nm]], { type: t })).then(nb);
+      }
+      function nd() { if (i >= docs.length) return Promise.resolve(); return DB.put(docs[i++]).then(nd); }
+      return nb().then(nd).then(function () { var ls = m.ls || {}; Object.keys(ls).forEach(function (k) { LS.set(k, ls[k]); }); OFF = null; return docs.length; });
+    }).then(function (n) { done(); renderHome(); toast(n + ' दस्त परत आले', 3500); }).catch(fail);
+  }
+  $('b-bkf') && $('b-bkf').addEventListener('click', backupFile);
+  $('b-rsf') && $('b-rsf').addEventListener('click', function () {
+    var f = document.createElement('input'); f.type = 'file'; f.accept = '.zip,application/zip';
+    f.onchange = function () { if (f.files[0]) restoreFile(f.files[0]); }; f.click();
+  });
+
   /* ---------- मुख्य बटणे (v3) ---------- */
   $('b-psp').addEventListener('click', function () { openCam(null, 'pass'); });
   $('b-qr').addEventListener('click', openQr);
@@ -3685,6 +3883,15 @@ function uni2kruti(s){
     window.addEventListener('pageshow', function (e) { if (e.persisted) play(false); });
   })();
   renderHome();
+  /* दुसऱ्या ॲपमधून "शेअर" करून आलेल्या फाईल (Android) */
+  if (/[?&]share=1/.test(location.search) && window.caches) {
+    caches.open('scanos-share').then(function (c) { return c.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return c.match(k).then(function (r) { return r.blob().then(function (b) { return c.delete(k).then(function () { return new File([b], decodeURIComponent(k.url.split('/').pop()), { type: b.type }); }); }); }); })); }); }).then(function (fs) {
+      history.replaceState({ v: 'v-home', n: 1 }, '', location.pathname);
+      var pdfs = fs.filter(function (f) { return /pdf/i.test(f.type) || /\.pdf$/i.test(f.name); }), imgs = fs.filter(function (f) { return pdfs.indexOf(f) < 0; });
+      if (imgs.length) setTimeout(function () { onPickedImages(imgs); }, 600);
+      else if (pdfs.length) setTimeout(function () { var dt = new DataTransfer(); dt.items.add(pdfs[0]); $('f-pdf').files = dt.files; $('f-pdf').dispatchEvent(new Event('change')); }, 600);
+    }).catch(function () {});
+  }
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
 })();
 </script>
