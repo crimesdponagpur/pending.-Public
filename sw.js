@@ -1,4 +1,4 @@
-var C='pl-v7-mvwdztu7';
+var C='pl-v7-mvwea350';
 self.addEventListener('install',function(e){e.waitUntil(caches.open(C).then(function(c){return Promise.all(['./','./index.html','./config.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'].map(function(u){return fetch(new Request(u,{cache:'reload'})).then(function(r){return r.ok?c.put(u,r):0})}))}));self.skipWaiting()});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x!==C&&x.indexOf('pl-v7-')===0}).map(function(x){return caches.delete(x)}))}));self.clients.claim()});
 self.addEventListener('fetch',function(e){if(e.request.method!=='GET')return;var u=new URL(e.request.url);if(u.origin!==location.origin)return;e.respondWith(caches.open(C).then(function(c){return c.match(e.request,{ignoreSearch:true}).then(function(hit){var net=fetch(e.request,{cache:'no-cache'}).then(function(r){if(r.ok)c.put(e.request,r.clone());return r});if(hit){e.waitUntil(net.catch(function(){}));return hit}return net.catch(function(){return c.match('./index.html')})})}))});
