@@ -1,0 +1,19 @@
+name: mcr_demo
+description: MCR pending app Flutter demo
+publish_to: 'none'
+version: 0.1.0
+environment:
+  sdk: ^3.9.0
+dependencies:
+  flutter:
+    sdk: flutter
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: NotoDeva
+      fonts:
+        - asset: fonts/NSD-400.ttf
+        - asset: fonts/NSD-600.ttf
+          weight: 600
+        - asset: fonts/NSD-700.ttf
+          weight: 700
