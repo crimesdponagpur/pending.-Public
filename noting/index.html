@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="mr"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-kwJN6+gKbPXJkn2JkrVHVFQz9GMFnQi+6Ee8xkgyG4I='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' blob: data: https://script.google.com https://script.googleusercontent.com; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Noting • Breakup</title><meta name="theme-color" content="#1f6f43"><meta name="description" content="मासिक Noting: पो.स्टे. व SDPO कार्यालय एकाच Excel मध्ये"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><style>:root { --bg: #f3f4f1; --card: #fff; --ink: #1d2320; --mut: #66706a; --ln: #d5d9d3; --gl: #e2e5e0; --acc: #1f6f43; --acc2: #e7f3ec; --bad: #b42318; --warn: #fff4d6;
+<html lang="mr"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-a5l4qvQ79pVhANXK82vHt/MAhLhS9TeYfDSaWJbCp4Q='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' blob: data: https://script.google.com https://script.googleusercontent.com; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Noting • Breakup</title><meta name="theme-color" content="#1f6f43"><meta name="description" content="मासिक Noting: पो.स्टे. व SDPO कार्यालय एकाच Excel मध्ये"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><style>:root { --bg: #f3f4f1; --card: #fff; --ink: #1d2320; --mut: #66706a; --ln: #d5d9d3; --gl: #e2e5e0; --acc: #1f6f43; --acc2: #e7f3ec; --bad: #b42318; --warn: #fff4d6;
   --BELA: #2f6fdb; --BORI: #c2410c; --MIDC: #7c3aed; --hand: #0e7490; --carry: #15803d; --pl: #b45309; --my: #fffbe0; color-scheme: light; }
 :root[data-theme="dark"] { color-scheme: dark; }
 * { box-sizing: border-box; }
@@ -606,12 +606,14 @@ function loginView(msg) {
     '<button class="btn p w" id="lb">लॉगिन</button></form><p class="mut sm">PL / MCR ॲपचाच यूजर आयडी व पासवर्ड</p></div></div>';
   $('lf').onsubmit = function (e) {
     e.preventDefault(); var f = this; $('lb').disabled = true; $('lb').textContent = 'तपासत आहे…';
-    rpc('login', [f.u.value, f.pw.value, f.rem.checked, 'Noting ॲप']).then(function (r) {
+    rpc('login', [f.u.value, f.pw.value, f.rem.checked, 'Noting • ' + devInfo()]).then(function (r) {
       sSet('pl_tok', r.token, f.rem.checked); sSet('pl_uid', r.id, f.rem.checked); try { localStorage.setItem('pl_lastid', r.id); } catch (x) {}
       NB.tok = r.token; load();
     }, function (er) { loginView(er.message); });
   };
 }
+/* v10.7: फोन / ब्राउझरची थोडक्यात ओळख (सुरक्षा नोंद; मुख्य ॲपसारखीच) */
+function devInfo() { try { var u = navigator.userAgent || '', os = /Android [\d.]+/.exec(u) || /iPhone OS [\d_]+/.exec(u) || /Windows NT [\d.]+/.exec(u) || /Mac OS X [\d_]+/.exec(u) || ['']; var br = /(Edg|OPR|SamsungBrowser|Chrome|Firefox|Version)\/[\d]+/.exec(u) || ['']; var md = /; ([^;)]+) Build\//.exec(u); return [os[0].replace(/_/g, '.'), md ? md[1] : '', br[0].replace('Version', 'Safari')].filter(Boolean).join(', ').slice(0, 100); } catch (e) { return ''; } }
 function logout(msg) { sSet('pl_tok', ''); sSet('pl_uid', ''); NB.tok = ''; NB.d = null; NB.who = null; NB.ym = ''; NB.sheet = ''; NB.sel = ''; NB.q = {}; loginView(msg); }
 
 /* ---------- माहिती ---------- */
@@ -1105,7 +1107,8 @@ function exportXl(forClose) {
     .then(function (out) {
       if (forClose) return out;
       var name = 'NOTING_BREAKUP_' + NB.ym.slice(5, 7) + '-' + NB.ym.slice(2, 4) + '.xlsx', a = document.createElement('a');
-      a.href = URL.createObjectURL(out); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+      a.href = URL.createObjectURL(out); a.download = name; document.body.appendChild(a); a.click();
+      rpc('act', [NB.tok, 'audit', { kind: 'export', name: 'Noting: ' + name, size: out.size || 0 }]).catch(function () { }); // v10.7: सुरक्षा नोंद setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
       toast(name + ' डाउनलोड झाली');
     }, function (e) { toast('Excel बनवताना अडचण: ' + (e.message || e), true); throw e; });
 }
