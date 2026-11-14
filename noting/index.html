@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="mr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Noting • Breakup</title><meta name="theme-color" content="#1f6f43"><meta name="description" content="मासिक Noting: पो.स्टे. व SDPO कार्यालय एकाच Excel मध्ये"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><style>:root { --bg: #f3f4f1; --card: #fff; --ink: #1d2320; --mut: #66706a; --ln: #d5d9d3; --gl: #e2e5e0; --acc: #1f6f43; --acc2: #e7f3ec; --bad: #b42318; --warn: #fff4d6;
+<html lang="mr"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-GxsIga89BJxEdIF42ov6ZAVQt43zg1qBSe3iQ1Cl2W0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' blob: data: https://script.google.com https://script.googleusercontent.com; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Noting • Breakup</title><meta name="theme-color" content="#1f6f43"><meta name="description" content="मासिक Noting: पो.स्टे. व SDPO कार्यालय एकाच Excel मध्ये"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><style>:root { --bg: #f3f4f1; --card: #fff; --ink: #1d2320; --mut: #66706a; --ln: #d5d9d3; --gl: #e2e5e0; --acc: #1f6f43; --acc2: #e7f3ec; --bad: #b42318; --warn: #fff4d6;
   --BELA: #2f6fdb; --BORI: #c2410c; --MIDC: #7c3aed; --hand: #0e7490; --carry: #15803d; --pl: #b45309; --my: #fffbe0; color-scheme: light; }
 :root[data-theme="dark"] { color-scheme: dark; }
 * { box-sizing: border-box; }
@@ -500,9 +500,9 @@ var NX = (function () {
  * नवीन महिना: मागील महिन्याची फाइल + चालू महिन्याच्या चौकटी रिकाम्या + बेरीज पुढे + मागील महिना / तत्सम (इतिहासातून)
  * ===================================================================== */
 var NB = { tok: '', who: null, ym: '', d: null, model: null, eng: null, tpl: null, tplId: '', S: {}, sheet: '', sel: '', set: {}, src: {}, by: {}, q: {}, qT: null, busy: 0, own: {}, mine: {}, clr: {}, carry: [], warn: [], hist: {} };
-var NB_HF = 'https://cdn.jsdelivr.net/npm/hyperformula@2.7.1/dist/hyperformula.full.min.js';
-var NB_XL = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';
-var NB_ZIP = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+var NB_HF = '../lib/hyperformula-2.7.1.full.min.js';
+var NB_XL = '../lib/xlsx-js-style-1.2.0.bundle.js';
+var NB_ZIP = '../lib/jszip-3.10.1.min.js';
 var NB_PS = ['BELA', 'BORI', 'MIDC'], NB_PSM = { BELA: 'बेला', BORI: 'बोरी', MIDC: 'एमआयडीसी' };
 var NB_PSSHEET = { 'बेला': 'BELA', 'बोरी': 'BORI', 'एमआयडीसी': 'MIDC' }; // पो.स्टे.चे स्वतःचे पत्रक
 var NB_KEEP = { 'assesment': 1, 'break up  (2)': 1 }; // नवीन महिन्यात रिकामे न करायची पत्रके
