@@ -596,7 +596,7 @@ function loginView(msg) {
     '<button class="btn p w" id="lb">लॉगिन</button></form><p class="mut sm">PL / MCR ॲपचाच यूजर आयडी व पासवर्ड</p></div></div>';
   $('lf').onsubmit = function (e) {
     e.preventDefault(); var f = this; $('lb').disabled = true; $('lb').textContent = 'तपासत आहे…';
-    rpc('login', [f.u.value, f.pw.value, f.rem.checked]).then(function (r) {
+    rpc('login', [f.u.value, f.pw.value, f.rem.checked, 'Noting ॲप']).then(function (r) {
       sSet('pl_tok', r.token, f.rem.checked); sSet('pl_uid', r.id, f.rem.checked); try { localStorage.setItem('pl_lastid', r.id); } catch (x) {}
       NB.tok = r.token; load();
     }, function (er) { loginView(er.message); });
