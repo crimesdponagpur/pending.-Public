@@ -6,7 +6,9 @@
  */
 (function () {
   var DBN = 'pl_vault', ST = 'kv', KEYN = '__k', MEM = {}, KEY = null, DB = null, OK = false, Q = {}, T = {};
-  var SENS = ['pl_tok', 'pl_data', 'pl_ntg1', 'pl_rec1', 'pl_undo'];
+  var SENS = ['pl_tok', 'pl_data', 'pl_ntg1', 'pl_rec1', 'pl_undo', 'pl_q', 'pl_pv'];
+  /* pl_q = नेट नसताना केलेल्या, अजून सर्व्हरवर न गेलेल्या नोंदी; pl_pv = ऑफलाइन lock उघडण्यासाठी पासवर्ड पडताळणी (hash). हे लॉगआउटला पुसले जात नाहीत (नोंदी हरवू नयेत). */
+  var KEEP = ['pl_q', 'pl_pv'];
   function req(r) { return new Promise(function (res, rej) { r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
   function store(mode) { return DB.transaction(ST, mode).objectStore(ST); }
   function open() {
@@ -68,6 +70,6 @@
     },
     del: function (k) { VAULT.set(k, null); },
     /* लॉगआउट: सर्व संवेदनशील माहिती पुसा (किल्ली तशीच; पुढच्या लॉगिनला वापरली जाते) */
-    wipe: function () { SENS.forEach(function (n) { clearTimeout(T[n]); MEM[n] = null; rmPlain(n); persist(n); }); }
+    wipe: function () { SENS.forEach(function (n) { if (KEEP.indexOf(n) >= 0) return; clearTimeout(T[n]); MEM[n] = null; rmPlain(n); persist(n); }); }
   };
 })();
