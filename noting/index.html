@@ -111,7 +111,7 @@ table.pt tr:hover td { background: var(--acc2); } table.pt tr.cur td { backgroun
 table.pt td.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 table.pt td.ok { color: #116634; font-weight: 600; } table.pt td.part { color: #8a5a00; } table.pt td.zero { color: #a3a8a4; }
 @media (max-width: 900px) { .prog { display: none; } }
-</style><script src="../config.js"></script></head><body><div id="app"></div>
+</style><script src="../config.js"></script><script src="../vault.js"></script></head><body><div id="app"></div>
 <script>
 var APP_VER = "1.0.0";
 var LOGO = "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"2\" y=\"2\" width=\"60\" height=\"60\" rx=\"14\" fill=\"#1f6f43\"/><rect x=\"13\" y=\"14\" width=\"38\" height=\"36\" rx=\"3\" fill=\"#fff\"/><path d=\"M13 24h38M13 33h38M13 42h38M26 14v36M38 14v36\" stroke=\"#1f6f43\" stroke-width=\"2\"/><rect x=\"13\" y=\"14\" width=\"38\" height=\"10\" rx=\"3\" fill=\"#c9e8d4\"/><circle cx=\"44\" cy=\"46\" r=\"9\" fill=\"#f2b705\"/><path d=\"M40 46l3 3 5-6\" stroke=\"#fff\" stroke-width=\"2.4\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>";
@@ -514,8 +514,14 @@ var NB_SRC_L = { pl: 'MCR ॲपमधील गुन्ह्यांवर�
 /* ---------- मदत ---------- */
 function $(id) { return document.getElementById(id); }
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-function sGet(k) { try { return localStorage.getItem(k) || sessionStorage.getItem(k) || ''; } catch (e) { return ''; } }
-function sSet(k, v, persist) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); if (v) (persist ? localStorage : sessionStorage).setItem(k, v); } catch (e) {} }
+/* token मुख्य ॲपच्याच encrypt केलेल्या तिजोरीत (../vault.js) */
+if (!window.VAULT) window.VAULT = { ready: Promise.resolve(), ok: function () { return false; }, sens: function () { return false; }, get: function () { return null; }, set: function () { }, del: function () { } };
+function sGet(k) { if (VAULT.sens(k)) { var x = VAULT.get(k); if (x) return x; } try { return localStorage.getItem(k) || sessionStorage.getItem(k) || ''; } catch (e) { return ''; } }
+function sSet(k, v, persist) {
+  try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {}
+  if (VAULT.sens(k)) { VAULT.del(k); if (v && persist && VAULT.ok()) return VAULT.set(k, v); persist = false; }
+  try { if (v) (persist ? localStorage : sessionStorage).setItem(k, v); } catch (e) {}
+}
 function monL(ym) { return NB_MON[+ym.slice(5, 7) - 1] + ' ' + ym.slice(0, 4); }
 function addM(ym, n) { var y = +ym.slice(0, 4), m = +ym.slice(5, 7) - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y + '-' + ('0' + (m + 1)).slice(-2); }
 function today() { var d = new Date(Date.now() + 330 * 6e4); return d.toISOString().slice(0, 10); }
@@ -1166,6 +1172,6 @@ function wireSetup() {
 function closeOv() { var o = document.querySelector('.ov'); if (o) o.remove(); }
 function setupDlg() { modal('<h3>सेटअप</h3>' + setupBody() + '<div class="row end"><button class="btn" data-close>बंद</button></div>', function () { wireSetup(); }); }
 
-boot();
+VAULT.ready.then(boot, boot);
 if ("serviceWorker" in navigator) window.addEventListener("load", function () { var hc = !!navigator.serviceWorker.controller; navigator.serviceWorker.register("sw.js"); navigator.serviceWorker.addEventListener("controllerchange", function () { if (hc && !Object.keys(NB.q).length) location.reload(); }); });
 </script></body></html>
