@@ -1,4 +1,4 @@
-var C='pl-v7-v1070';
+var C='pl-v7-v1080';
 var RT='pl-rt-1';
 var CDN=/^https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
 self.addEventListener('install',function(e){e.waitUntil(caches.open(C).then(function(c){return Promise.all(['./','./index.html','./config.js','./vault.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'].map(function(u){return fetch(new Request(u,{cache:'reload'})).then(function(r){return r.ok?c.put(u,r):0})}))}));self.skipWaiting()});

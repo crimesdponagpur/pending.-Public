@@ -1,7 +1,7 @@
 /* MCR आयकॉन: चालू महिन्याइतक्या सोनेरी कडी. वापर: node mkicon.js [महिना 1-12] [बाहेरील फोल्डर...] */
 const sharp = require('sharp'), fs = require('fs'), path = require('path');
 const mn = +process.argv[2] || (new Date().getUTCMonth() + 1 + (new Date().getUTCHours() >= 18 ? 0 : 0));
-const dirs = process.argv.slice(3).length ? process.argv.slice(3) : ['.', 'test'];
+const dirs = process.argv.slice(3).length ? process.argv.slice(3) : ['.'];
 function logo(mn) {
   var mo = '';
   for (var i = 0; i < 12; i++) {
