@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="mr"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-GxsIga89BJxEdIF42ov6ZAVQt43zg1qBSe3iQ1Cl2W0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' blob: data: https://script.google.com https://script.googleusercontent.com; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Noting • Breakup</title><meta name="theme-color" content="#1f6f43"><meta name="description" content="मासिक Noting: पो.स्टे. व SDPO कार्यालय एकाच Excel मध्ये"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><style>:root { --bg: #f3f4f1; --card: #fff; --ink: #1d2320; --mut: #66706a; --ln: #d5d9d3; --gl: #e2e5e0; --acc: #1f6f43; --acc2: #e7f3ec; --bad: #b42318; --warn: #fff4d6;
+<html lang="mr"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-kwJN6+gKbPXJkn2JkrVHVFQz9GMFnQi+6Ee8xkgyG4I='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' blob: data: https://script.google.com https://script.googleusercontent.com; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Noting • Breakup</title><meta name="theme-color" content="#1f6f43"><meta name="description" content="मासिक Noting: पो.स्टे. व SDPO कार्यालय एकाच Excel मध्ये"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><style>:root { --bg: #f3f4f1; --card: #fff; --ink: #1d2320; --mut: #66706a; --ln: #d5d9d3; --gl: #e2e5e0; --acc: #1f6f43; --acc2: #e7f3ec; --bad: #b42318; --warn: #fff4d6;
   --BELA: #2f6fdb; --BORI: #c2410c; --MIDC: #7c3aed; --hand: #0e7490; --carry: #15803d; --pl: #b45309; --my: #fffbe0; color-scheme: light; }
 :root[data-theme="dark"] { color-scheme: dark; }
 * { box-sizing: border-box; }
@@ -581,7 +581,11 @@ function idb(op, key, val) {
     try {
       var rq = indexedDB.open('noting', 1);
       rq.onupgradeneeded = function () { rq.result.createObjectStore('f'); };
-      rq.onsuccess = function () { var tx = rq.result.transaction('f', op === 'get' ? 'readonly' : 'readwrite'), st = tx.objectStore('f'), r = op === 'get' ? st.get(key) : st.put(val, key); r.onsuccess = function () { res(r.result); }; r.onerror = function () { res(null); }; };
+      rq.onsuccess = function () {
+        var tx = rq.result.transaction('f', op === 'get' ? 'readonly' : 'readwrite'), st = tx.objectStore('f');
+        if (op === 'purge') { var cur = st.openCursor(); cur.onsuccess = function () { var c = cur.result; if (!c) return res(null); if (String(c.key).indexOf(key) === 0 && String(c.key) !== val) c.delete(); c.continue(); }; cur.onerror = function () { res(null); }; return; } // key ने सुरू होणाऱ्या जुन्या प्रती काढा (val सोडून)
+        var r = op === 'get' ? st.get(key) : st.put(val, key); r.onsuccess = function () { res(r.result); }; r.onerror = function () { res(null); };
+      };
       rq.onerror = function () { res(null); };
     } catch (e) { res(null); }
   });
@@ -633,7 +637,9 @@ function engine() {
   var T = NB.d.tpl;
   if (NB.eng && NB.tplId === T.id + T.at) return Promise.resolve();
   busyT('Noting ची Excel फाइल उघडत आहे…');
-  var key = 'tpl:' + T.id + ':' + T.at;
+  var mine = NB.who && !NB.who.all, key = (mine ? 'tplps:' + NB.who.ps + ':' : 'tpl:') + T.id + ':' + T.at;
+  if (mine) idb('purge', 'tpl:', ''); // v10.6: आधी साठवलेली पूर्ण (सर्व पो.स्टे.ची) प्रत पो.स्टे.च्या फोनमधून काढा
+  idb('purge', mine ? 'tplps:' : 'tpl:', key);
   return Promise.all([idb('get', key).then(function (buf) {
     if (buf) return buf;
     return rpc('nfFile', [NB.tok, '']).then(function (f) { var b = unb64(f.b64); idb('put', key, b); return b; });
@@ -811,7 +817,7 @@ function shell() {
   NB.mine = W.all ? {} : NB.ownPs[W.ps] || {};
   if (!NB.sheet || !NB.S[NB.sheet] || NB.S[NB.sheet].st) NB.sheet = firstSheet();
   tabs(); grid(); wireFx(); saved(); prog();
-  if (W.admin && d.tpl && (!d.own || d.own.tid !== d.tpl.id + '|' + d.tpl.at)) pubOwn();
+  if (W.admin && d.tpl && (!d.own || d.own.tid !== d.tpl.id + '|' + d.tpl.at || (d.own.dv || 0) < 2)) pubOwn();
 }
 function firstSheet() {
   var mineS = Object.keys(NB.mine)[0], own = NB_PSM[NB.who.ps];
@@ -1134,9 +1140,59 @@ function reopen() {
 }
 
 /* ---------- सेटअप (SDPO) ---------- */
+/* v10.6 सुरक्षा: प्रत्येक चौकट कोणत्या पो.स्टे.च्या माहितीवर अवलंबून (सूत्रे, बेरीज पुढे, मागील महिना / तत्सम रकाने यांची पूर्ण साखळी).
+   एखाद्या पो.स्टे.शिवाय इतर पो.स्टे.ची माहिती असलेली चौकट त्या पो.स्टे.ला "नाकार" यादीत: सर्व्हर नमुना Excel व इतिहासातून ती काढूनच देतो. */
+function ownDeny() {
+  var T = NB.model.t, O = {}, PRE = {}, U = {}, byName = {};
+  Object.keys(NB.S).forEach(function (x) { byName[x] = x; byName[x.trim().toLowerCase()] = x; byName[NB.S[x].n] = x; });
+  function allPs(k) { O[k] = O[k] || {}; NB_PS.forEach(function (x) { O[k][x] = 1; }); }
+  /* संदर्भ नक्की ओळखता न येणारे सूत्र (पूर्ण रकाना/ओळ, INDIRECT/OFFSET, नाव दिलेली range): सुरक्षिततेसाठी सर्व पो.स्टे.चे */
+  function vague(t) {
+    var x = String(t).replace(/"(?:[^"]|"")*"/g, '""').replace(/'(?:[^']|'')+'!/g, ' ').replace(/[A-Za-z_][A-Za-z0-9_.]*!/g, ' ').replace(/\{\$?-?\d+,\$?-?\d+\}(?:\s*:\s*\{\$?-?\d+,\$?-?\d+\})?/g, '0');
+    if (/\b(INDIRECT|OFFSET)\s*\(/i.test(x) || /\$?[A-Z]{1,3}\s*:\s*\$?[A-Z]{1,3}(?![A-Za-z0-9_(])/.test(x) || /(^|[^A-Za-z0-9_.])\$?\d+\s*:\s*\$?\d+/.test(x)) return true;
+    var id = /[A-Za-z_\u0900-\u097F][A-Za-z0-9_.\u0900-\u097F]*/g, m;
+    while ((m = id.exec(x))) { var after = x.slice(m.index + m[0].length).replace(/^\s+/, ''); if (after[0] === '(' || /^(TRUE|FALSE)$/i.test(m[0])) continue; if (/^[eE]\d*$/.test(m[0]) && /\d$/.test(x.slice(0, m.index))) continue; return true; }
+    return false;
+  }
+  function K(sh, a) { return sh + '!' + a; }
+  function addPre(k, q) { (PRE[k] = PRE[k] || []).push(q); U[k] = 1; U[q] = 1; }
+  Object.keys(NB.own).forEach(function (k) { O[k] = {}; O[k][NB.own[k]] = 1; U[k] = 1; });
+  NB.carry.forEach(function (c) { addPre(K(c[0], c[1]), K(c[0], c[2])); });
+  Object.keys(NB_RULES).forEach(function (sh) { var S = NB.S[sh]; if (!S) return; Object.keys(NB_RULES[sh]).forEach(function (col) { var r0 = NB_RULES[sh][col]; rowsOf(S, col, r0[1]).forEach(function (r) { addPre(K(sh, col + r), K(sh, r0[1] + r)); }); }); });
+  var re = /('(?:[^']|'')+'!|[^\s'!(){}+\-*\/,:;=<>&^"]+!)?\{(\$?)(-?\d+),(\$?)(-?\d+)\}(?::\{(\$?)(-?\d+),(\$?)(-?\d+)\})?/g;
+  Object.keys(NB.S).forEach(function (sh) {
+    var S = NB.S[sh];
+    Object.keys(S.v).forEach(function (a) { U[K(sh, a)] = 1; });
+    Object.keys(S.f).forEach(function (a) {
+      var k = K(sh, a), p = NFC.sp(a), t = T[S.f[a]], m; U[k] = 1; re.lastIndex = 0;
+      if (vague(t)) allPs(k);
+      while ((m = re.exec(t))) {
+        var ts = sh;
+        if (m[1]) { var nm = m[1].slice(0, -1); if (nm[0] === "'") nm = nm.slice(1, -1).replace(/''/g, "'"); ts = byName[nm] || byName[nm.trim().toLowerCase()]; if (!ts) { allPs(k); continue; } } // अज्ञात पत्रक: सर्वांचे
+        var c1 = m[2] ? +m[3] : p[0] + +m[3], r1 = m[4] ? +m[5] : p[1] + +m[5];
+        if (m[6] === undefined) { addPre(k, K(ts, NFC.cl(c1) + r1)); continue; }
+        var c2 = m[6] ? +m[7] : p[0] + +m[7], r2 = m[8] ? +m[9] : p[1] + +m[9];
+        if ((Math.abs(c2 - c1) + 1) * (Math.abs(r2 - r1) + 1) > 50000) { allPs(k); continue; } // फार मोठी range: सुरक्षिततेसाठी सर्वांची
+        for (var c = Math.min(c1, c2); c <= Math.max(c1, c2); c++) for (var r = Math.min(r1, r2); r <= Math.max(r1, r2); r++) addPre(k, K(ts, NFC.cl(c) + r));
+      }
+    });
+  });
+  var keys = Object.keys(U), ch = true, it = 0;
+  while (ch && it++ < 200) { // चक्रीय संदर्भ (वर्षाची बेरीज ↔ बेरीज पुढे) असले तरी पूर्ण साखळी: बदल थांबेपर्यंत
+    ch = false;
+    keys.forEach(function (k) { var pr = PRE[k]; if (!pr) return; var o = O[k] || (O[k] = {}); pr.forEach(function (q) { var x = O[q]; if (x) for (var p in x) if (!o[p]) { o[p] = 1; ch = true; } }); });
+  }
+  var dn = {}; NB_PS.forEach(function (p) { dn[p] = {}; });
+  keys.forEach(function (k) {
+    var o = O[k]; if (!o) return; var i = k.indexOf('!'), sh = k.slice(0, i), a = k.slice(i + 1);
+    NB_PS.forEach(function (p) { for (var q in o) if (q !== p) { (dn[p][sh] = dn[p][sh] || []).push(a); return; } });
+  });
+  return dn;
+}
 function pubOwn() {
   var ps = {}; NB_PS.forEach(function (p) { ps[p] = NB.ownPs[p]; });
-  rpc('nfAct', [NB.tok, 'own', { own: { tid: NB.d.tpl.id + '|' + NB.d.tpl.at, ps: ps } }]).then(function (r) { NB.d.own = { tid: NB.d.tpl.id + '|' + NB.d.tpl.at, at: r.at }; }, function (e) { toast('पो.स्टे.च्या चौकटी जतन झाल्या नाहीत: ' + e.message, true); });
+  var dn; try { dn = ownDeny(); } catch (e) { return toast('पो.स्टे.च्या चौकटींचा नकाशा बनला नाही: ' + (e.message || e), true); }
+  rpc('nfAct', [NB.tok, 'own', { own: { tid: NB.d.tpl.id + '|' + NB.d.tpl.at, ps: ps, dn: dn, dv: 2 } }]).then(function (r) { NB.d.own = { tid: NB.d.tpl.id + '|' + NB.d.tpl.at, at: r.at, dv: 2 }; }, function (e) { toast('पो.स्टे.च्या चौकटी जतन झाल्या नाहीत: ' + e.message, true); });
 }
 function setupHtml() {
   var d = NB.d, W = NB.who;
