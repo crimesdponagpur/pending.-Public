@@ -1,0 +1,20 @@
+name: MCR सुरक्षा तपासणी
+# प्रत्येक बदलावर: CSP hash, lib/ फाइलींची सत्यता, JavaScript syntax. चूक असल्यास लाल ✗ दिसते.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: तपासणी
+        run: node tools/check.js
